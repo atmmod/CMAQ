@@ -50,7 +50,7 @@ set ParOpt                             #> uncomment to build a multiple processo
                                        #>   comment out for a single processor (serial) executable
 #set build_parallel_io                 #> uncomment to build with parallel I/O (pnetcdf); 
                                        #>   comment out to use standard netCDF I/O 
-#set Debug_CCTM                        #> uncomment to compile CCTM with debug option equal to TRUE
+set Debug_CCTM                        #> uncomment to compile CCTM with debug option equal to TRUE
                                        #>   comment out to use standard, optimized compile process
 set make_options = "-j"                #> additional options for make command if MakeFileOnly is not set
                                        #>   comment out if no additional options are wanted.

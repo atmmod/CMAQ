@@ -132,13 +132,15 @@ c      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
             INTEGER, INTENT( IN )        :: JDATE, JTIME
          END SUBROUTINE CKSUMMER
          SUBROUTINE PA_UPDATE ( PNAME, CGRID, JDATE, JTIME, TSTEP )
+            USE HDMod
             CHARACTER( * ), INTENT( IN ) :: PNAME
-            REAL, POINTER             :: CGRID( :,:,:,: )
+            Type(hyperdual), POINTER             :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )     :: JDATE, JTIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
          END SUBROUTINE PA_UPDATE
          SUBROUTINE HADV ( CGRID, JDATE, JTIME, TSTEP, ASTEP )
-            REAL, POINTER             :: CGRID( :,:,:,: )
+            USE HDMod
+            Type(hyperdual), POINTER             :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )     :: JDATE, JTIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
             INTEGER, INTENT( IN )     :: ASTEP( : )
@@ -162,7 +164,8 @@ c      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
          END SUBROUTINE DECOUPLE
          SUBROUTINE HDIFF ( CGRID, JDATE, JTIME, TSTEP )
-            REAL, POINTER             :: CGRID( :,:,:,: )
+            USE HDMod
+            Type(hyperdual), POINTER             :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )     :: JDATE, JTIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
          END SUBROUTINE HDIFF
@@ -173,24 +176,28 @@ c      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
          END SUBROUTINE VDIFF
          SUBROUTINE PHOT ( CGRID, JDATE, JTIME, TSTEP )
-            REAL, POINTER             :: CGRID( :,:,:,: )
+            USE HDMod
+            Type(hyperdual), POINTER             :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )     :: JDATE, JTIME
             INTEGER, INTENT( IN )     :: TSTEP( : )
          END SUBROUTINE PHOT
          SUBROUTINE CLDPROC ( CGRID, JDATE, JTIME, TSTEP )
-            REAL, POINTER             :: CGRID( :,:,:,: )
+         	USE HDMod
+            Type(hyperdual), POINTER             :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )     :: JDATE, JTIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
          END SUBROUTINE CLDPROC
          SUBROUTINE CHEM ( CGRID, JDATE, JTIME, TSTEP )
-            REAL, POINTER             :: CGRID( :,:,:,: )
+            USE HDMod
+            Type(hyperdual), POINTER             :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )     :: JDATE, JTIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
          END SUBROUTINE CHEM
 #ifdef potvorto3
          SUBROUTINE PVO3 ( CGRID, JDATE, JTIME )
+            USE HDMod
             IMPLICIT NONE
-            REAL, POINTER             :: CGRID( :,:,:,: )
+            Type(hyperdual), POINTER             :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )     :: JDATE, JTIME
          END SUBROUTINE PVO3
 #endif
@@ -251,7 +258,7 @@ C-----------------------------------------------------------------------
 
  	  IF (JTIME .EQ. 0) THEN
 c        Hyperdual perturbation at the very first
- 	    CGRID(:, :, :, 156) = CGRID(:, :, :, 156) + PERT_HYPERDUAL
+ 	    CGRID(:, :, :, 156.0D0) = CGRID(:, :, :, 156.0D0) + PERT_HYPERDUAL
  	    
 c       Hyperdual <-- CD
  	    DO V = 1, N_CSPCS
