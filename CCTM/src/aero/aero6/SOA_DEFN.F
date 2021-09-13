@@ -190,7 +190,7 @@ C-----------------------------------------------------------------------
           Real, Allocatable    :: rog_mw   ( : )   ! Precursor Species
                                                    ! that are linked to yields
       !   Concentrations
-          TYPE(hyperdual), Allocatable    :: og_conc  ( : )   ! Vapors ! This should be hyperdual 
+          TYPE(hyperdual), Allocatable    :: og_conc  ( : )   ! Vapors 
           TYPE(hyperdual), Allocatable    :: rog_dconc( : )   ! Reaction counters
 
       ! Variables for mapping OA to aerosol and CGRID arrays
@@ -796,7 +796,7 @@ C Key Subroutines/Functions called:  newt, soabisection
       Real, Parameter :: ctolmin = 1.0E-06
       Real, Parameter :: convfac_298 = 101325.0 * rgas1 * trefm1  ! P/RT at 1 atm and 298 K [ mole/m**3 ]
       Real, Parameter :: difforg = 9.36e-6  ! Diffusivity of organics [m2 s-1]
-      Real( 8 ), Parameter :: alphorg = 1.0D0      ! accomodation coefficient
+      Real, Parameter :: alphorg = 1.0      ! accomodation coefficient
 
       Real convfac
       Real tt1, tt2      ! temperature-related factors
@@ -949,31 +949,6 @@ C-----------------------------------------------------------------------
       		GR3FRAC( i , 2 ) = GR3( i , 2 ) / ( GR3( i , 1 ) + GR3( i , 2 ) )    
         endif
       enddo
-      		
-      		
-C     Where ( GR3( :,1 )%x .gt. 0.0d0 ) 
-C    &    GR3FRAC( :,1 )%x = GR3( :,1 )%x / ( GR3(:,1)%x + GR3(:,2)%x ) ! Aitken Growth
-C
-C     Where ( GR3( :,1 )%x .gt. 0.0d0 ) 
-C    &    GR3FRAC( :,1 )%dx1 = GR3( :,1 )%dx1 / ( GR3(:,1)%dx1 + GR3(:,2)%dx1 ) ! Aitken Growth     
-C
-C     Where ( GR3( :,1 )%x .gt. 0.0d0 ) 
-C    &    GR3FRAC( :,1 )%dx2 = GR3( :,1 )%dx2 / ( GR3(:,1)%dx2 + GR3(:,2)%dx2 ) ! Aitken Growth 
-C
-C     Where ( GR3( :,1 )%x .gt. 0.0d0 ) 
-C    &    GR3FRAC( :,1 )%dx1x2 = GR3( :,1 )%dx1x2 / ( GR3(:,1)%dx1x2 + GR3(:,2)%dx1x2 ) ! Aitken Growth 
-                    
-C     Where ( GR3( :,2 )%x .gt. 0.0d0 )
-C    &    GR3FRAC( :,2 )%x = GR3( :,2 )%x / ( GR3(:,1)%x + GR3(:,2)%x ) ! Accumulation Growth
-C
-C     Where ( GR3( :,2 )%x .gt. 0.0d0 )
-C    &    GR3FRAC( :,2 )%dx1 = GR3( :,2 )%dx1 / ( GR3(:,1)%dx1 + GR3(:,2)%dx1 ) ! Accumulation Growth     
-C
-C     Where ( GR3( :,2 )%x .gt. 0.0d0 )
-C    &    GR3FRAC( :,2 )%dx2 = GR3( :,2 )%dx2 / ( GR3(:,1)%dx2 + GR3(:,2)%dx2 ) ! Accumulation Growth
-C
-C     Where ( GR3( :,2 )%x .gt. 0.0d0 )
-C    &    GR3FRAC( :,2 )%dx1x2 = GR3( :,2 )%dx1x2 / ( GR3(:,1)%dx1x2 + GR3(:,2)%dx1x2 ) ! Accumulation Growth
   
       ! Initialize drog from ORGPROD and change units to [ ug / m**3 ]
       ! Assignment of drog to totrog. This moving mass from the reactive
@@ -1045,7 +1020,7 @@ C    &    GR3FRAC( :,2 )%dx1x2 = GR3( :,2 )%dx1x2 / ( GR3(:,1)%dx1x2 + GR3(:,2)%
           tempcorr      = tt1 * Exp( oaspc( i )%enth * rgas1 * tt2 )
           c0( nsvol )   = oaspc( i )%cstar * tempcorr      ! Satn Conc. [ug/m3]
           prod( nsvol ) = oaspc( i )%alpha * totrog( i )   ! Total Vapor Produced [ug/m3]
-          ctotf( nsvol )= ctoti( nsvol ) + prod( nsvol )   ! Vapor + Particle [ug/m3]
+          ctotf( nsvol )= ctoti( nsvol ) + prod( nsvol )   ! Vapor + Particle [ug/m3]       
           threshold  = threshold +  ctotf( nsvol ) / c0( nsvol )
          
           ! Partition semivolatile species accordingly
@@ -1089,7 +1064,7 @@ C    &    GR3FRAC( :,2 )%dx1x2 = GR3( :,2 )%dx1x2 / ( GR3(:,1)%dx1x2 + GR3(:,2)%
                 Call m3exit( pname, 0, 0, xmsg, xstat3 )
              End If
           End If
-
+ 
         Else
             
           ! METHOD2
@@ -1106,14 +1081,14 @@ C    &    GR3FRAC( :,2 )%dx1x2 = GR3( :,2 )%dx1x2 / ( GR3(:,1)%dx1x2 + GR3(:,2)%
             upb       = upb * ( 2.0 + 1.0e-7 * real(n_oa) ) ! prevent numerical issues
             orgmoles = soabisect( lowb, upb, totorgnv, nsvol, c0, ctotf, svmw )
           End If
-
+ 
           ! Determine concentration of each semivoltile (hotp 7/5/11)
           Do i = 1, nsvol
             faer = svmw(i) * orgmoles / 
      &             ( c0( i ) + svmw(i) * orgmoles )
             caer( i ) = ctotf( i ) * faer
           End Do
-
+ 
         End If  ! End OA paritioning solver METHOD selection
 
         ! Constrain caer to values between conmin and ctotf
@@ -1156,6 +1131,27 @@ C          totaer%dx2 = sum( aerospc_conc( indx,: )%dx2 , mask =
 C    &                 .NOT. aero_missing( indx,: ) )
 C          totaer%dx1x2 = sum( aerospc_conc( indx,: )%dx1x2 , mask = 
 C    &                 .NOT. aero_missing( indx,: ) )  
+          
+           ! If the concentration is less than conmin, then all the hyperdual
+           ! Components should be zero. 
+           
+     	   IF   ( sum(aerospc_conc(indx, :)%x, mask = 
+     & 	   .NOT. aero_missing( indx, : ) ) .LE. conmin ) THEN
+     	   
+     	   totaer%dx1 = 0.0d0
+     	   totaer%dx2 = 0.0d0
+     	   totaer%dx1x2 = 0.0d0
+     	   
+     	   ELSE
+     
+           totaer%dx1 = sum( aerospc_conc( indx,: )%dx1 , mask = 
+     &                 .NOT. aero_missing( indx,: ) )
+           totaer%dx2 = sum( aerospc_conc( indx,: )%dx2 , mask = 
+     &                 .NOT. aero_missing( indx,: ) )
+           totaer%dx1x2 = sum( aerospc_conc( indx,: )%dx1x2 , mask = 
+     &                 .NOT. aero_missing( indx,: ) )  
+           
+           ENDIF
             
            ! Transfer the semivolatile mass
            Do im = 1,2
@@ -1170,10 +1166,11 @@ C    &                 .NOT. aero_missing( indx,: ) )
                  ! fraction
                  aerospc_conc( indx,im ) = aerospc_conc( indx,im ) 
      &                + dcaer * GR3FRAC( i,im )
+
               End If
            End Do
-
-           og_conc( i ) = ctotf( nsvol ) - caer( nsvol )
+ 
+           og_conc( i ) = ctotf( nsvol ) - caer( nsvol )   
         End Do  ! Partitioning Vapor Loop
  
       Else   ! threshold not exceeded; no material transferred to aerosol phase
@@ -1210,10 +1207,10 @@ C    &                 .NOT. aero_missing( indx,: ) )
       ! Uptake of water onto inorganic species is calculated elsewhere
       ! using ISORROPIA.
       If ( aorgh2o_idx > 0 ) Then
-
+ 
          kappaVorg = 0.0d0 ! units: m3.spec/m3.air
          totvol    = 0.0d0 ! units: m3.particle/m3.air
-
+ 
          im = 2 ! only compute water for accumulation mode OM
 
          ! Compute sum_i(Kappa_i*Vorg_i) for all OM species except POC 
@@ -1243,7 +1240,7 @@ C    &                 .NOT. aero_missing( indx,: ) )
          diam         = (6.0*totvol/numparticles/ pi ) ** (1.0/3.0)
 
          ! Compute aerosol water (Eq 3 of Petters and Kreidenweis)
-         relhumid = min( airRH, 0.95d0 ) ! Cap RH at 95% to be conservative regarding uptake
+         relhumid = min( airRH, 0.95 ) ! Cap RH at 95% to be conservative regarding uptake
          aw = activityw( relhumid, airtemp, diam ) ! activity of water
          If( overallkappa .gt. 1e-6 ) then ! prevents situation of little uptake
             aerospc_conc( aorgh2o_idx, im ) = aerospc( aorgh2o_idx )%density
@@ -1272,7 +1269,7 @@ C    &                 .NOT. aero_missing( indx,: ) )
       DO IM = 1,N_MODE
         COND_BUDGET( AERONUM_MAP( IM ) )  = MOMENT0_CONC( IM ) - CBUDGET0_NUM( IM )
         COND_BUDGET( AEROSRF_MAP( IM ) )  = MOMENT2_CONC( IM ) - CBUDGET0_SRF( IM )
-
+ 
         DO ISPC = 1,N_AEROSPC
           IF ( AEROSPC_MAP( ISPC,IM ) .NE. 0 ) 
      &         COND_BUDGET( AEROSPC_MAP( ISPC,IM ) ) = 
@@ -1923,7 +1920,7 @@ C     Function arguments
 C     Parameters for solution convergenc
       Real             :: FRACTOL = 1.0e-6    ! Solution converged if abs(old-new)/new < FRACTOL
 !     Real             :: ABSTOL  = 1.0e-10   ! Solution converged if there are less than ABSTOL umol/m3 in aerosol
-      Real             :: ABSTOL  = 1.0e-08   ! Solution converged if there are less than ABSTOL umol/m3 in aerosol
+      Real             :: ABSTOL  = 1.0e-8   ! Solution converged if there are less than ABSTOL umol/m3 in aerosol
 
 C     Result
       TYPE(hyperdual)             :: nroot               ! solution (final nguess)
@@ -2057,7 +2054,7 @@ C     Function inputs and output
       Real, INTENT(IN) :: mlwt(n)                    ! molecular weights of semivolatiles
       TYPE(hyperdual), INTENT(IN) :: semivol(n)  
       REAL :: cstar(n)                                ! semivolatile mass, sat conc in ug/m3
-      TYPE(hyperdual)             :: eqnerror                         ! result, deviation from 0.0 in equation
+      TYPE(hyperdual)            :: eqnerror                         ! result, deviation from 0.0 in equation
 
 C     Local variables
       TYPE(hyperdual)             :: temptot                          ! temporary total
@@ -2095,7 +2092,7 @@ C     Parameters for solution convergenc
       Real             :: ABSTOL  = 1.0e-10   ! Solution converged if there are less than ABSTOL umol/m3 in aerosol
 
 C     Result
-      TYPE(hyperdual)             :: nroot               ! solution (final nguess)
+      TYPE(hyperdual)           :: nroot               ! solution (final nguess)
 
 C External functions:
 

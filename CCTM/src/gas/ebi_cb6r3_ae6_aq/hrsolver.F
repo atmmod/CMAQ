@@ -42,6 +42,7 @@ C**********************************************************************
       USE UTILIO_DEFN
       USE RXNS_DATA
       USE HRDATA
+      USE HDMod
 C     USE PA_IRR_MODULE
 #ifdef isam
       USE SA_IRR_DEFN
@@ -77,8 +78,8 @@ C..SAVED LOCAL VARIABLES:
       LOGICAL, ALLOCATABLE, SAVE :: MAXCONC ( : )       ! MAXCONC ERROR Flag for EBI species
       LOGICAL, ALLOCATABLE, SAVE :: NOTMAX  ( : )       ! Initial concentration not greater than MAXPRED
 
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: RERROR  ( : )     ! Relative Error
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: AERROR  ( : )     ! Absolute Error
+      REAL( 8 ), ALLOCATABLE, SAVE :: RERROR  ( : )     ! Relative Error
+      REAL( 8 ), ALLOCATABLE, SAVE :: AERROR  ( : )     ! Absolute Error
 
 
 C..SCRATCH LOCAL VARIABLES:
@@ -96,6 +97,7 @@ C..SCRATCH LOCAL VARIABLES:
 #endif
       INTEGER M               ! species index
       INTEGER EBI             ! Loop index
+      INTEGER NOT_EBI         ! Loop index
       INTEGER NBKUPS          ! No. of times time step reduced
       INTEGER ERR             ! Allocate error flag
 
@@ -107,6 +109,7 @@ C..SCRATCH LOCAL VARIABLES:
       REAL( 8 ) DTG         ! Time step in degrade routines, sec
       TYPE(hyperdual) FXDLOSS          ! Total loss due to negative stoichiometry
       TYPE(hyperdual) VARLOSS          ! Loss excluding negative stoichiometry
+
 
 
 #ifdef hrdebug
@@ -231,6 +234,12 @@ c++++++++++++++++++++++++Debug section++++++++++++++++++++++++++++++++++
            WRITE(LOGDEV,91000)C, R, L, CHEMISTRY_SPC(S), YC(S)
          END IF
       END DO
+      
+C     DO S = 1, NUMB_MECH_SPC
+C     	YC_dx1( S ) = YC( S )%dx1
+C     	YC_dx2( S ) = YC( S )%dx2
+C     	YC_dx1x2( S ) = YC( S )%dx1x2
+C     ENDDO
 
 ! Initial PA_IRR
 C     IF( CALL_IRR ) CALL PA_IRR ( .TRUE., RKI, YC, DTC )
@@ -238,7 +247,7 @@ C     IF( CALL_IRR ) CALL PA_IRR ( .TRUE., RKI, YC, DTC )
 
          SUBSTEP_EBI: DO NINR = 1, N_INR_STEPS   ! time substeps loop
 !  first attempt is sub time-step equals EBI time-step
-
+			
             IF( LEBI_CONV ) FORALL( S = 1:NUMB_MECH_SPC )YC0( S )%x = YC( S )%x   ! Set ICs for EBI iterations
             IF( LEBI_CONV ) FORALL( S = 1:NUMB_MECH_SPC )YC0( S )%dx1 = YC( S )%dx1   ! Set ICs for EBI iterations
             IF( LEBI_CONV ) FORALL( S = 1:NUMB_MECH_SPC )YC0( S )%dx2 = YC( S )%dx2   ! Set ICs for EBI iterations
@@ -274,11 +283,11 @@ c  Call routines to compute concentrations of groups 1-4
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
                CALL HRG1( DTC )
-
+ 
                CALL HRG2( DTC )
-
+ 
                CALL HRG3( DTC )
-
+ 
                CALL HRG4( DTC )
 
 
@@ -289,8 +298,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
                DO EBI = 1, N_EBISP
                   S = EBISP( EBI )
-                  YCP( S ) =  YC( S )*( ( YC0( S ) + PROD( S ) * DTC )
-     &                     / ( YC( S ) + LOSS( S ) * DTC ) )
+                  YCP( S ) =  YC( S ) *( ( YC0( S ) + PROD( S ) * DTC )
+     &                     / ( YC( S ) + LOSS( S ) * DTC ) )		   	       		   	  
                END DO
 
 c..Special treatment of PAR because of negative product stoichiometry
@@ -314,8 +323,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
                DO S = 1, NUMB_MECH_SPC
                   LEBISPFL( S ) = .FALSE.
                   YCP( S ) = MAX( ZERO, YCP( S ) )
-                  AERROR( S ) = ABS( YC(S)-YCP(S) )
-                  RERROR( S ) = AERROR( S ) / ABS( YC(S)+YCP(S) )
+                  AERROR( S ) = ABS( YC(S)%x-YCP(S)%x )
+                  RERROR( S ) = AERROR( S ) / ABS( YC(S)%x+YCP(S)%x )
                    IF( RERROR( S ) .GT. RTOL(S) .OR. AERROR( S ) .GT. 1.0D-5 )THEN
 !                 IF( RERROR( S ) .GT. RTOL(S)  )THEN
                      LEBI_CONV     = .FALSE.
@@ -356,8 +365,10 @@ c++++++++++++++++++++++++Debug section++++++++++++++++++++++++++++++++++
                IF( LEBI_CONV ) THEN
 
                 DTG = 60.0D0 * DTC
+                
+                
                 DO S = 1, NUMB_MECH_SPC
-                   M = CGRID_INDEX( S )
+                   M = CGRID_INDEX( S )                   
                    YCCELL( M ) = YC( S )
                 END DO
                 IF( CALL_DEG )CALL DEGRADE(YCCELL, DTG, JDATE, JTIME) ! :WTH Call degradation routine
@@ -394,11 +405,12 @@ C                IF( CALL_IRR ) CALL PA_IRR ( .FALSE., RKI, YC, DTC )
      &               YC0(S), YCP(S)
                   END DO
                END IF
+               
 
                FORALL( S = 1:NUMB_MECH_SPC )YC( S )%x = YC0( S )%x   ! Set ICs for EBI time-step
-               FORALL( S = 1:NUMB_MECH_SPC )YC( S )%dx1 = YC0( S )%dx1   ! Set ICs for EBI time-step
-               FORALL( S = 1:NUMB_MECH_SPC )YC( S )%dx2 = YC0( S )%dx2   ! Set ICs for EBI time-step
-               FORALL( S = 1:NUMB_MECH_SPC )YC( S )%dx1x2 = YC0( S )%dx1x2   ! Set ICs for EBI time-step    
+C              FORALL( S = 1:NUMB_MECH_SPC )YC( S )%dx1 = YC0( S )%dx1   ! Set ICs for EBI time-step
+C              FORALL( S = 1:NUMB_MECH_SPC )YC( S )%dx2 = YC0( S )%dx2   ! Set ICs for EBI time-step
+C              FORALL( S = 1:NUMB_MECH_SPC )YC( S )%dx1x2 = YC0( S )%dx1x2   ! Set ICs for EBI time-step    
                                          
                DTC = 0.5D0 * DTC
 

@@ -183,7 +183,8 @@ c      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
          END SUBROUTINE CLDPROC
          SUBROUTINE CHEM ( CGRID, JDATE, JTIME, TSTEP )
-            REAL, POINTER             :: CGRID( :,:,:,: )
+         	USE HDMod
+            TYPE(hyperdual), POINTER             :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )     :: JDATE, JTIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
          END SUBROUTINE CHEM
@@ -251,7 +252,7 @@ C-----------------------------------------------------------------------
 
  	  IF (JTIME .EQ. 0) THEN
 c        Hyperdual perturbation at the very first
- 	    CGRID(:, :, :, 156) = CGRID(:, :, :, 156) + PERT_HYPERDUAL
+ 	    CGRID(:, :, :, 14) = CGRID(:, :, :, 14) + PERT_HYPERDUAL
  	    
 c       Hyperdual <-- CD
  	    DO V = 1, N_CSPCS
@@ -302,11 +303,10 @@ C decouple CGRID for cloud and chemistry
          SDATE = JDATE
          STIME = JTIME
          CALL NEXTIME ( SDATE, STIME, TSTEP( 2 ) )
-C        
+        
          CALL DECOUPLE ( CGRID, SDATE, STIME, TSTEP )
          IF ( CKSUM ) CALL CKSUMMER ( 'DECOUPLE', CGRID, JDATE, JTIME )
          IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'DECOUPLE' )
-C
       END IF
 C     
 C     CALL PHOT ( CGRID, JDATE, JTIME, TSTEP )
@@ -318,12 +318,12 @@ C     IF ( CKSUM ) CALL CKSUMMER ( 'CLDPROC', CGRID, JDATE, JTIME )
 C     ! IF ( LIPR ) CALL PA_UPDATE ( 'CLDS', CGRID, JDATE, JTIME, TSTEP )
 C     IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CLDPROC' )
 C
-C     IF ( STM ) CALL STM_WRAP_GAS ( CGRID_HD, JDATE, JTIME, .TRUE. )
-C     CALL CHEM ( CGRID, JDATE, JTIME, TSTEP )
-C     IF ( CKSUM ) CALL CKSUMMER ( 'CHEM', CGRID, JDATE, JTIME )
-C     ! IF ( LIPR ) CALL PA_UPDATE ( 'CHEM', CGRID, JDATE, JTIME, TSTEP ) 
-C     IF ( STM ) CALL STM_WRAP_GAS ( CGRID_HD, JDATE, JTIME, .FALSE. )
-C     IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CHEM' )
+      IF ( STM ) CALL STM_WRAP_GAS ( CGRID, JDATE, JTIME, .TRUE. )
+      CALL CHEM ( CGRID, JDATE, JTIME, TSTEP )
+      IF ( CKSUM ) CALL CKSUMMER ( 'CHEM', CGRID, JDATE, JTIME )
+      ! IF ( LIPR ) CALL PA_UPDATE ( 'CHEM', CGRID, JDATE, JTIME, TSTEP ) 
+      IF ( STM ) CALL STM_WRAP_GAS ( CGRID, JDATE, JTIME, .FALSE. )
+      IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CHEM' )
 C
 C#ifdef potvorto3
 C     CALL PVO3 ( CGRID, JDATE, JTIME )
@@ -331,19 +331,16 @@ C     IF ( CKSUM ) CALL CKSUMMER ( 'PVO3', CGRID, JDATE, JTIME )
 C     ! IF ( LIPR ) CALL PA_UPDATE ( 'PVO3', CGRID, JDATE, JTIME, TSTEP )
 C     IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'PVO3' )
 C#endif
-C
-C#ifdef isam
-C     CGRID0  = CGRID
-C#endif
-	  
-		  	    
-   	  CALL AERO ( CGRID, JDATE, JTIME, TSTEP )
+
+#ifdef isam
+      CGRID0  = CGRID
+#endif
+
+      CALL AERO ( CGRID, JDATE, JTIME, TSTEP )
       IF ( CKSUM ) CALL CKSUMMER ( 'AERO', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE_AERO ( CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'AERO' )
       IF ( STM ) CALL STM_WRAP_AE ( CGRID, JDATE, JTIME )
-	  
-
 
 #ifdef isam
       CALL SA_WRAP_AE( CGRID0, CGRID, JDATE, JTIME, TSTEP )

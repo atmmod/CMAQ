@@ -302,8 +302,7 @@ C-----------------------------------------------------------------------
          write( logdev,* ) 'aero_subs: nomm'
 #endif
       end if
-	  	  
-	  
+
 C *** square root of the ambient temperature for later use
       SQRT_TEMP = SQRT( AIRTEMP )
  
@@ -321,7 +320,6 @@ C     where beta = 1.458e-6 [ kg sec^-1 K**-0.5 ], s = 110.4 [ K ].
       AMU = 1.458E-6 * AIRTEMP * SQRT_TEMP / ( AIRTEMP + 110.4 )
 
 C *** Set minimums for coarse mode
-C     The MAX has problem?????
       MOMENT0_CONC( N_MODE ) = MAX( AEROMODE_MINNUM( N_MODE ),
      &                              MOMENT0_CONC( N_MODE ) )
 	  
@@ -1764,8 +1762,8 @@ C *** Arguments:
       TYPE(hyperdual), INTENT( IN ) :: AM2   ! second moment of mode  [ m**2/m**3 ]
       REAL,            INTENT( IN ) :: Dv    ! molecular diffusivity of the
                                        ! condensing vapor  [ m**2/s ]
-      TYPE(hyperdual),      INTENT( IN ) :: ALPHA ! accommodation coefficient
-      REAL,      INTENT( IN ) :: CBAR  ! kinetic velocity of condensing vapor [ m/s ]
+      REAL,      INTENT( IN ) :: ALPHA ! accommodation coefficient
+      REAL,           INTENT( IN ) :: CBAR  ! kinetic velocity of condensing vapor [ m/s ]
 
       TYPE(hyperdual), INTENT( OUT ) :: F( 2 ) ! size-dependent term in condensational-growth
                                          ! rate: F(1) = 2nd moment [ m**2/m**3 s ]

@@ -140,11 +140,13 @@ C..Scratch Local Variables:
 
       INTERFACE
         SUBROUTINE HRSOLVER( JDATE, JTIME, C, R, L )
+           USE HDMod
            INTEGER, INTENT( IN ) :: JDATE    ! Current date (YYYYDDD)
            INTEGER, INTENT( IN ) :: JTIME    ! Current time (HHMMSS)
            INTEGER, INTENT( IN ) :: C, R, L  ! Cell col, row, lev
         END SUBROUTINE HRSOLVER
          SUBROUTINE FIND_DEGRADED( JDATE, JTIME, CALL_DEGRADE )
+           USE HDMod
            INTEGER, INTENT( IN )  :: JDATE        ! current model date , coded YYYYDDD
            INTEGER, INTENT( IN )  :: JTIME        ! current model time , coded HHMMSS
            LOGICAL, INTENT( OUT ) :: CALL_DEGRADE ! whether to call degradation routines
@@ -367,7 +369,7 @@ c..Load ICs
 
                   YCCELL = 0.0D0
                   DO S = 1, MODEL_SPECIES
-                     YCCELL( S ) = CGRID(C,R,L,S) 
+                     YCCELL( S ) = CGRID(C,R,L,S)
                   END DO
                   CALL INIT_DEGRADE(YCCELL,TA(C,R,L),DENS(C,R,L),RJIN(NCELL,:),
      &                              JDATE, JTIME)
@@ -390,15 +392,17 @@ c..Get rate constants
                LSUNLIGHT = .FALSE.
                FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH ) = REAL( RJ( C,R,L,NPH ), 8)
                IF( MAXVAL(RJIN) .GT. 0.0D0 ) LSUNLIGHT = .TRUE.
-
+			   
                FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%x = KHETERO( NPH,C,R,L )%x
                FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%dx1 = KHETERO( NPH,C,R,L )%dx1
                FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%dx2 = KHETERO( NPH,C,R,L )%dx2
                FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%dx1x2 = KHETERO( NPH,C,R,L )%dx1x2
                                              
-               CALL CALC_RCONST( TEMP, ATMPRES, H2O, RJIN, REAL_HDUAL_MATRIX(HET), LSUNLIGHT, LAND, RKI_SAV, NCELL )
-               FORALL( NPH = 1:NRXNS )RKI( NPH ) = RKI_SAV( NCELL, NPH )
-
+               CALL CALC_RCONST( TEMP, ATMPRES, H2O, RJIN, HET, LSUNLIGHT, LAND, RKI_SAV, NCELL )
+C              FORALL( NPH = 1:NRXNS )RKI( NPH ) = RKI_SAV( NCELL, NPH )
+ 	           DO NPH = 1, NRXNS
+ 	              RKI( NPH ) = RKI_SAV( NCELL, NPH )   ! Only take the x component to see whether the impact is caused by RKI calculation
+ 	           ENDDO
 #ifdef isam
 #if defined(isam) || defined(verbose_isam)
 C...For diagnosing IRR calculations in log files
@@ -446,7 +450,7 @@ c..Update concentration array
                      DO S = 1, NUMB_MECH_SPC
                         IF(  CGRID_INDEX( S ) .EQ. ISP )CYCLE UPDATE_DEGRADED
                      END DO
-                     CGRID(C,R,L,ISP) = YCCELL(ISP) 
+                     CGRID(C,R,L,ISP) = YCCELL(ISP)
                   END DO UPDATE_DEGRADED
                END IF
 

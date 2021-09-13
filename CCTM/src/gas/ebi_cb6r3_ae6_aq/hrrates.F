@@ -31,6 +31,7 @@ C  REVISION HISTORY: Created by EBI solver program, Aug  6, 2019
 C
 C***********************************************************************
       USE HRDATA
+      USE HDMod
 
       IMPLICIT NONE
 

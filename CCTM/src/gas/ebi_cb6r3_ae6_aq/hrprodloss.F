@@ -35,7 +35,8 @@ C   18 Jul 14 B.Hutzell: revised to use real(8) variables
 
 C***********************************************************************
       USE HRDATA
-
+	  USE HDMod
+	  
       IMPLICIT NONE
 
 
@@ -1114,19 +1115,19 @@ C***********************************************************************
 
       PROD(  AXYL2J       ) =   0.0D0
       LOSS(  AXYL2J       ) =                 RXRAT(   278 )      ! AXYL2J=0.1143D+01*AOLGAJ
-
+ 
       PROD(  ATOL1J       ) =   0.0D0
       LOSS(  ATOL1J       ) =                 RXRAT(   279 )      ! ATOL1J=0.8571D+00*AOLGAJ
-
+ 
       PROD(  ATOL2J       ) =   0.0D0
       LOSS(  ATOL2J       ) =                 RXRAT(   280 )      ! ATOL2J=0.1143D+01*AOLGAJ
-
+ 
       PROD(  ABNZ1J       ) =   0.0D0
       LOSS(  ABNZ1J       ) =                 RXRAT(   281 )      ! ABNZ1J=0.7143D+00*AOLGAJ
-
+ 
       PROD(  ABNZ2J       ) =   0.0D0
       LOSS(  ABNZ2J       ) =                 RXRAT(   282 )      ! ABNZ2J=0.7143D+00*AOLGAJ
-
+ 
       PROD(  ATRP1J       ) =   0.0D0
       LOSS(  ATRP1J       ) =                 RXRAT(   283 )      ! ATRP1J=0.8000D+00*AOLGBJ
 
@@ -1151,13 +1152,13 @@ C***********************************************************************
 
       PROD(  APAH1J       ) =   0.0D0
       LOSS(  APAH1J       ) =                 RXRAT(   288 )      ! APAH1J=0.1429D+01*AOLGAJ
-
+ 
       PROD(  APAH2J       ) =   0.0D0
       LOSS(  APAH2J       ) =                 RXRAT(   289 )      ! APAH2J=0.1429D+01*AOLGAJ
-
+ 
       PROD(  AALK1J       ) =   0.0D0
       LOSS(  AALK1J       ) =                 RXRAT(   290 )      ! AALK1J=0.1714D+01*AOLGAJ
-
+ 
       PROD(  AALK2J       ) =   0.0D0
       LOSS(  AALK2J       ) =                 RXRAT(   291 )      ! AALK2J=0.1714D+01*AOLGAJ
 

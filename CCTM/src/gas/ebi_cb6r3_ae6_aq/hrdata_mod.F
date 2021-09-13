@@ -43,6 +43,7 @@ c..Mechanism specific variables
       INTEGER   N_SPEC       ! No. of species in mechanism
       INTEGER   N_RXNS       ! No. of reactions in mechanism
       INTEGER   N_EBISP      ! No. of species solved by EBI
+      INTEGER   N_NOT_EBISP
       INTEGER   NING1        ! No. of species in group 1
       INTEGER   NING2        ! No. of species in group 2
       INTEGER   N_SPCL_RKS   ! No. of special rate constants
@@ -73,14 +74,18 @@ c...Allocatable arrays
       INTEGER, ALLOCATABLE :: SSASP( : )         ! Index of ss species
       INTEGER, ALLOCATABLE :: ACTSP( : )         ! Index of active species
       INTEGER, ALLOCATABLE :: IOLD2NEW( :,: )    ! YC species map, used if NSPECIAL > 0
+      INTEGER, ALLOCATABLE :: NOT_EBISP( : )     ! Integer list containing all species not in EBI
 
-      REAL( 8 ), ALLOCATABLE ::  RKI(  : )     ! Rate constants
-      REAL( 8 ), ALLOCATABLE ::  RKI_SAV(  :,  : )  ! Saved values of RKI for SS species calcs
+      TYPE(hyperdual), ALLOCATABLE ::  RKI(  : )     ! Rate constants
+      TYPE(hyperdual), ALLOCATABLE ::  RKI_SAV(  :,  : )  ! Saved values of RKI for SS species calcs
 
       TYPE(hyperdual), ALLOCATABLE ::  YC (  : )      ! Species concentrations
       TYPE(hyperdual), ALLOCATABLE ::  YC0(  : )      ! Species concentrations
       TYPE(hyperdual), ALLOCATABLE ::  YCP(  : )      ! Species concentrations
-      REAL( 8 ), ALLOCATABLE ::  SYC(  :, : )   ! Species concentrations
+      REAL( 8 ), ALLOCATABLE ::  YC_dx1( : )    ! Species DX1 information before the EBI timestep
+      REAL( 8 ), ALLOCATABLE ::  YC_dx2( : )    ! Species DX2 information before the EBI timestep
+      REAL( 8 ), ALLOCATABLE ::  YC_dx1x2( : )  ! Species DX1X2 information before the EBI timestep
+      REAL( 8 ), ALLOCATABLE ::  SYC(  :, : )         ! Species concentrations
 
       REAL, ALLOCATABLE      :: FORWARD_CONV( : )  ! CGRID to CHEM Species conversion factor
       REAL, ALLOCATABLE      :: REVERSE_CONV( : )  ! CHEM to CGRID Species conversion factor
@@ -107,8 +112,8 @@ c...Allocatable arrays
       REAL( 8 ), ALLOCATABLE ::  H2O     ( : )     ! Cell H2O mixing ratio (ppmV)
       REAL( 8 ), ALLOCATABLE ::  TEMP    ( : )     ! Cell Temperature
       REAL( 8 ), ALLOCATABLE ::  DENSITY ( : )     ! Cell mass density (Kg/m3)
-!     REAL( 8 ), ALLOCATABLE ::  HET     ( :, : )  ! cell heterogeneous reaction rates
-      TYPE(hyperdual), ALLOCATABLE :: HET( :, : )
+
+      TYPE(hyperdual), ALLOCATABLE :: HET( :, : )  ! cell heterogeneous reaction rates
       REAL( 8 ), ALLOCATABLE ::  RJIN    ( :, : )  ! J-values for a cell
       LOGICAL, ALLOCATABLE   ::  LAND    ( : )     ! land_zone value for specific cell
 

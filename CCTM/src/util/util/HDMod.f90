@@ -696,26 +696,26 @@ Module HDMod
         end function hdual_eq_hdual
   
   
-        function hdual_eq_dble(qleft, iright) result(bool)
+        function hdual_eq_dble(qleft, xright) result(bool)
   
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          REAL(PRhyd), intent(in)     :: iright
+          REAL(PRhyd), intent(in)     :: xright
           logical                     :: bool
           
-          bool = (REAL(qleft%x,PRhyd).EQ.iright)
+          bool = (REAL(qleft%x,PRhyd).EQ. xright)
           
         end function hdual_eq_dble
   
   
-        function hdual_eq_dble_SPRhyd(qleft, iright) result(bool)
+        function hdual_eq_dble_SPRhyd(qleft, xright) result(bool)
   
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          REAL(SPRhyd), intent(in)    :: iright
+          REAL(SPRhyd), intent(in)    :: xright
           logical                     :: bool
           
-          bool = (REAL(qleft%x,PRhyd).EQ.REAL(iright,PRhyd))
+          bool = (REAL(qleft%x,SPRhyd).EQ. xright)
           
         end function hdual_eq_dble_SPRhyd
         
@@ -724,7 +724,7 @@ Module HDMod
   
           implicit none
           TYPE(hyperdual), intent(in) :: qright
-          REAL(PRhyd), intent(in)        :: xleft
+          REAL(PRhyd), intent(in)     :: xleft
           logical                     :: bool
           
           bool = (xleft .EQ. REAL(qright%x,PRhyd))
@@ -739,7 +739,7 @@ Module HDMod
           REAL(SPRhyd), intent(in)        :: xleft
           logical                     :: bool
           
-          bool = ( REAL(xleft, PRhyd) .EQ. REAL(qright%x,PRhyd))
+          bool = ( xleft .EQ. REAL(qright%x,SPRhyd))
           
         end function dble_eq_hdual_SPRhyd
   
@@ -751,31 +751,31 @@ Module HDMod
           TYPE(hyperdual), intent(in) :: qleft, qright
           logical                     :: bool
           
-          bool = (REAL(qleft%x,PRhyd) .NE. REAL(qright%x,PRhyd))
+          bool = (.NOT. qleft .EQ. qright)
             
         end function hdual_ne_hdual
   
   
-        function hdual_ne_dble(qleft, iright) result(bool)
+        function hdual_ne_dble(qleft, xright) result(bool)
   
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          REAL(PRhyd), intent(in)        :: iright
+          REAL(PRhyd), intent(in)     :: xright
           logical                     :: bool
           
-          bool = (REAL(qleft%x,PRhyd) .NE. iright)
+          bool = (REAL(qleft%x,PRhyd) .NE. xright)
           
         end function hdual_ne_dble
   
   
-        function hdual_ne_dble_SPRhyd(qleft, iright) result(bool)
+        function hdual_ne_dble_SPRhyd(qleft, xright) result(bool)
   
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          REAL(SPRhyd), intent(in)        :: iright
+          REAL(SPRhyd), intent(in)    :: xright
           logical                     :: bool
           
-          bool = (REAL(qleft%x,PRhyd) .NE. REAL(iright,PRhyd))
+          bool = (REAL(qleft%x,SPRhyd) .NE. xright )
           
         end function hdual_ne_dble_SPRhyd
         
@@ -784,7 +784,7 @@ Module HDMod
   
           implicit none
           TYPE(hyperdual), intent(in) :: qright
-          REAL(PRhyd), intent(in)        :: xleft
+          REAL(PRhyd), intent(in)     :: xleft
           logical                     :: bool
           
           bool = ( xleft .NE. REAL(qright%x,PRhyd) )
@@ -796,10 +796,10 @@ Module HDMod
   
           implicit none
           TYPE(hyperdual), intent(in) :: qright
-          REAL(SPRhyd), intent(in)        :: xleft
+          REAL(SPRhyd), intent(in)    :: xleft
           logical                     :: bool
           
-          bool = (REAL(xleft,PRhyd) .NE. REAL(qright%x,PRhyd) )
+          bool = ( xleft .NE. REAL(qright%x,SPRhyd) )
           
         end function dble_ne_hdual_SPRhyd
   
@@ -816,26 +816,26 @@ Module HDMod
         end function hdual_gt_hdual
   
   
-        function hdual_gt_dble(qleft, iright) result(bool)
+        function hdual_gt_dble(qleft, xright) result(bool)
   
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          REAL(PRhyd), intent(in)        :: iright
+          REAL(PRhyd), intent(in)     :: xright
           logical                     :: bool
           
-          bool = ( REAL(qleft%x,PRhyd) > iright)
+          bool = ( REAL(qleft%x,PRhyd) > xright)
           
         end function hdual_gt_dble
   
   
-        function hdual_gt_dble_SPRhyd(qleft, iright) result(bool)
+        function hdual_gt_dble_SPRhyd(qleft, xright) result(bool)
   
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          REAL(SPRhyd), intent(in)        :: iright
+          REAL(SPRhyd), intent(in)    :: xright
           logical                     :: bool
           
-          bool = (REAL(qleft%x,PRhyd) > REAL(iright,PRhyd))
+          bool = (REAL(qleft%x,SPRhyd) > xright)
           
         end function hdual_gt_dble_SPRhyd
         
@@ -844,7 +844,7 @@ Module HDMod
   
           implicit none
           TYPE(hyperdual), intent(in) :: qright
-          REAL(PRhyd), intent(in)        :: xleft
+          REAL(PRhyd), intent(in)     :: xleft
           logical                     :: bool
           
           bool = ( xleft > REAL(qright%x,PRhyd) )
@@ -859,7 +859,7 @@ Module HDMod
           REAL(SPRhyd), intent(in)        :: xleft
           logical                     :: bool
           
-          bool = ( REAL(xleft,PRhyd) > REAL(qright%x,PRhyd))
+          bool = ( xleft > REAL(qright%x,SPRhyd))
           
         end function dble_gt_hdual_SPRhyd
   
@@ -878,26 +878,26 @@ Module HDMod
         end function hdual_ge_hdual
   
   
-        function hdual_ge_dble(qleft, iright) result(bool)
+        function hdual_ge_dble(qleft, xright) result(bool)
   
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          REAL(PRhyd), intent(in)        :: iright
+          REAL(PRhyd), intent(in)     :: xright
           logical                     :: bool
           
-          bool = (REAL(qleft%x,PRhyd) >= iright)
+          bool = (REAL(qleft%x,PRhyd) >= xright)
           
         end function hdual_ge_dble
   
   
-        function hdual_ge_dble_SPRhyd(qleft, iright) result(bool)
+        function hdual_ge_dble_SPRhyd(qleft, xright) result(bool)
   
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          REAL(SPRhyd), intent(in)        :: iright
+          REAL(SPRhyd), intent(in)    :: xright
           logical                     :: bool
           
-          bool = (REAL(qleft%x,PRhyd) >= iright)
+          bool = (REAL(qleft%x,SPRhyd) >= xright)
           
         end function hdual_ge_dble_SPRhyd
         
@@ -906,7 +906,7 @@ Module HDMod
   
           implicit none
           TYPE(hyperdual), intent(in) :: qright
-          REAL(PRhyd), intent(in)        :: xleft
+          REAL(PRhyd), intent(in)     :: xleft
           logical                     :: bool
           
           bool = (xleft >= REAL(qright%x,PRhyd))
@@ -917,10 +917,10 @@ Module HDMod
   
           implicit none
           TYPE(hyperdual), intent(in) :: qright
-          REAL(SPRhyd), intent(in)        :: xleft
+          REAL(SPRhyd), intent(in)    :: xleft
           logical                     :: bool
           
-          bool = ( REAL( xleft, PRhyd ) >= REAL( qright%x,PRhyd ) )
+          bool = ( xleft >= REAL( qright%x,SPRhyd ) )
           
         end function dble_ge_hdual_SPRhyd
   
@@ -937,25 +937,25 @@ Module HDMod
         end function hdual_lt_hdual
   
   
-        function hdual_lt_dble(qleft, iright) result(bool)
+        function hdual_lt_dble(qleft, xright) result(bool)
   
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          REAL(PRhyd), intent(in)     :: iright
+          REAL(PRhyd), intent(in)     :: xright
           logical                     :: bool
           
-          bool = ( REAL(qleft%x,PRhyd) < iright )
+          bool = ( REAL(qleft%x,PRhyd) < xright )
           
         end function hdual_lt_dble
   
-        function hdual_lt_dble_SPRhyd(qleft, iright) result(bool)
+        function hdual_lt_dble_SPRhyd(qleft, xright) result(bool)
   
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          REAL(SPRhyd), intent(in)    :: iright
+          REAL(SPRhyd), intent(in)    :: xright
           logical                     :: bool
           
-          bool = ( REAL(qleft%x,PRhyd) < REAL( iright,PRhyd ) )
+          bool = ( REAL(qleft%x, SPRhyd) < xright )
           
         end function hdual_lt_dble_SPRhyd
         
@@ -978,7 +978,7 @@ Module HDMod
           REAL(SPRhyd), intent(in)    :: xleft
           logical                     :: bool
           
-          bool = ( REAL(xleft,PRhyd) < REAL(qright%x,PRhyd) )
+          bool = ( xleft < REAL(qright%x,SPRhyd) )
           
         end function dble_lt_hdual_SPRhyd
   
@@ -995,25 +995,25 @@ Module HDMod
         end function hdual_le_hdual
   
   
-        function hdual_le_dble(qleft, iright) result(bool)
+        function hdual_le_dble(qleft, xright) result(bool)
   
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          REAL(PRhyd), intent(in)        :: iright
+          REAL(PRhyd), intent(in)     :: xright
           logical                     :: bool
           
-          bool = (REAL(qleft%x,PRhyd) <= iright)
+          bool = (REAL(qleft%x,PRhyd) <= xright)
           
         end function hdual_le_dble
   
-        function hdual_le_dble_SPRhyd(qleft, iright) result(bool)
+        function hdual_le_dble_SPRhyd(qleft, xright) result(bool)
   
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          REAL(SPRhyd), intent(in)        :: iright
+          REAL(SPRhyd), intent(in)    :: xright
           logical                     :: bool
           
-          bool = (REAL(qleft%x,PRhyd) <= iright)
+          bool = (REAL(qleft%x,PRhyd) <= xright)
           
         end function hdual_le_dble_SPRhyd
         
@@ -1022,7 +1022,7 @@ Module HDMod
   
           implicit none
           TYPE(hyperdual), intent(in) :: qright
-          REAL(PRhyd), intent(in)        :: xleft
+          REAL(PRhyd), intent(in)     :: xleft
           logical                     :: bool
           
           bool = (xleft <= REAL(qright%x,PRhyd) )
@@ -1033,10 +1033,10 @@ Module HDMod
   
           implicit none
           TYPE(hyperdual), intent(in) :: qright
-          REAL(SPRhyd), intent(in)        :: xleft
+          REAL(SPRhyd), intent(in)    :: xleft
           logical                     :: bool
           
-          bool = ( REAL (xleft ,PRhyd) <= REAL(qright%x,PRhyd) )
+          bool = ( xleft <= REAL(qright%x,SPRhyd) )
           
         end function dble_le_hdual_SPRhyd
   
@@ -1107,14 +1107,14 @@ Module HDMod
         end function hdual_plus_hdual_tens
            
         
-        function hdual_plus_dble(qleft, iright) result(res)
+        function hdual_plus_dble(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in) :: qleft
-          real(PRhyd), intent(in)        :: iright
+          real(PRhyd), intent(in)     :: xright
           TYPE(hyperdual)             :: res
                 
-          res%x  = qleft%x + iright
+          res%x  = qleft%x + xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2 
@@ -1122,14 +1122,14 @@ Module HDMod
         end function hdual_plus_dble
   
   
-        function hdual_plus_dble_SPRhyd(qleft, iright) result(res)
+        function hdual_plus_dble_SPRhyd(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in) :: qleft
-          real(SPRhyd), intent(in)        :: iright
+          real(SPRhyd), intent(in)    :: xright
           TYPE(hyperdual)             :: res
                 
-          res%x  = qleft%x + REAL(iright,PRhyd)
+          res%x  = qleft%x + REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2 
@@ -1137,14 +1137,14 @@ Module HDMod
         end function hdual_plus_dble_SPRhyd
              
         
-        function hdual_plus_dble_array(qleft, iright) result(res)
+        function hdual_plus_dble_array(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in)         :: qleft
-          real(PRhyd), dimension(:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright))  :: res
+          real(PRhyd), dimension(:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright))  :: res
                 
-          res%x  = qleft%x + iright
+          res%x  = qleft%x + xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1152,14 +1152,14 @@ Module HDMod
         end function hdual_plus_dble_array
   
   
-        function hdual_plus_dble_array_SPRhyd(qleft, iright) result(res)
+        function hdual_plus_dble_array_SPRhyd(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in)         :: qleft
-          real(SPRhyd), dimension(:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright))  :: res
+          real(SPRhyd), dimension(:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright))  :: res
                 
-          res%x  = qleft%x + REAL(iright,PRhyd)
+          res%x  = qleft%x + REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1167,14 +1167,14 @@ Module HDMod
         end function hdual_plus_dble_array_SPRhyd
                 
   
-        function hdual_plus_dble_matrix(qleft, iright) result(res)
+        function hdual_plus_dble_matrix(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in)           :: qleft
-          real(PRhyd), dimension(:,:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright,1),size(iright,2)) :: res
+          real(PRhyd), dimension(:,:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright,1),size(xright,2)) :: res
                 
-          res%x  = qleft%x + iright
+          res%x  = qleft%x + xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1182,14 +1182,14 @@ Module HDMod
         end function hdual_plus_dble_matrix
   
   
-        function hdual_plus_dble_matrix_SPRhyd(qleft, iright) result(res)
+        function hdual_plus_dble_matrix_SPRhyd(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in)           :: qleft
-          real(SPRhyd), dimension(:,:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright,1),size(iright,2)) :: res
+          real(SPRhyd), dimension(:,:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright,1),size(xright,2)) :: res
                 
-          res%x  = qleft%x + REAL(iright,PRhyd)
+          res%x  = qleft%x + REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1197,14 +1197,14 @@ Module HDMod
         end function hdual_plus_dble_matrix_SPRhyd
              
         
-        function hdual_plus_dble_tens(qleft, iright) result(res)
+        function hdual_plus_dble_tens(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in)             :: qleft
-          real(PRhyd), dimension(:,:,:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright,1),size(iright,2),size(iright,3)) :: res
+          real(PRhyd), dimension(:,:,:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright,1),size(xright,2),size(xright,3)) :: res
                 
-            res%x  = qleft%x + iright
+            res%x  = qleft%x + xright
             res%dx1 = qleft%dx1 
             res%dx2 = qleft%dx2 
             res%dx1x2 = qleft%dx1x2
@@ -1212,14 +1212,14 @@ Module HDMod
         end function hdual_plus_dble_tens
   
   
-        function hdual_plus_dble_tens_SPRhyd(qleft, iright) result(res)
+        function hdual_plus_dble_tens_SPRhyd(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in)             :: qleft
-          real(SPRhyd), dimension(:,:,:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright,1),size(iright,2),size(iright,3)) :: res
+          real(SPRhyd), dimension(:,:,:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright,1),size(xright,2),size(xright,3)) :: res
                 
-            res%x  = qleft%x + REAL(iright,PRhyd)
+            res%x  = qleft%x + REAL(xright,PRhyd)
             res%dx1 = qleft%dx1 
             res%dx2 = qleft%dx2 
             res%dx1x2 = qleft%dx1x2
@@ -1317,14 +1317,14 @@ Module HDMod
         end function hdual_array_plus_hdual_array
              
         
-        function hdual_array_plus_dble(qleft, iright) result(res)
+        function hdual_array_plus_dble(qleft, xright) result(res)
                 
           implicit none
           TYPE(hyperdual), dimension(:), intent(in) :: qleft
-          real(PRhyd), intent(in)                      :: iright
+          real(PRhyd), intent(in)                   :: xright
           TYPE(hyperdual), dimension(size(qleft))   :: res
                 
-          res%x  = qleft%x + iright
+          res%x  = qleft%x + xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2 
@@ -1332,14 +1332,14 @@ Module HDMod
         end function hdual_array_plus_dble
   
   
-        function hdual_array_plus_dble_SPRhyd(qleft, iright) result(res)
+        function hdual_array_plus_dble_SPRhyd(qleft, xright) result(res)
                 
           implicit none
           TYPE(hyperdual), dimension(:), intent(in) :: qleft
-          real(SPRhyd), intent(in)                      :: iright
+          real(SPRhyd), intent(in)                  :: xright
           TYPE(hyperdual), dimension(size(qleft))   :: res
                 
-          res%x  = qleft%x + REAL(iright,PRhyd)
+          res%x  = qleft%x + REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2 
@@ -1347,14 +1347,14 @@ Module HDMod
         end function hdual_array_plus_dble_SPRhyd
         
         
-        function hdual_array_plus_dble_array(qleft, iright) result(res)
+        function hdual_array_plus_dble_array(qleft, xright) result(res)
                 
           implicit none
           TYPE(hyperdual), dimension(:), intent(in) :: qleft
-          real(PRhyd), dimension(:), intent(in)        :: iright
+          real(PRhyd), dimension(:), intent(in)     :: xright
           TYPE(hyperdual), dimension(size(qleft))   :: res
                 
-          res%x  = qleft%x + iright
+          res%x  = qleft%x + xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2 
@@ -1362,14 +1362,14 @@ Module HDMod
         end function hdual_array_plus_dble_array
   
   
-        function hdual_array_plus_dble_array_SPRhyd(qleft, iright) result(res)
+        function hdual_array_plus_dble_array_SPRhyd(qleft, xright) result(res)
                 
           implicit none
           TYPE(hyperdual), dimension(:), intent(in) :: qleft
-          real(SPRhyd), dimension(:), intent(in)        :: iright
+          real(SPRhyd), dimension(:), intent(in)    :: xright
           TYPE(hyperdual), dimension(size(qleft))   :: res
                 
-          res%x  = qleft%x + REAL(iright,PRhyd)
+          res%x  = qleft%x + REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2 
@@ -1437,14 +1437,14 @@ Module HDMod
         end function hdual_matrix_plus_hdual_matrix
   
   
-        function hdual_matrix_plus_dble(qleft, iright) result(res)
+        function hdual_matrix_plus_dble(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:), intent(in) :: qleft
-          real(PRhyd), intent(in)                        :: iright
+          real(PRhyd), intent(in)                     :: xright
           TYPE(hyperdual), dimension(size(qleft,1), size(qleft,2))  :: res
   
-          res%x  = qleft%x + iright
+          res%x  = qleft%x + xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1452,14 +1452,14 @@ Module HDMod
         end function hdual_matrix_plus_dble
   
   
-        function hdual_matrix_plus_dble_SPRhyd(qleft, iright) result(res)
+        function hdual_matrix_plus_dble_SPRhyd(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:), intent(in) :: qleft
-          real(SPRhyd), intent(in)                        :: iright
+          real(SPRhyd), intent(in)                    :: xright
           TYPE(hyperdual), dimension(size(qleft,1), size(qleft,2))  :: res
   
-          res%x  = qleft%x + REAL(iright,PRhyd)
+          res%x  = qleft%x + REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1467,14 +1467,14 @@ Module HDMod
         end function hdual_matrix_plus_dble_SPRhyd
   
   
-        function hdual_matrix_plus_dble_matrix(qleft, iright) result(res)
+        function hdual_matrix_plus_dble_matrix(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:), intent(in) :: qleft
-          real(PRhyd), dimension(:,:), intent(in)        :: iright
+          real(PRhyd), dimension(:,:), intent(in)     :: xright
           TYPE(hyperdual), dimension(size(qleft,1), size(qleft,2))  :: res
   
-          res%x  = qleft%x + iright
+          res%x  = qleft%x + xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1482,14 +1482,14 @@ Module HDMod
         end function hdual_matrix_plus_dble_matrix
   
   
-        function hdual_matrix_plus_dble_matrix_SPRhyd(qleft, iright) result(res)
+        function hdual_matrix_plus_dble_matrix_SPRhyd(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:), intent(in) :: qleft
-          real(SPRhyd), dimension(:,:), intent(in)        :: iright
+          real(SPRhyd), dimension(:,:), intent(in)    :: xright
           TYPE(hyperdual), dimension(size(qleft,1), size(qleft,2))  :: res
   
-          res%x  = qleft%x + REAL(iright,PRhyd)
+          res%x  = qleft%x + REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1559,15 +1559,15 @@ Module HDMod
         end function hdual_tens_plus_hdual_tens
   
   
-        function hdual_tens_plus_dble(qleft, iright) result(res)
+        function hdual_tens_plus_dble(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qleft
-          real(PRhyd), intent(in)                          :: iright
+          real(PRhyd), intent(in)                       :: xright
           TYPE(hyperdual), &
             dimension(size(qleft,1),size(qleft,2),size(qleft,3))  :: res
   
-          res%x  = qleft%x + iright
+          res%x  = qleft%x + xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1575,15 +1575,15 @@ Module HDMod
         end function hdual_tens_plus_dble
   
   
-        function hdual_tens_plus_dble_SPRhyd(qleft, iright) result(res)
+        function hdual_tens_plus_dble_SPRhyd(qleft, xright) result(res)
     
             implicit none
             TYPE(hyperdual), dimension(:,:,:), intent(in) :: qleft
-            real(SPRhyd), intent(in)                          :: iright
+            real(SPRhyd), intent(in)                      :: xright
             TYPE(hyperdual), &
               dimension(size(qleft,1),size(qleft,2),size(qleft,3))  :: res
     
-            res%x  = qleft%x + REAL(iright, PRhyd)
+            res%x  = qleft%x + REAL(xright, PRhyd)
             res%dx1 = qleft%dx1 
             res%dx2 = qleft%dx2 
             res%dx1x2 = qleft%dx1x2
@@ -1591,15 +1591,15 @@ Module HDMod
           end function hdual_tens_plus_dble_SPRhyd
   
   
-        function hdual_tens_plus_dble_tens(qleft, iright) result(res)
+        function hdual_tens_plus_dble_tens(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qleft
-          real(PRhyd), dimension(:,:,:), intent(in)        :: iright
+          real(PRhyd), dimension(:,:,:), intent(in)     :: xright
           TYPE(hyperdual), &
             dimension(size(qleft,1),size(qleft,2),size(qleft,3))  :: res
   
-          res%x  = qleft%x + iright
+          res%x  = qleft%x + xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1686,15 +1686,15 @@ Module HDMod
         end function hdual_4d_plus_hdual_4d
   
   
-        function hdual_4d_plus_dble(qleft, iright) result(res)
+        function hdual_4d_plus_dble(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:,:,:), intent(in) :: qleft
-          real(PRhyd), intent(in)                            :: iright
+          real(PRhyd), intent(in)                         :: xright
           TYPE(hyperdual), &
             dimension(size(qleft,1),size(qleft,2),size(qleft,3),size(qleft,4))  :: res
   
-          res%x  = qleft%x + iright
+          res%x  = qleft%x + xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1702,15 +1702,15 @@ Module HDMod
         end function hdual_4d_plus_dble
   
   
-        function hdual_4d_plus_dble_SPRhyd(qleft, iright) result(res)
+        function hdual_4d_plus_dble_SPRhyd(qleft, xright) result(res)
     
             implicit none
             TYPE(hyperdual), dimension(:,:,:,:), intent(in) :: qleft
-            real(SPRhyd), intent(in)                            :: iright
+            real(SPRhyd), intent(in)                        :: xright
             TYPE(hyperdual), &
               dimension(size(qleft,1),size(qleft,2),size(qleft,3),size(qleft,4))  :: res
     
-            res%x  = qleft%x + REAL(iright, PRhyd)
+            res%x  = qleft%x + REAL(xright, PRhyd)
             res%dx1 = qleft%dx1 
             res%dx2 = qleft%dx2 
             res%dx1x2 = qleft%dx1x2
@@ -1718,15 +1718,15 @@ Module HDMod
           end function hdual_4d_plus_dble_SPRhyd
   
   
-        function hdual_4d_plus_dble_4d(qleft, iright) result(res)
+        function hdual_4d_plus_dble_4d(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:,:,:), intent(in) :: qleft
-          real(PRhyd), dimension(:,:,:,:), intent(in)        :: iright
+          real(PRhyd), dimension(:,:,:,:), intent(in)     :: xright
           TYPE(hyperdual), &
             dimension(size(qleft,1),size(qleft,2),size(qleft,3),size(qleft,4))  :: res
   
-          res%x  = qleft%x + iright
+          res%x  = qleft%x + xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1734,15 +1734,15 @@ Module HDMod
         end function hdual_4d_plus_dble_4d
   
   
-        function hdual_4d_plus_dble_4d_SPRhyd(qleft, iright) result(res)
+        function hdual_4d_plus_dble_4d_SPRhyd(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:,:,:), intent(in) :: qleft
-          real(SPRhyd), dimension(:,:,:,:), intent(in)        :: iright
+          real(SPRhyd), dimension(:,:,:,:), intent(in)    :: xright
           TYPE(hyperdual), &
             dimension(size(qleft,1),size(qleft,2),size(qleft,3),size(qleft,4))  :: res
   
-          res%x  = qleft%x + REAL(iright,PRhyd)
+          res%x  = qleft%x + REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -1786,8 +1786,8 @@ Module HDMod
                 
           implicit none
           real(PRhyd), intent(in)        :: xleft
-          TYPE(hyperdual), intent(in) :: qright
-          TYPE(hyperdual)             :: res
+          TYPE(hyperdual), intent(in)    :: qright
+          TYPE(hyperdual)                :: res
                 
           res%x = qright%x + xleft
           res%dx1 = qright%dx1 
@@ -1800,7 +1800,7 @@ Module HDMod
         function dble_plus_hdual_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), intent(in)        :: xleft
+          real(SPRhyd), intent(in)    :: xleft
           TYPE(hyperdual), intent(in) :: qright
           TYPE(hyperdual)             :: res
                 
@@ -1815,7 +1815,7 @@ Module HDMod
         function dble_plus_hdual_array(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), intent(in)                      :: xleft
+          real(PRhyd), intent(in)                   :: xleft
           TYPE(hyperdual), dimension(:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright))  :: res
                 
@@ -1830,7 +1830,7 @@ Module HDMod
         function dble_plus_hdual_array_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), intent(in)                      :: xleft
+          real(SPRhyd), intent(in)                  :: xleft
           TYPE(hyperdual), dimension(:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright))  :: res
                 
@@ -1845,7 +1845,7 @@ Module HDMod
         function dble_plus_hdual_matrix(xleft, qright) result(res)
   
           implicit none
-          real(PRhyd), intent(in)                        :: xleft
+          real(PRhyd), intent(in)                     :: xleft
           TYPE(hyperdual), dimension(:,:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright,1), size(qright,2))  :: res
   
@@ -1860,7 +1860,7 @@ Module HDMod
         function dble_plus_hdual_matrix_SPRhyd(xleft, qright) result(res)
   
           implicit none
-          real(SPRhyd), intent(in)                        :: xleft
+          real(SPRhyd), intent(in)                    :: xleft
           TYPE(hyperdual), dimension(:,:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright,1), size(qright,2))  :: res
   
@@ -1875,7 +1875,7 @@ Module HDMod
         function dble_plus_hdual_tens(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), intent(in)                          :: xleft
+          real(PRhyd), intent(in)                       :: xleft
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qright
           TYPE(hyperdual), &
             dimension(size(qright,1),size(qright,2),size(qright,3)) :: res
@@ -1891,7 +1891,7 @@ Module HDMod
         function dble_plus_hdual_tens_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), intent(in)                          :: xleft
+          real(SPRhyd), intent(in)                      :: xleft
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qright
           TYPE(hyperdual), &
             dimension(size(qright,1),size(qright,2),size(qright,3)) :: res
@@ -1907,7 +1907,7 @@ Module HDMod
         function dble_array_plus_hdual(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), dimension(:), intent(in)        :: xleft
+          real(PRhyd), dimension(:), intent(in)     :: xleft
           TYPE(hyperdual), intent(in)               :: qright
           TYPE(hyperdual), dimension(size(xleft))   :: res
                 
@@ -1922,7 +1922,7 @@ Module HDMod
         function dble_array_plus_hdual_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), dimension(:), intent(in)        :: xleft
+          real(SPRhyd), dimension(:), intent(in)    :: xleft
           TYPE(hyperdual), intent(in)               :: qright
           TYPE(hyperdual), dimension(size(xleft))   :: res
                 
@@ -1937,7 +1937,7 @@ Module HDMod
         function dble_array_plus_hdual_array(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), dimension(:), intent(in)        :: xleft
+          real(PRhyd), dimension(:), intent(in)     :: xleft
           TYPE(hyperdual), dimension(:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright))  :: res
                 
@@ -1952,7 +1952,7 @@ Module HDMod
         function dble_array_plus_hdual_array_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), dimension(:), intent(in)        :: xleft
+          real(SPRhyd), dimension(:), intent(in)    :: xleft
           TYPE(hyperdual), dimension(:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright))  :: res
                 
@@ -1967,7 +1967,7 @@ Module HDMod
         function dble_matrix_plus_hdual(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), dimension(:,:), intent(in)      :: xleft
+          real(PRhyd), dimension(:,:), intent(in)   :: xleft
           TYPE(hyperdual), intent(in)               :: qright
           TYPE(hyperdual), dimension(size(xleft,1),size(xleft,2)) :: res
                 
@@ -1982,7 +1982,7 @@ Module HDMod
         function dble_matrix_plus_hdual_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), dimension(:,:), intent(in)      :: xleft
+          real(SPRhyd), dimension(:,:), intent(in)  :: xleft
           TYPE(hyperdual), intent(in)               :: qright
           TYPE(hyperdual), dimension(size(xleft,1),size(xleft,2)) :: res
                 
@@ -1997,7 +1997,7 @@ Module HDMod
         function dble_matrix_plus_hdual_matrix(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), dimension(:,:), intent(in)        :: xleft
+          real(PRhyd), dimension(:,:), intent(in)     :: xleft
           TYPE(hyperdual), dimension(:,:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(xleft,1),size(xleft,2)) :: res
                 
@@ -2012,7 +2012,7 @@ Module HDMod
         function dble_matrix_plus_hdual_matrix_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), dimension(:,:), intent(in)        :: xleft
+          real(SPRhyd), dimension(:,:), intent(in)    :: xleft
           TYPE(hyperdual), dimension(:,:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(xleft,1),size(xleft,2)) :: res
                 
@@ -2028,7 +2028,7 @@ Module HDMod
                 
           implicit none
           real(PRhyd), dimension(:,:,:), intent(in)  :: xleft
-          TYPE(hyperdual), intent(in)             :: qright
+          TYPE(hyperdual), intent(in)                :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3)) :: res
                 
@@ -2044,7 +2044,7 @@ Module HDMod
                 
           implicit none
           real(SPRhyd), dimension(:,:,:), intent(in)  :: xleft
-          TYPE(hyperdual), intent(in)             :: qright
+          TYPE(hyperdual), intent(in)                 :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3)) :: res
                 
@@ -2060,7 +2060,7 @@ Module HDMod
                 
           implicit none
           real(PRhyd), dimension(:,:,:), intent(in)        :: xleft
-          TYPE(hyperdual), dimension(:,:,:), intent(in) :: qright
+          TYPE(hyperdual), dimension(:,:,:), intent(in)    :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3)) :: res
                 
@@ -2076,7 +2076,7 @@ Module HDMod
                 
           implicit none
           real(SPRhyd), dimension(:,:,:), intent(in)        :: xleft
-          TYPE(hyperdual), dimension(:,:,:), intent(in) :: qright
+          TYPE(hyperdual), dimension(:,:,:), intent(in)     :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3)) :: res
                 
@@ -2092,7 +2092,7 @@ Module HDMod
                 
           implicit none
           real(PRhyd), dimension(:,:,:,:), intent(in)  :: xleft
-          TYPE(hyperdual), intent(in)               :: qright
+          TYPE(hyperdual), intent(in)                  :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3),size(xleft,4)) :: res
                 
@@ -2108,7 +2108,7 @@ Module HDMod
                 
           implicit none
           real(SPRhyd), dimension(:,:,:,:), intent(in)  :: xleft
-          TYPE(hyperdual), intent(in)               :: qright
+          TYPE(hyperdual), intent(in)                   :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3),size(xleft,4)) :: res
                 
@@ -2124,7 +2124,7 @@ Module HDMod
                 
           implicit none
           real(PRhyd), dimension(:,:,:,:), intent(in)        :: xleft
-          TYPE(hyperdual), dimension(:,:,:,:), intent(in) :: qright
+          TYPE(hyperdual), dimension(:,:,:,:), intent(in)    :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3),size(xleft,4)) :: res
                 
@@ -2140,7 +2140,7 @@ Module HDMod
                 
           implicit none
           real(SPRhyd), dimension(:,:,:,:), intent(in)        :: xleft
-          TYPE(hyperdual), dimension(:,:,:,:), intent(in) :: qright
+          TYPE(hyperdual), dimension(:,:,:,:), intent(in)     :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3),size(xleft,4)) :: res
                 
@@ -2227,6 +2227,7 @@ Module HDMod
                     
         end function int_array_plus_hdual
   
+
         function int_array_plus_hdual_array(ileft, qright) result(res)
                 
           implicit none
@@ -2241,6 +2242,7 @@ Module HDMod
                     
         end function int_array_plus_hdual_array
   
+
         function int_matrix_plus_hdual(ileft, qright) result(res)
                 
           implicit none
@@ -2255,6 +2257,7 @@ Module HDMod
                     
         end function int_matrix_plus_hdual
   
+
         function int_matrix_plus_hdual_matrix(ileft, qright) result(res)
                 
           implicit none
@@ -2269,6 +2272,7 @@ Module HDMod
                     
         end function int_matrix_plus_hdual_matrix
   
+
         function int_tens_plus_hdual(ileft, qright) result(res)
                 
           implicit none
@@ -2284,6 +2288,7 @@ Module HDMod
                     
         end function int_tens_plus_hdual
   
+
         function int_tens_plus_hdual_tens(ileft, qright) result(res)
                 
           implicit none
@@ -2359,14 +2364,14 @@ Module HDMod
         end function hdual_minus_hdual_tens
            
         
-        function hdual_minus_dble(qleft, iright) result(res)
+        function hdual_minus_dble(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in) :: qleft
-          real(PRhyd), intent(in)        :: iright
+          real(PRhyd), intent(in)     :: xright
           TYPE(hyperdual)             :: res
                 
-          res%x  = qleft%x - iright
+          res%x  = qleft%x - xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2 
@@ -2374,14 +2379,14 @@ Module HDMod
         end function hdual_minus_dble
   
   
-        function hdual_minus_dble_SPRhyd(qleft, iright) result(res)
+        function hdual_minus_dble_SPRhyd(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in) :: qleft
-          real(SPRhyd), intent(in)        :: iright
+          real(SPRhyd), intent(in)    :: xright
           TYPE(hyperdual)             :: res
                 
-          res%x  = qleft%x - REAL(iright,PRhyd)
+          res%x  = qleft%x - REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2 
@@ -2389,14 +2394,14 @@ Module HDMod
         end function hdual_minus_dble_SPRhyd
              
         
-        function hdual_minus_dble_array(qleft, iright) result(res)
+        function hdual_minus_dble_array(qleft, xright) result(res)
                 
           implicit none      
-          TYPE(hyperdual), intent(in)         :: qleft
-          real(PRhyd), dimension(:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright))  :: res
+          TYPE(hyperdual), intent(in)               :: qleft
+          real(PRhyd), dimension(:), intent(in)     :: xright
+          TYPE(hyperdual), dimension(size(xright))  :: res
                 
-          res%x  = qleft%x - iright
+          res%x  = qleft%x - xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -2404,14 +2409,14 @@ Module HDMod
         end function hdual_minus_dble_array
   
   
-        function hdual_minus_dble_array_SPRhyd(qleft, iright) result(res)
+        function hdual_minus_dble_array_SPRhyd(qleft, xright) result(res)
                 
           implicit none      
-          TYPE(hyperdual), intent(in)         :: qleft
-          real(SPRhyd), dimension(:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright))  :: res
+          TYPE(hyperdual), intent(in)               :: qleft
+          real(SPRhyd), dimension(:), intent(in)    :: xright
+          TYPE(hyperdual), dimension(size(xright))  :: res
                 
-          res%x  = qleft%x - REAL(iright,PRhyd)
+          res%x  = qleft%x - REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -2419,14 +2424,14 @@ Module HDMod
         end function hdual_minus_dble_array_SPRhyd
                 
   
-        function hdual_minus_dble_matrix(qleft, iright) result(res)
+        function hdual_minus_dble_matrix(qleft, xright) result(res)
                 
           implicit none      
-          TYPE(hyperdual), intent(in)           :: qleft
-          real(PRhyd), dimension(:,:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright,1),size(iright,2)) :: res
+          TYPE(hyperdual), intent(in)              :: qleft
+          real(PRhyd), dimension(:,:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright,1),size(xright,2)) :: res
                 
-          res%x  = qleft%x - iright
+          res%x  = qleft%x - xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -2434,14 +2439,14 @@ Module HDMod
         end function hdual_minus_dble_matrix
   
   
-        function hdual_minus_dble_matrix_SPRhyd(qleft, iright) result(res)
+        function hdual_minus_dble_matrix_SPRhyd(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in)           :: qleft
-          real(SPRhyd), dimension(:,:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright,1),size(iright,2)) :: res
+          real(SPRhyd), dimension(:,:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright,1),size(xright,2)) :: res
                 
-          res%x  = qleft%x - REAL(iright,PRhyd)
+          res%x  = qleft%x - REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -2449,14 +2454,14 @@ Module HDMod
         end function hdual_minus_dble_matrix_SPRhyd
              
         
-        function hdual_minus_dble_tens(qleft, iright) result(res)
+        function hdual_minus_dble_tens(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in)             :: qleft
-          real(PRhyd), dimension(:,:,:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright,1),size(iright,2),size(iright,3)) :: res
+          real(PRhyd), dimension(:,:,:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright,1),size(xright,2),size(xright,3)) :: res
                 
-            res%x  = qleft%x - iright
+            res%x  = qleft%x - xright
             res%dx1 = qleft%dx1 
             res%dx2 = qleft%dx2 
             res%dx1x2 = qleft%dx1x2
@@ -2464,14 +2469,14 @@ Module HDMod
         end function hdual_minus_dble_tens
   
   
-        function hdual_minus_dble_tens_SPRhyd(qleft, iright) result(res)
+        function hdual_minus_dble_tens_SPRhyd(qleft, xright) result(res)
                 
           implicit none      
           TYPE(hyperdual), intent(in)             :: qleft
-          real(SPRhyd), dimension(:,:,:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright,1),size(iright,2),size(iright,3)) :: res
+          real(SPRhyd), dimension(:,:,:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright,1),size(xright,2),size(xright,3)) :: res
                 
-            res%x  = qleft%x - REAL(iright,PRhyd)
+            res%x  = qleft%x - REAL(xright,PRhyd)
             res%dx1 = qleft%dx1 
             res%dx2 = qleft%dx2 
             res%dx1x2 = qleft%dx1x2
@@ -2569,14 +2574,14 @@ Module HDMod
         end function hdual_array_minus_hdual_array
              
         
-        function hdual_array_minus_dble(qleft, iright) result(res)
+        function hdual_array_minus_dble(qleft, xright) result(res)
                 
           implicit none
           TYPE(hyperdual), dimension(:), intent(in) :: qleft
-          real(PRhyd), intent(in)                      :: iright
+          real(PRhyd), intent(in)                   :: xright
           TYPE(hyperdual), dimension(size(qleft))   :: res
                 
-          res%x  = qleft%x - iright
+          res%x  = qleft%x - xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2 
@@ -2584,14 +2589,14 @@ Module HDMod
         end function hdual_array_minus_dble
   
   
-        function hdual_array_minus_dble_SPRhyd(qleft, iright) result(res)
+        function hdual_array_minus_dble_SPRhyd(qleft, xright) result(res)
                 
           implicit none
           TYPE(hyperdual), dimension(:), intent(in) :: qleft
-          real(SPRhyd), intent(in)                      :: iright
+          real(SPRhyd), intent(in)                  :: xright
           TYPE(hyperdual), dimension(size(qleft))   :: res
                 
-          res%x  = qleft%x - REAL(iright,PRhyd)
+          res%x  = qleft%x - REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2 
@@ -2599,14 +2604,14 @@ Module HDMod
         end function hdual_array_minus_dble_SPRhyd
         
         
-        function hdual_array_minus_dble_array(qleft, iright) result(res)
+        function hdual_array_minus_dble_array(qleft, xright) result(res)
                 
           implicit none
           TYPE(hyperdual), dimension(:), intent(in) :: qleft
-          real(PRhyd), dimension(:), intent(in)        :: iright
+          real(PRhyd), dimension(:), intent(in)     :: xright
           TYPE(hyperdual), dimension(size(qleft))   :: res
                 
-          res%x  = qleft%x - iright
+          res%x  = qleft%x - xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2 
@@ -2614,14 +2619,14 @@ Module HDMod
         end function hdual_array_minus_dble_array
   
   
-        function hdual_array_minus_dble_array_SPRhyd(qleft, iright) result(res)
+        function hdual_array_minus_dble_array_SPRhyd(qleft, xright) result(res)
                 
           implicit none
           TYPE(hyperdual), dimension(:), intent(in) :: qleft
-          real(SPRhyd), dimension(:), intent(in)        :: iright
+          real(SPRhyd), dimension(:), intent(in)    :: xright
           TYPE(hyperdual), dimension(size(qleft))   :: res
                 
-          res%x  = qleft%x - REAL(iright,PRhyd)
+          res%x  = qleft%x - REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2 
@@ -2689,14 +2694,14 @@ Module HDMod
         end function hdual_matrix_minus_hdual_matrix
   
   
-        function hdual_matrix_minus_dble(qleft, iright) result(res)
+        function hdual_matrix_minus_dble(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:), intent(in) :: qleft
-          real(PRhyd), intent(in)                        :: iright
+          real(PRhyd), intent(in)                     :: xright
           TYPE(hyperdual), dimension(size(qleft,1), size(qleft,2))  :: res
   
-          res%x  = qleft%x - iright
+          res%x  = qleft%x - xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -2704,14 +2709,14 @@ Module HDMod
         end function hdual_matrix_minus_dble
   
   
-        function hdual_matrix_minus_dble_SPRhyd(qleft, iright) result(res)
+        function hdual_matrix_minus_dble_SPRhyd(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:), intent(in) :: qleft
-          real(SPRhyd), intent(in)                        :: iright
+          real(SPRhyd), intent(in)                    :: xright
           TYPE(hyperdual), dimension(size(qleft,1), size(qleft,2))  :: res
   
-          res%x  = qleft%x - REAL(iright,PRhyd)
+          res%x  = qleft%x - REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -2719,14 +2724,14 @@ Module HDMod
         end function hdual_matrix_minus_dble_SPRhyd
   
   
-        function hdual_matrix_minus_dble_matrix(qleft, iright) result(res)
+        function hdual_matrix_minus_dble_matrix(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:), intent(in) :: qleft
-          real(PRhyd), dimension(:,:), intent(in)        :: iright
+          real(PRhyd), dimension(:,:), intent(in)     :: xright
           TYPE(hyperdual), dimension(size(qleft,1), size(qleft,2))  :: res
   
-          res%x  = qleft%x - iright
+          res%x  = qleft%x - xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -2734,14 +2739,14 @@ Module HDMod
         end function hdual_matrix_minus_dble_matrix
   
   
-        function hdual_matrix_minus_dble_matrix_SPRhyd(qleft, iright) result(res)
+        function hdual_matrix_minus_dble_matrix_SPRhyd(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:), intent(in) :: qleft
-          real(SPRhyd), dimension(:,:), intent(in)        :: iright
+          real(SPRhyd), dimension(:,:), intent(in)    :: xright
           TYPE(hyperdual), dimension(size(qleft,1), size(qleft,2))  :: res
   
-          res%x  = qleft%x - REAL(iright,PRhyd)
+          res%x  = qleft%x - REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -2809,15 +2814,15 @@ Module HDMod
         
         end function hdual_tens_minus_hdual_tens
   
-        function hdual_tens_minus_dble(qleft, iright) result(res)
+        function hdual_tens_minus_dble(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qleft
-          real(PRhyd), intent(in)                          :: iright
+          real(PRhyd), intent(in)                       :: xright
           TYPE(hyperdual), &
             dimension(size(qleft,1),size(qleft,2),size(qleft,3))  :: res
   
-          res%x  = qleft%x - iright
+          res%x  = qleft%x - xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -2825,15 +2830,15 @@ Module HDMod
         end function hdual_tens_minus_dble
   
   
-        function hdual_tens_minus_dble_SPRhyd(qleft, iright) result(res)
+        function hdual_tens_minus_dble_SPRhyd(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qleft
-          real(SPRhyd), intent(in)                          :: iright
+          real(SPRhyd), intent(in)                      :: xright
           TYPE(hyperdual), &
             dimension(size(qleft,1),size(qleft,2),size(qleft,3))  :: res
   
-          res%x  = qleft%x - REAL(iright,PRhyd)
+          res%x  = qleft%x - REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -2841,15 +2846,15 @@ Module HDMod
         end function hdual_tens_minus_dble_SPRhyd
   
   
-        function hdual_tens_minus_dble_tens(qleft, iright) result(res)
+        function hdual_tens_minus_dble_tens(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qleft
-          real(PRhyd), dimension(:,:,:), intent(in)        :: iright
+          real(PRhyd), dimension(:,:,:), intent(in)     :: xright
           TYPE(hyperdual), &
             dimension(size(qleft,1),size(qleft,2),size(qleft,3))  :: res
   
-          res%x  = qleft%x - iright
+          res%x  = qleft%x - xright
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -2857,15 +2862,15 @@ Module HDMod
         end function hdual_tens_minus_dble_tens
   
   
-        function hdual_tens_minus_dble_tens_SPRhyd(qleft, iright) result(res)
+        function hdual_tens_minus_dble_tens_SPRhyd(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qleft
-          real(SPRhyd), dimension(:,:,:), intent(in)        :: iright
+          real(SPRhyd), dimension(:,:,:), intent(in)    :: xright
           TYPE(hyperdual), &
             dimension(size(qleft,1),size(qleft,2),size(qleft,3))  :: res
   
-          res%x  = qleft%x - REAL(iright,PRhyd)
+          res%x  = qleft%x - REAL(xright,PRhyd)
           res%dx1 = qleft%dx1 
           res%dx2 = qleft%dx2 
           res%dx1x2 = qleft%dx1x2
@@ -2908,7 +2913,7 @@ Module HDMod
         function dble_minus_hdual(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), intent(in)        :: xleft
+          real(PRhyd), intent(in)     :: xleft
           TYPE(hyperdual), intent(in) :: qright
           TYPE(hyperdual)             :: res
                 
@@ -2923,7 +2928,7 @@ Module HDMod
         function dble_minus_hdual_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), intent(in)        :: xleft
+          real(SPRhyd), intent(in)    :: xleft
           TYPE(hyperdual), intent(in) :: qright
           TYPE(hyperdual)             :: res
                 
@@ -2938,7 +2943,7 @@ Module HDMod
         function dble_minus_hdual_array(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), intent(in)                      :: xleft
+          real(PRhyd), intent(in)                   :: xleft
           TYPE(hyperdual), dimension(:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright))  :: res
                 
@@ -2953,7 +2958,7 @@ Module HDMod
         function dble_minus_hdual_array_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), intent(in)                      :: xleft
+          real(SPRhyd), intent(in)                  :: xleft
           TYPE(hyperdual), dimension(:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright))  :: res
                 
@@ -2968,7 +2973,7 @@ Module HDMod
         function dble_minus_hdual_matrix(xleft, qright) result(res)
   
           implicit none
-          real(PRhyd), intent(in)                        :: xleft
+          real(PRhyd), intent(in)                     :: xleft
           TYPE(hyperdual), dimension(:,:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright,1), size(qright,2))  :: res
   
@@ -2983,7 +2988,7 @@ Module HDMod
         function dble_minus_hdual_matrix_SPRhyd(xleft, qright) result(res)
   
           implicit none
-          real(SPRhyd), intent(in)                        :: xleft
+          real(SPRhyd), intent(in)                    :: xleft
           TYPE(hyperdual), dimension(:,:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright,1), size(qright,2))  :: res
   
@@ -2998,7 +3003,7 @@ Module HDMod
         function dble_minus_hdual_tens(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), intent(in)                          :: xleft
+          real(PRhyd), intent(in)                       :: xleft
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qright
           TYPE(hyperdual), &
             dimension(size(qright,1),size(qright,2),size(qright,3)) :: res
@@ -3014,7 +3019,7 @@ Module HDMod
         function dble_minus_hdual_tens_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), intent(in)                          :: xleft
+          real(SPRhyd), intent(in)                      :: xleft
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qright
           TYPE(hyperdual), &
             dimension(size(qright,1),size(qright,2),size(qright,3)) :: res
@@ -3030,7 +3035,7 @@ Module HDMod
         function dble_array_minus_hdual(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), dimension(:), intent(in)        :: xleft
+          real(PRhyd), dimension(:), intent(in)     :: xleft
           TYPE(hyperdual), intent(in)               :: qright
           TYPE(hyperdual), dimension(size(xleft))   :: res
                 
@@ -3045,7 +3050,7 @@ Module HDMod
         function dble_array_minus_hdual_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), dimension(:), intent(in)        :: xleft
+          real(SPRhyd), dimension(:), intent(in)    :: xleft
           TYPE(hyperdual), intent(in)               :: qright
           TYPE(hyperdual), dimension(size(xleft))   :: res
                 
@@ -3060,7 +3065,7 @@ Module HDMod
         function dble_array_minus_hdual_array(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), dimension(:), intent(in)        :: xleft
+          real(PRhyd), dimension(:), intent(in)     :: xleft
           TYPE(hyperdual), dimension(:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright))  :: res
                 
@@ -3075,7 +3080,7 @@ Module HDMod
         function dble_array_minus_hdual_array_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), dimension(:), intent(in)        :: xleft
+          real(SPRhyd), dimension(:), intent(in)    :: xleft
           TYPE(hyperdual), dimension(:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright))  :: res
                 
@@ -3090,7 +3095,7 @@ Module HDMod
         function dble_matrix_minus_hdual(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), dimension(:,:), intent(in)      :: xleft
+          real(PRhyd), dimension(:,:), intent(in)   :: xleft
           TYPE(hyperdual), intent(in)               :: qright
           TYPE(hyperdual), dimension(size(xleft,1),size(xleft,2)) :: res
                 
@@ -3105,7 +3110,7 @@ Module HDMod
         function dble_matrix_minus_hdual_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), dimension(:,:), intent(in)      :: xleft
+          real(SPRhyd), dimension(:,:), intent(in)  :: xleft
           TYPE(hyperdual), intent(in)               :: qright
           TYPE(hyperdual), dimension(size(xleft,1),size(xleft,2)) :: res
                 
@@ -3120,7 +3125,7 @@ Module HDMod
         function dble_matrix_minus_hdual_matrix(xleft, qright) result(res)
                 
           implicit none
-          real(PRhyd), dimension(:,:), intent(in)        :: xleft
+          real(PRhyd), dimension(:,:), intent(in)     :: xleft
           TYPE(hyperdual), dimension(:,:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(xleft,1),size(xleft,2)) :: res
                 
@@ -3135,7 +3140,7 @@ Module HDMod
         function dble_matrix_minus_hdual_matrix_SPRhyd(xleft, qright) result(res)
                 
           implicit none
-          real(SPRhyd), dimension(:,:), intent(in)        :: xleft
+          real(SPRhyd), dimension(:,:), intent(in)    :: xleft
           TYPE(hyperdual), dimension(:,:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(xleft,1),size(xleft,2)) :: res
                 
@@ -3151,7 +3156,7 @@ Module HDMod
                 
           implicit none
           real(PRhyd), dimension(:,:,:), intent(in)  :: xleft
-          TYPE(hyperdual), intent(in)             :: qright
+          TYPE(hyperdual), intent(in)                :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3)) :: res
                 
@@ -3167,7 +3172,7 @@ Module HDMod
                 
           implicit none
           real(SPRhyd), dimension(:,:,:), intent(in)  :: xleft
-          TYPE(hyperdual), intent(in)             :: qright
+          TYPE(hyperdual), intent(in)                 :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3)) :: res
                 
@@ -3183,7 +3188,7 @@ Module HDMod
                 
           implicit none
           real(PRhyd), dimension(:,:,:), intent(in)        :: xleft
-          TYPE(hyperdual), dimension(:,:,:), intent(in) :: qright
+          TYPE(hyperdual), dimension(:,:,:), intent(in)    :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3)) :: res
                 
@@ -3199,7 +3204,7 @@ Module HDMod
                 
           implicit none
           real(SPRhyd), dimension(:,:,:), intent(in)        :: xleft
-          TYPE(hyperdual), dimension(:,:,:), intent(in) :: qright
+          TYPE(hyperdual), dimension(:,:,:), intent(in)     :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3)) :: res
                 
@@ -3469,124 +3474,124 @@ Module HDMod
         
         end function hdual_mul_hdual_tens
   
-        function hdual_mul_dble(qleft, iright) result(res)
+        function hdual_mul_dble(qleft, xright) result(res)
         
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          real(PRhyd), intent(in)        :: iright
+          real(PRhyd), intent(in)     :: xright
           TYPE(hyperdual)             :: res
         
-          res%x = qleft%x * iright
-          res%dx1 = qleft%dx1 * iright
-          res%dx2 = qleft%dx2 * iright
-          res%dx1x2 = qleft%dx1x2 * iright
+          res%x = qleft%x * xright
+          res%dx1 = qleft%dx1 * xright
+          res%dx2 = qleft%dx2 * xright
+          res%dx1x2 = qleft%dx1x2 * xright
         
         end function hdual_mul_dble
   
   
-        function hdual_mul_dble_SPRhyd(qleft, iright) result(res)
+        function hdual_mul_dble_SPRhyd(qleft, xright) result(res)
         
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
-          real(SPRhyd), intent(in)        :: iright
+          real(SPRhyd), intent(in)    :: xright
           TYPE(hyperdual)             :: res
         
-          res%x = qleft%x * REAL(iright,PRhyd)
-          res%dx1 = qleft%dx1 * REAL(iright,PRhyd)
-          res%dx2 = qleft%dx2 * REAL(iright,PRhyd)
-          res%dx1x2 = qleft%dx1x2 * REAL(iright,PRhyd)
+          res%x = qleft%x * REAL(xright,PRhyd)
+          res%dx1 = qleft%dx1 * REAL(xright,PRhyd)
+          res%dx2 = qleft%dx2 * REAL(xright,PRhyd)
+          res%dx1x2 = qleft%dx1x2 * REAL(xright,PRhyd)
         
         end function hdual_mul_dble_SPRhyd
   
         
-        function hdual_mul_dble_array(qleft, iright) result(res)
+        function hdual_mul_dble_array(qleft, xright) result(res)
         
           implicit none
-          TYPE(hyperdual), intent(in)         :: qleft
-          real(PRhyd), dimension(:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright))  :: res
+          TYPE(hyperdual), intent(in)            :: qleft
+          real(PRhyd), dimension(:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright))  :: res
         
-          res%x = qleft%x * iright
-          res%dx1 = qleft%dx1 * iright
-          res%dx2 = qleft%dx2 * iright
-          res%dx1x2 = qleft%dx1x2 * iright
+          res%x = qleft%x * xright
+          res%dx1 = qleft%dx1 * xright
+          res%dx2 = qleft%dx2 * xright
+          res%dx1x2 = qleft%dx1x2 * xright
         
         end function hdual_mul_dble_array
   
   
-        function hdual_mul_dble_array_SPRhyd(qleft, iright) result(res)
+        function hdual_mul_dble_array_SPRhyd(qleft, xright) result(res)
         
           implicit none
-          TYPE(hyperdual), intent(in)         :: qleft
-          real(SPRhyd), dimension(:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright))  :: res
+          TYPE(hyperdual), intent(in)               :: qleft
+          real(SPRhyd), dimension(:), intent(in)    :: xright
+          TYPE(hyperdual), dimension(size(xright))  :: res
         
-          res%x = qleft%x * REAL(iright,PRhyd)
-          res%dx1 = qleft%dx1 * REAL(iright,PRhyd)
-          res%dx2 = qleft%dx2 * REAL(iright,PRhyd)
-          res%dx1x2 = qleft%dx1x2 * REAL(iright,PRhyd)
+          res%x = qleft%x * REAL(xright,PRhyd)
+          res%dx1 = qleft%dx1 * REAL(xright,PRhyd)
+          res%dx2 = qleft%dx2 * REAL(xright,PRhyd)
+          res%dx1x2 = qleft%dx1x2 * REAL(xright,PRhyd)
         
         end function hdual_mul_dble_array_SPRhyd
   
   
-        function hdual_mul_dble_matrix(qleft, iright) result(res)
+        function hdual_mul_dble_matrix(qleft, xright) result(res)
         
           implicit none
-          TYPE(hyperdual), intent(in)           :: qleft
-          real(PRhyd), dimension(:,:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright,1),size(iright,2)) :: res
+          TYPE(hyperdual), intent(in)              :: qleft
+          real(PRhyd), dimension(:,:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright,1),size(xright,2)) :: res
         
-          res%x = qleft%x * iright
-          res%dx1 = qleft%dx1 * iright
-          res%dx2 = qleft%dx2 * iright
-          res%dx1x2 = qleft%dx1x2 * iright
+          res%x = qleft%x * xright
+          res%dx1 = qleft%dx1 * xright
+          res%dx2 = qleft%dx2 * xright
+          res%dx1x2 = qleft%dx1x2 * xright
         
         end function hdual_mul_dble_matrix
   
   
-        function hdual_mul_dble_matrix_SPRhyd(qleft, iright) result(res)
+        function hdual_mul_dble_matrix_SPRhyd(qleft, xright) result(res)
         
           implicit none
-          TYPE(hyperdual), intent(in)           :: qleft
-          real(SPRhyd), dimension(:,:), intent(in)  :: iright
-          TYPE(hyperdual), dimension(size(iright,1),size(iright,2)) :: res
+          TYPE(hyperdual), intent(in)               :: qleft
+          real(SPRhyd), dimension(:,:), intent(in)  :: xright
+          TYPE(hyperdual), dimension(size(xright,1),size(xright,2)) :: res
         
-          res%x = qleft%x * REAL(iright,PRhyd)
-          res%dx1 = qleft%dx1 * REAL(iright,PRhyd)
-          res%dx2 = qleft%dx2 * REAL(iright,PRhyd)
-          res%dx1x2 = qleft%dx1x2 * REAL(iright,PRhyd)
+          res%x = qleft%x * REAL(xright,PRhyd)
+          res%dx1 = qleft%dx1 * REAL(xright,PRhyd)
+          res%dx2 = qleft%dx2 * REAL(xright,PRhyd)
+          res%dx1x2 = qleft%dx1x2 * REAL(xright,PRhyd)
         
         end function hdual_mul_dble_matrix_SPRhyd
   
   
-        function hdual_mul_dble_tens(qleft, iright) result(res)
+        function hdual_mul_dble_tens(qleft, xright) result(res)
         
           implicit none
-          TYPE(hyperdual), intent(in)             :: qleft
-          real(PRhyd), dimension(:,:,:), intent(in)  :: iright
+          TYPE(hyperdual), intent(in)                :: qleft
+          real(PRhyd), dimension(:,:,:), intent(in)  :: xright
           TYPE(hyperdual), &
-            dimension(size(iright,1),size(iright,2),size(iright,3)) :: res
+            dimension(size(xright,1),size(xright,2),size(xright,3)) :: res
         
-          res%x = qleft%x * iright
-          res%dx1 = qleft%dx1 * iright
-          res%dx2 = qleft%dx2 * iright
-          res%dx1x2 = qleft%dx1x2 * iright
+          res%x = qleft%x * xright
+          res%dx1 = qleft%dx1 * xright
+          res%dx2 = qleft%dx2 * xright
+          res%dx1x2 = qleft%dx1x2 * xright
         
         end function hdual_mul_dble_tens
   
   
-        function hdual_mul_dble_tens_SPRhyd(qleft, iright) result(res)
+        function hdual_mul_dble_tens_SPRhyd(qleft, xright) result(res)
         
           implicit none
-          TYPE(hyperdual), intent(in)             :: qleft
-          real(SPRhyd), dimension(:,:,:), intent(in)  :: iright
+          TYPE(hyperdual), intent(in)                 :: qleft
+          real(SPRhyd), dimension(:,:,:), intent(in)  :: xright
           TYPE(hyperdual), &
-            dimension(size(iright,1),size(iright,2),size(iright,3)) :: res
+            dimension(size(xright,1),size(xright,2),size(xright,3)) :: res
         
-          res%x = qleft%x * REAL(iright,PRhyd)
-          res%dx1 = qleft%dx1 * REAL(iright,PRhyd)
-          res%dx2 = qleft%dx2 * REAL(iright,PRhyd)
-          res%dx1x2 = qleft%dx1x2 * REAL(iright,PRhyd)
+          res%x = qleft%x * REAL(xright,PRhyd)
+          res%dx1 = qleft%dx1 * REAL(xright,PRhyd)
+          res%dx2 = qleft%dx2 * REAL(xright,PRhyd)
+          res%dx1x2 = qleft%dx1x2 * REAL(xright,PRhyd)
         
         end function hdual_mul_dble_tens_SPRhyd
   
@@ -3667,32 +3672,32 @@ Module HDMod
         end function hdual_array_mul_hdual
   
   
-        function hdual_array_mul_dble(qleft, iright) result(res)
+        function hdual_array_mul_dble(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:), intent(in) :: qleft
-          real(PRhyd), intent(in)                      :: iright
-          TYPE(hyperdual), dimension(size(qleft)) :: res
+          real(PRhyd), intent(in)                   :: xright
+          TYPE(hyperdual), dimension(size(qleft))   :: res
   
-          res%x = qleft%x * iright
-          res%dx1 = qleft%dx1 * iright
-          res%dx2 = qleft%dx2 * iright
-          res%dx1x2 = qleft%dx1x2 * iright
+          res%x = qleft%x * xright
+          res%dx1 = qleft%dx1 * xright
+          res%dx2 = qleft%dx2 * xright
+          res%dx1x2 = qleft%dx1x2 * xright
           
         end function hdual_array_mul_dble
   
   
-        function hdual_array_mul_dble_SPRhyd(qleft, iright) result(res)
+        function hdual_array_mul_dble_SPRhyd(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:), intent(in) :: qleft
-          real(SPRhyd), intent(in)                      :: iright
-          TYPE(hyperdual), dimension(size(qleft)) :: res
+          real(SPRhyd), intent(in)                  :: xright
+          TYPE(hyperdual), dimension(size(qleft))   :: res
   
-          res%x = qleft%x * REAL(iright,PRhyd)
-          res%dx1 = qleft%dx1 * REAL(iright,PRhyd)
-          res%dx2 = qleft%dx2 * REAL(iright,PRhyd)
-          res%dx1x2 = qleft%dx1x2 * REAL(iright,PRhyd)
+          res%x = qleft%x * REAL(xright,PRhyd)
+          res%dx1 = qleft%dx1 * REAL(xright,PRhyd)
+          res%dx2 = qleft%dx2 * REAL(xright,PRhyd)
+          res%dx1x2 = qleft%dx1x2 * REAL(xright,PRhyd)
           
         end function hdual_array_mul_dble_SPRhyd
   
@@ -3727,32 +3732,32 @@ Module HDMod
         end function hdual_matrix_mul_hdual
   
   
-        function hdual_matrix_mul_dble(qleft, iright) result(res)
+        function hdual_matrix_mul_dble(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:), intent(in) :: qleft
-          real(PRhyd), intent(in)                        :: iright
+          real(PRhyd), intent(in)                     :: xright
           TYPE(hyperdual), dimension(size(qleft,1),size(qleft,2)) :: res
   
-          res%x = qleft%x * iright
-          res%dx1 = qleft%dx1 * iright
-          res%dx2 = qleft%dx2 * iright
-          res%dx1x2 = qleft%dx1x2 * iright
+          res%x = qleft%x * xright
+          res%dx1 = qleft%dx1 * xright
+          res%dx2 = qleft%dx2 * xright
+          res%dx1x2 = qleft%dx1x2 * xright
           
         end function hdual_matrix_mul_dble
   
   
-        function hdual_matrix_mul_dble_SPRhyd(qleft, iright) result(res)
+        function hdual_matrix_mul_dble_SPRhyd(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:), intent(in) :: qleft
-          real(SPRhyd), intent(in)                        :: iright
+          real(SPRhyd), intent(in)                    :: xright
           TYPE(hyperdual), dimension(size(qleft,1),size(qleft,2)) :: res
   
-          res%x = qleft%x * REAL(iright,PRhyd)
-          res%dx1 = qleft%dx1 * REAL(iright,PRhyd)
-          res%dx2 = qleft%dx2 * REAL(iright,PRhyd)
-          res%dx1x2 = qleft%dx1x2 * REAL(iright,PRhyd)
+          res%x = qleft%x * REAL(xright,PRhyd)
+          res%dx1 = qleft%dx1 * REAL(xright,PRhyd)
+          res%dx2 = qleft%dx2 * REAL(xright,PRhyd)
+          res%dx1x2 = qleft%dx1x2 * REAL(xright,PRhyd)
           
         end function hdual_matrix_mul_dble_SPRhyd
   
@@ -3787,18 +3792,18 @@ Module HDMod
         end function hdual_tens_mul_hdual
   
   
-        function hdual_tens_mul_dble(qleft, iright) result(res)
+        function hdual_tens_mul_dble(qleft, xright) result(res)
   
           implicit none
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qleft
-          real(PRhyd), intent(in)                          :: iright
+          real(PRhyd), intent(in)                       :: xright
           TYPE(hyperdual), &
             dimension(size(qleft,1),size(qleft,2),size(qleft,3)) :: res
   
-          res%x = qleft%x * iright
-          res%dx1 = qleft%dx1 * iright
-          res%dx2 = qleft%dx2 * iright
-          res%dx1x2 = qleft%dx1x2 * iright
+          res%x = qleft%x * xright
+          res%dx1 = qleft%dx1 * xright
+          res%dx2 = qleft%dx2 * xright
+          res%dx1x2 = qleft%dx1x2 * xright
           
         end function hdual_tens_mul_dble
   
@@ -3839,7 +3844,7 @@ Module HDMod
         function dble_mul_hdual(xleft, qright) result(res)
         
           implicit none
-          real(PRhyd), intent(in)        :: xleft
+          real(PRhyd), intent(in)     :: xleft
           TYPE(hyperdual), intent(in) :: qright
           TYPE(hyperdual)             :: res
         
@@ -3884,7 +3889,7 @@ Module HDMod
         function dble_mul_hdual_array_SPRhyd(xleft, qright) result(res)
         
           implicit none
-          real(SPRhyd), intent(in)                      :: xleft
+          real(SPRhyd), intent(in)                  :: xleft
           TYPE(hyperdual), dimension(:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright))  :: res
         
@@ -3899,7 +3904,7 @@ Module HDMod
         function dble_mul_hdual_matrix(xleft, qright) result(res)
         
           implicit none
-          real(PRhyd), intent(in)                        :: xleft
+          real(PRhyd), intent(in)                     :: xleft
           TYPE(hyperdual), dimension(:,:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright,1),size(qright,2)) :: res
         
@@ -3914,7 +3919,7 @@ Module HDMod
         function dble_mul_hdual_matrix_SPRhyd(xleft, qright) result(res)
         
           implicit none
-          real(SPRhyd), intent(in)                        :: xleft
+          real(SPRhyd), intent(in)                    :: xleft
           TYPE(hyperdual), dimension(:,:), intent(in) :: qright
           TYPE(hyperdual), dimension(size(qright,1),size(qright,2)) :: res
         
@@ -3929,7 +3934,7 @@ Module HDMod
         function dble_mul_hdual_tens(xleft, qright) result(res)
         
           implicit none
-          real(PRhyd), intent(in)                          :: xleft
+          real(PRhyd), intent(in)                       :: xleft
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qright
           TYPE(hyperdual), &
             dimension(size(qright,1),size(qright,2),size(qright,3)) :: res
@@ -3945,7 +3950,7 @@ Module HDMod
         function dble_mul_hdual_tens_SPRhyd(xleft, qright) result(res)
         
           implicit none
-          real(SPRhyd), intent(in)                          :: xleft
+          real(SPRhyd), intent(in)                      :: xleft
           TYPE(hyperdual), dimension(:,:,:), intent(in) :: qright
           TYPE(hyperdual), &
             dimension(size(qright,1),size(qright,2),size(qright,3)) :: res
@@ -3962,7 +3967,7 @@ Module HDMod
         
           implicit none
           real(PRhyd), dimension(:), intent(in)  :: xleft
-          TYPE(hyperdual), intent(in)         :: qright
+          TYPE(hyperdual), intent(in)            :: qright
           TYPE(hyperdual), dimension(size(xleft)) :: res
         
           res%x = qright%x * xleft
@@ -3977,7 +3982,7 @@ Module HDMod
         
           implicit none
           real(SPRhyd), dimension(:), intent(in)  :: xleft
-          TYPE(hyperdual), intent(in)         :: qright
+          TYPE(hyperdual), intent(in)             :: qright
           TYPE(hyperdual), dimension(size(xleft)) :: res
         
           res%x = qright%x * REAL(xleft,PRhyd)
@@ -3992,7 +3997,7 @@ Module HDMod
         
           implicit none
           real(PRhyd), dimension(:,:), intent(in)  :: xleft
-          TYPE(hyperdual), intent(in)           :: qright
+          TYPE(hyperdual), intent(in)              :: qright
           TYPE(hyperdual), dimension(size(xleft,1),size(xleft,2)) :: res
         
           res%x = qright%x * xleft
@@ -4007,7 +4012,7 @@ Module HDMod
         
           implicit none
           real(SPRhyd), dimension(:,:), intent(in)  :: xleft
-          TYPE(hyperdual), intent(in)           :: qright
+          TYPE(hyperdual), intent(in)               :: qright
           TYPE(hyperdual), dimension(size(xleft,1),size(xleft,2)) :: res
         
           res%x = qright%x * REAL(xleft,PRhyd)
@@ -4022,7 +4027,7 @@ Module HDMod
         
           implicit none
           real(PRhyd), dimension(:,:,:), intent(in)  :: xleft
-          TYPE(hyperdual), intent(in)             :: qright
+          TYPE(hyperdual), intent(in)                :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3)) :: res
         
@@ -4038,7 +4043,7 @@ Module HDMod
         
           implicit none
           real(SPRhyd), dimension(:,:,:), intent(in)  :: xleft
-          TYPE(hyperdual), intent(in)             :: qright
+          TYPE(hyperdual), intent(in)                 :: qright
           TYPE(hyperdual), &
             dimension(size(xleft,1),size(xleft,2),size(xleft,3)) :: res
         
@@ -4158,7 +4163,6 @@ Module HDMod
   
   
         function hdual_array_mul_hdual_array(qleft, qright) result(res)
-          ! Elemental multiplication, size(qleft) == size(qright)
           implicit none
           TYPE(hyperdual), dimension(:), intent(in)   :: qleft
           TYPE(hyperdual), dimension(:), intent(in)   :: qright
@@ -4173,10 +4177,9 @@ Module HDMod
   
   
         function hdual_array_mul_dble_array(qleft, xright) result(res)
-          ! Elemental multiplication, size(qleft) == size(qright)
           implicit none
           TYPE(hyperdual), dimension(:), intent(in)   :: qleft
-          Real(PRhyd), dimension(:), intent(in)         :: xright
+          Real(PRhyd), dimension(:), intent(in)       :: xright
           TYPE(hyperdual), dimension(size(qleft))     :: res
   
           res%x = qleft%x * xright
@@ -4188,10 +4191,10 @@ Module HDMod
   
   
         function hdual_array_mul_dble_array_SPRhyd(qleft, xright) result(res)
-          ! Elemental multiplication, size(qleft) == size(qright)
+
           implicit none
           TYPE(hyperdual), dimension(:), intent(in)   :: qleft
-          Real(SPRhyd), dimension(:), intent(in)         :: xright
+          Real(SPRhyd), dimension(:), intent(in)      :: xright
           TYPE(hyperdual), dimension(size(qleft))     :: res
   
           res%x = qleft%x * REAL(xright,PRhyd)
@@ -4203,11 +4206,11 @@ Module HDMod
   
   
         function dble_array_mul_hdual_array(xleft, qright) result(res)
-          ! Elemental multiplication, size(qleft) == size(qright)
+
           implicit none
           TYPE(hyperdual), dimension(:), intent(in)   :: qright
-          Real(PRhyd), dimension(:), intent(in)          :: xleft
-          TYPE(hyperdual), dimension(size(qright))     :: res
+          Real(PRhyd), dimension(:), intent(in)       :: xleft
+          TYPE(hyperdual), dimension(size(qright))    :: res
   
           res%x = qright%x * xleft
           res%dx1 = qright%dx1 * xleft
@@ -4218,10 +4221,10 @@ Module HDMod
   
   
         function dble_array_mul_hdual_array_SPRhyd(xleft, qright) result(res)
-          ! Elemental multiplication, size(qleft) == size(qright)
+          
           implicit none
-          TYPE(hyperdual), dimension(:), intent(in)   :: qright
-          Real(SPRhyd), dimension(:), intent(in)          :: xleft
+          TYPE(hyperdual), dimension(:), intent(in)    :: qright
+          Real(SPRhyd), dimension(:), intent(in)       :: xleft
           TYPE(hyperdual), dimension(size(qright))     :: res
   
           res%x = qright%x * REAL(xleft,PRhyd)
@@ -4251,7 +4254,7 @@ Module HDMod
         function hdual_matrix_mul_dble_matrix(qleft, xright) result(res)
           
           implicit none
-          TYPE(hyperdual), dimension(:,:), intent(in)   :: qleft
+          TYPE(hyperdual), dimension(:,:), intent(in)      :: qleft
           real(PRhyd), dimension(:,:), intent(in)          :: xright
           TYPE(hyperdual), dimension(size(qleft,1),size(qleft,2))    :: res
           
@@ -4266,14 +4269,14 @@ Module HDMod
         function hdual_matrix_mul_dble_matrix_SPRhyd(qleft, xright) result(res)
           
           implicit none
-          TYPE(hyperdual), dimension(:,:), intent(in)   :: qleft
+          TYPE(hyperdual), dimension(:,:), intent(in)      :: qleft
           real(SPRhyd), dimension(:,:), intent(in)         :: xright
           TYPE(hyperdual), dimension(size(qleft,1),size(qleft,2))    :: res
           
-          res%x = qleft%x * REAL(xright, 8)
-          res%dx1 = qleft%dx1 * REAL(xright, 8)
-          res%dx2 = qleft%dx2 * REAL(xright, 8)
-          res%dx1x2 = qleft%dx1x2 * REAL(xright, 8) 
+          res%x = qleft%x * REAL(xright, PRhyd)
+          res%dx1 = qleft%dx1 * REAL(xright, PRhyd)
+          res%dx2 = qleft%dx2 * REAL(xright, PRhyd)
+          res%dx1x2 = qleft%dx1x2 * REAL(xright, PRhyd) 
   
         end function hdual_matrix_mul_dble_matrix_SPRhyd
   
@@ -4281,7 +4284,7 @@ Module HDMod
         function dble_matrix_mul_hdual_matrix(xleft, qright) result(res)
           
           implicit none
-          TYPE(hyperdual), dimension(:,:), intent(in)   :: qright
+          TYPE(hyperdual), dimension(:,:), intent(in)      :: qright
           real(PRhyd), dimension(:,:), intent(in)          :: xleft
           TYPE(hyperdual), dimension(size(qright,1),size(qright,2))    :: res
           
@@ -4296,7 +4299,7 @@ Module HDMod
         function dble_matrix_mul_hdual_matrix_SPRhyd(xleft, qright) result(res)
           
           implicit none
-          TYPE(hyperdual), dimension(:,:), intent(in)    :: qright
+          TYPE(hyperdual), dimension(:,:), intent(in)       :: qright
           real(SPRhyd), dimension(:,:), intent(in)          :: xleft
           TYPE(hyperdual), dimension(size(qright,1),size(qright,2))    :: res
           
@@ -4326,7 +4329,7 @@ Module HDMod
         function hdual_tens_mul_dble_tens(qleft, xright) result(res)
           
           implicit none
-          TYPE(hyperdual), dimension(:,:,:), intent(in)   :: qleft
+          TYPE(hyperdual), dimension(:,:,:), intent(in)      :: qleft
           real(PRhyd), dimension(:,:,:), intent(in)          :: xright
           TYPE(hyperdual), dimension(size(qleft,1),size(qleft,2),size(qleft,3))    :: res
           
@@ -4341,7 +4344,7 @@ Module HDMod
         function hdual_tens_mul_dble_tens_SPRhyd(qleft, xright) result(res)
           
           implicit none
-          TYPE(hyperdual), dimension(:,:,:), intent(in)   :: qleft
+          TYPE(hyperdual), dimension(:,:,:), intent(in)       :: qleft
           real(SPRhyd), dimension(:,:,:), intent(in)          :: xright
           TYPE(hyperdual), dimension(size(qleft,1),size(qleft,2),size(qleft,3))    :: res
           
@@ -4356,7 +4359,7 @@ Module HDMod
         function dble_tens_mul_hdual_tens(xleft, qright) result(res)
           
           implicit none
-          TYPE(hyperdual), dimension(:,:,:), intent(in)   :: qright
+          TYPE(hyperdual), dimension(:,:,:), intent(in)      :: qright
           real(PRhyd), dimension(:,:,:), intent(in)          :: xleft
           TYPE(hyperdual), dimension(size(qright,1),size(qright,2),size(qright,3))    :: res
           
@@ -4371,7 +4374,7 @@ Module HDMod
         function dble_tens_mul_hdual_tens_SPRhyd(xleft, qright) result(res)
           
           implicit none
-          TYPE(hyperdual), dimension(:,:,:), intent(in)   :: qright
+          TYPE(hyperdual), dimension(:,:,:), intent(in)      :: qright
           real(SPRhyd), dimension(:,:,:), intent(in)         :: xleft
           TYPE(hyperdual), dimension(size(qright,1),size(qright,2),size(qright,3))    :: res
           
@@ -4384,10 +4387,11 @@ Module HDMod
         
         
         function hdual_4d_mul_dble_4d(qleft, xright) result(res)
-        	implicit none
-        	TYPE(hyperdual), dimension(:,:,:,:), intent(in) :: qleft
-        	real(PRhyd), dimension(:,:,:,:), intent(in)     :: xright
-        	TYPE(hyperdual), dimension(size(qleft,1), size(qleft,2), size(qleft,3), size(qleft,4)) :: res
+        	
+          implicit none
+          TYPE(hyperdual), dimension(:,:,:,:), intent(in) :: qleft
+          real(PRhyd), dimension(:,:,:,:), intent(in)     :: xright
+          TYPE(hyperdual), dimension(size(qleft,1), size(qleft,2), size(qleft,3), size(qleft,4)) :: res
         	
             res%x = qleft%x * xright
             res%dx1 = qleft%dx1 * xright
@@ -4398,10 +4402,11 @@ Module HDMod
         
         
         function hdual_4d_mul_dble_4d_SPRhyd(qleft, xright) result(res)
-        	implicit none
-        	TYPE(hyperdual), dimension(:,:,:,:), intent(in) :: qleft
-        	real(SPRhyd), dimension(:,:,:,:), intent(in)     :: xright
-        	TYPE(hyperdual), dimension(size(qleft,1), size(qleft,2), size(qleft,3), size(qleft,4)) :: res
+        	
+          implicit none
+          TYPE(hyperdual), dimension(:,:,:,:), intent(in)  :: qleft
+          real(SPRhyd), dimension(:,:,:,:), intent(in)     :: xright
+          TYPE(hyperdual), dimension(size(qleft,1), size(qleft,2), size(qleft,3), size(qleft,4)) :: res
         	
             res%x = qleft%x * REAL(xright, PRhyd)
             res%dx1 = qleft%dx1 * REAL(xright, PRhyd)
@@ -4413,17 +4418,47 @@ Module HDMod
   
   
         !----- Division operator (/)
+        function inv_hdual(qleft) result(res)
+          ! Calculates the inverse of a hyperdual number
+
+          implicit none
+          TYPE(hyperdual), intent(in) :: qleft
+          TYPE(hyperdual)             :: res
+           
+          res%x = 1.d0 / qleft%x
+          res%dx1 = - qleft%dx1 / (qleft%x ** 2)
+          res%dx2 = - qleft%dx2 / (qleft%x ** 2)
+          res%dx1x2 = 2.d0 * qleft%dx1 * qleft%dx2 / (qleft%x ** 3 ) - qleft%dx1x2 / ( qleft%x ** 2 )
+
+        end function inv_hdual
+
+
         function hdual_div_hdual(qleft, qright) result(res)
-        
+
           implicit none
           TYPE(hyperdual), intent(in) :: qleft, qright
-          TYPE(hyperdual)             :: inv
           TYPE(hyperdual)             :: res
-          
-          inv = hdual_pow_dble(qright, -1.0_PRhyd)
-          res = qleft * inv
-  
+
+          res = qleft * inv_hdual(qright)
+        
         end function hdual_div_hdual
+
+
+
+!         function hdual_div_hdual(qleft, qright) result(res)
+!         
+!           implicit none
+!           TYPE(hyperdual), intent(in) :: qleft, qright
+!           TYPE(hyperdual)             :: inv
+!           TYPE(hyperdual)             :: res
+!           
+!           inv = hdual_pow_dble(qright, -1.0_PRhyd)
+!           res = qleft * inv
+! !         a/b = a * b^-1 = a * e^(ln(b^-1)) = a * e^(-ln(b))
+!           
+! !           res = qleft * hdexp( -1.0_PRhyd * hdlog(qright))
+!   
+!         end function hdual_div_hdual
         
         function hdual_div_dble(qleft, iright) result(res)
         
@@ -4894,7 +4929,9 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: qleft
             TYPE(hyperdual), intent(in) :: qright
             TYPE(hyperdual)             :: res
-  
+            
+            ! Only works when qleft > 0
+            
             res = hdexp(qright*hdlog(qleft))
   
           end function hdual_pow_hdual
@@ -4934,7 +4971,6 @@ Module HDMod
         
   
         function hdual_pow_dble_SPRhyd(qleft, iright) result(res)
-          !!!!DEC$ ATTRIBUTES DLLEXPORT, ALIAS : "hdual_pow_dble" :: hdual_pow_dble
           
             implicit none
             TYPE(hyperdual), intent(in) :: qleft
@@ -5234,7 +5270,7 @@ Module HDMod
             real(PRhyd), intent(in)     :: x2
             TYPE(hyperdual)             :: q_out
   
-            if (q1.GE.x2) then
+            if (q1.GT.x2) then
               q_out = q1
             else
               q_out = x2
