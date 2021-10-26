@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 ### Job Name
-#PBS -N hyd_vdiff_debug
+#PBS -N ASO4J_Test_with_ISORROPIA
 
 ### Project code
 #PBS -A UDRE0001                                                                                                                                                                             
@@ -71,7 +71,7 @@ echo 'Start Model Run At ' `date`
 
 #> Set Working, Input, and Output Directories
  setenv WORKDIR ${CMAQ_HOME}/CCTM/scripts          #> Working Directory. Where the runscript is.
- setenv OUTDIR  ${CMAQ_DATA}/output_CCTM_${RUNID}_chem_SO2_6h_all_proc  #> Output Directory
+ setenv OUTDIR  ${CMAQ_DATA}/output_CCTM_${RUNID}_chem_full_iso_ASO4J_ANO3J_orgaeroff  #> Output Directory
  setenv INPDIR  /glade/work/edliu/models/inputs/SEv5.3.2.BENCH/CMAQv5.3.2_Benchmark_2Day_Input/2016_12SE1            #> Input Directory
  setenv LOGDIR  ${OUTDIR}/LOGS     #> Log Directory Location
  setenv NMLpath ${BLD}             #> Location of Namelists. Common places are: 
@@ -137,6 +137,7 @@ set NCELLS = `echo "${NX} * ${NY} * ${NZ}" | bc -l`
 
 #> Output Species and Layer Options
    #> CONC file species; comment or set to "ALL" to write all species to CONC
+#    setenv CONC_SPCS "ASO4J SO2 NH3 ANH4J ANO3J ANH4K ANH4J"
 #    setenv CONC_SPCS "NO2 N2O5 HNO3 HCL ASO4J ASO4I ANH4J ANH4I ANO3J ANO3I AECJ AECI AH2OJ AH2OI ANAJ ACLJ ACLI NH3" 
    setenv CONC_BLEV_ELEV "1 35" #> CONC file layer range; comment to write all layers to CONC
 
@@ -698,7 +699,7 @@ while ($TODAYJ <= $STOP_DAY )  #>Compare dates in terms of YYYYJJJ
   #> Executable call for multi PE, configure for your system 
   # set MPI = /usr/local/intel/impi/3.2.2.006/bin64
   # set MPIRUN = $MPI/mpirun
-  ( /usr/bin/time -p mpirun -np $NPROCS $BLD/$EXEC ) |& tee buff_${EXECUTION_ID}.txt
+  ( /usr/bin/time -p ddt --connect -np $NPROCS $BLD/$EXEC ) |& tee buff_${EXECUTION_ID}.txt
   
   #> Harvest Timing Output so that it may be reported below
   set rtarray = "${rtarray} `tail -3 buff_${EXECUTION_ID}.txt | grep -Eo '[+-]?[0-9]+([.][0-9]+)?' | head -1` "

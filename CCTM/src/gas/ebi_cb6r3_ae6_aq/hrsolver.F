@@ -235,11 +235,6 @@ c++++++++++++++++++++++++Debug section++++++++++++++++++++++++++++++++++
          END IF
       END DO
       
-C     DO S = 1, NUMB_MECH_SPC
-C     	YC_dx1( S ) = YC( S )%dx1
-C     	YC_dx2( S ) = YC( S )%dx2
-C     	YC_dx1x2( S ) = YC( S )%dx1x2
-C     ENDDO
 
 ! Initial PA_IRR
 C     IF( CALL_IRR ) CALL PA_IRR ( .TRUE., RKI, YC, DTC )
@@ -408,9 +403,9 @@ C                IF( CALL_IRR ) CALL PA_IRR ( .FALSE., RKI, YC, DTC )
                
 
                FORALL( S = 1:NUMB_MECH_SPC )YC( S )%x = YC0( S )%x   ! Set ICs for EBI time-step
-C              FORALL( S = 1:NUMB_MECH_SPC )YC( S )%dx1 = YC0( S )%dx1   ! Set ICs for EBI time-step
-C              FORALL( S = 1:NUMB_MECH_SPC )YC( S )%dx2 = YC0( S )%dx2   ! Set ICs for EBI time-step
-C              FORALL( S = 1:NUMB_MECH_SPC )YC( S )%dx1x2 = YC0( S )%dx1x2   ! Set ICs for EBI time-step    
+               FORALL( S = 1:NUMB_MECH_SPC )YC( S )%dx1 = YC0( S )%dx1   ! Set ICs for EBI time-step
+               FORALL( S = 1:NUMB_MECH_SPC )YC( S )%dx2 = YC0( S )%dx2   ! Set ICs for EBI time-step
+               FORALL( S = 1:NUMB_MECH_SPC )YC( S )%dx1x2 = YC0( S )%dx1x2   ! Set ICs for EBI time-step    
                                          
                DTC = 0.5D0 * DTC
 

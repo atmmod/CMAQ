@@ -118,7 +118,8 @@ C Local Variables:
       INTEGER         :: V, S
 c      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
       TYPE(hyperdual), parameter :: PERT_HYPERDUAL = hyperdual(0.0D0, 1.D-3, 1.D-3, 0.0D0)
-      INTEGER         :: R_HD, C_HD, L_HD, T_HD
+      TYPE(hyperdual), parameter :: PERT_HYPERDUAL_1 = hyperdual(0.0D0, 1.D-3, 0.0d0, 0.0D0)
+      TYPE(hyperdual), parameter :: PERT_HYPERDUAL_2 = hyperdual(0.0d0, 0.0d0, 1.D-3, 0.0d0)
 
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: CGRID0( :,:,:,: )
@@ -251,8 +252,10 @@ C-----------------------------------------------------------------------
 
 
  	  IF (JTIME .EQ. 0) THEN
-c        Hyperdual perturbation at the very first
- 	    CGRID(:, :, :, 14) = CGRID(:, :, :, 14) + PERT_HYPERDUAL
+c        Hyperdual perturbation at the very first, ASO4J -> 130 ; ANO3J -> 134
+C        Isoprene is 55
+ 	    CGRID(:, :, 1, 130) = CGRID(:, :, 1, 130) + PERT_HYPERDUAL_1
+ 	    CGRID(:, :, 1, 134) = CGRID(:, :, 1, 134) + PERT_HYPERDUAL_2
  	    
 c       Hyperdual <-- CD
  	    DO V = 1, N_CSPCS

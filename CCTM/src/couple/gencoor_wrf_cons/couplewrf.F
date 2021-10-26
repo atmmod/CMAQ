@@ -188,7 +188,7 @@ C initialize RhoJ from MCIP - done once per sync step
       DO L = 1, NLAYS
          DO R = 1, NROWS
             DO C = 1, NCOLS
-               CGRID( C,R,L,RHOJ_LOC )%x = RHOJ( C,R,L )
+               CGRID( C,R,L,RHOJ_LOC )%x = REAL ( RHOJ( C,R,L ), 8 )
 #ifdef sens
                   DO NP = 1, NPMAX
                      SENGRID( C,R,L,NP,RHOJ_LOC ) = 0.0
@@ -197,7 +197,7 @@ C initialize RhoJ from MCIP - done once per sync step
             END DO
          END DO
       END DO
-
+	  
       OFF = AE_STRT - 1
 C CGRID in ug/m**3 -> ("total" Jacobian [m]) X [Kg/m**3]
       IF ( NQAE .GT. 0 ) THEN
@@ -217,7 +217,7 @@ C CGRID in ug/m**3 -> ("total" Jacobian [m]) X [Kg/m**3]
             END DO
          END DO
       END IF
-
+	 
 C CGRID in #/m**3 -> ("total" Jacobian [m]) X [#/m**3]
       IF ( NNAE .GT. 0 ) THEN
          DO V = 1, NNAE
@@ -368,6 +368,7 @@ C CGRID in mixing ratio [ppmV] X (air density X "total" Jacobian) -> mixing rati
  
       OFF = AE_STRT - 1
 C CGRID in Jacobian [m]) X [Kg/m**3] -> [ug/m**3]
+	  
       IF ( NQAE .GT. 0 ) THEN
          DO V = 1, NQAE
             SPC = OFF + AE_TRNS_MAP( QAE( V ) )
@@ -386,6 +387,7 @@ C CGRID in Jacobian [m]) X [Kg/m**3] -> [ug/m**3]
          END DO
       END IF
 
+	 
 C CGRID in Jacobian [m] X [#/m**3] -> #/m**3
       IF ( NNAE .GT. 0 ) THEN
          DO V = 1, NNAE

@@ -740,7 +740,7 @@ C Add evasion as negative dep flux
 #endif
                END DO
             END DO
-
+ 
 #ifdef isam
             DO JSPCTAG = 1, N_SPCTAG
                S = ISAM_DEPV( JSPCTAG )
@@ -755,7 +755,7 @@ C Add evasion as negative dep flux
                    END IF
                END IF
             END DO
-
+ 
 c Recalculate bidi NH3 deposition
             IF ( ABFLUX .AND. SA_BIDI ) THEN
               NH3_SUM = 0.0
@@ -763,7 +763,7 @@ c Recalculate bidi NH3 deposition
                 S = ISAM_DEPV( JSPCTAG )
                 IF ( S .EQ. NH3_HIT ) NH3_SUM = NH3_SUM + SACONC( JSPCTAG,1 )
               END DO
-
+ 
               DO JSPCTAG = 1, N_SPCTAG
                 S = ISAM_DEPV( JSPCTAG )
                 IF ( S .EQ. NH3_HIT ) THEN
@@ -775,7 +775,7 @@ c Recalculate bidi NH3 deposition
                 END IF
               END DO
             END IF
-
+ 
             DO L = 1, NLAYS
                DO V = 1, N_SPCTAG
                  SA_DD( V,L ) = 0.0
@@ -788,7 +788,7 @@ C Compute tendency of CBL concentrations - semi-implicit solution
 C Set MATRIX1 elements A (col 1), B (diag.), E (superdiag.) and D (RHS)
 
             IF ( Met_Data%CONVCT( C,R ) ) THEN
-
+ 
                L = 1
                DO V = 1, N_SPC_DIFF
                   DD( V,L ) = CONC( V,L )
@@ -802,7 +802,7 @@ C Set MATRIX1 elements A (col 1), B (diag.), E (superdiag.) and D (RHS)
                   END DO
 #endif
                END DO
-
+ 
 #ifdef isam
                DO JSPCTAG = 1, N_SPCTAG
                   SA_DD( JSPCTAG, L) = SACONC( JSPCTAG,L )
@@ -810,7 +810,7 @@ C Set MATRIX1 elements A (col 1), B (diag.), E (superdiag.) and D (RHS)
      &                      + LFAC2( L ) * SACONC( JSPCTAG,L+1 )
                ENDDO
 #endif
-
+ 
                DO L = 2, LCBL
                   DO V = 1, N_SPC_DIFF
                      DELC = MBARKS( L ) * CONC( V,1 )
@@ -826,7 +826,7 @@ C Set MATRIX1 elements A (col 1), B (diag.), E (superdiag.) and D (RHS)
                      END DO
 #endif         
                   END DO
-
+ 
 #ifdef isam
                   DO JSPCTAG = 1, N_SPCTAG
                      DELC = MBARKS( L ) * SACONC( JSPCTAG,1 )
@@ -835,14 +835,14 @@ C Set MATRIX1 elements A (col 1), B (diag.), E (superdiag.) and D (RHS)
                      SA_DD( JSPCTAG,L ) = SACONC( JSPCTAG,L ) + DFACQ  * DELC
                   END DO
 #endif
-
+ 
                END DO
-
+ 
                CALL MATRIX1 ( LCBL, AA, BB1, EE1, DD, UU )
 #ifdef isam 
                CALL SA_MATRIX1( LCBL, AA, BB1,EE1, SA_DD, SA_UU)
 #endif
-
+ 
 #ifdef sens
                DO NP = 1, NPMAX
                   CALL MATRIX1 ( LCBL, AA, BB1, EE1, S_DD(:,:,NP), S_UU(:,:,NP) )
@@ -866,7 +866,7 @@ C update conc
                   ENDDO
 #endif
                END DO
-
+ 
 C reinitialize for TRI solver
                DO L = 1, NLAYS
                   DO V = 1, N_SPC_DIFF
@@ -886,9 +886,9 @@ C reinitialize for TRI solver
                   ENDDO
 #endif
                END DO
-
+ 
             END IF
-
+ 
             L = 1
             DO V = 1, N_SPC_DIFF
                DD( V,L ) = CONC( V,L )
@@ -902,7 +902,7 @@ C reinitialize for TRI solver
                END DO
 #endif
             END DO
-
+ 
 #ifdef isam
             DO JSPCTAG = 1, N_SPCTAG
                SA_DD( JSPCTAG,L ) = SACONC( JSPCTAG,L )
@@ -910,7 +910,7 @@ C reinitialize for TRI solver
      &                   + SAEMIS( JSPCTAG,L )
             END DO
 #endif
-
+ 
             DO L = 2, NLAYS-1
                DO V = 1, N_SPC_DIFF
                   DD( V,L ) = CONC( V,L )
@@ -935,7 +935,7 @@ C reinitialize for TRI solver
                END DO
 #endif
             END DO
-
+ 
             L = NLAYS
             DO V = 1, N_SPC_DIFF
                DD( V,L ) = CONC( V,L )
@@ -953,12 +953,12 @@ C reinitialize for TRI solver
      &                   - LFAC4( L ) * ( SACONC( JSPCTAG,L ) - SACONC( JSPCTAG,L-1 ) )
             END DO
 #endif
-
+ 
             CALL TRI ( CC, BB2, EE2, DD, UU )
 #ifdef isam
             CALL SA_TRI ( CC, BB2, EE2, SA_DD, SA_UU )
 #endif
-
+ 
 #ifdef sens
             DO NP = 1, NPMAX
                CALL TRI ( CC, BB2, EE2, S_DD(:,:,NP), S_UU(:,:,NP) )
@@ -966,7 +966,7 @@ C reinitialize for TRI solver
 #endif
 
 
-C Load into CGRID
+c  Load into CGRID
             DO L = 1, NLAYS
                DO V = 1, N_SPC_DIFF
                   CONC( V,L ) = UU( V,L )
@@ -982,7 +982,7 @@ C Load into CGRID
                END DO
 #endif
             END DO
-            
+C           
             DO V = 1, N_SPC_DEPV
 
 C --------- HET HONO RX -----------------
