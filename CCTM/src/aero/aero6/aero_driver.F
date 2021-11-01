@@ -129,7 +129,7 @@ C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       USE PRECURSOR_DATA, ONLY: SULPRD_IDX, SO4RATE, PRECURSOR_CONC,
      &                          PHGRXN_IDX, PHG_RATE,
      &                          EXTRACT_PRECURSOR, UPDATE_PRECURSOR
-      USE SOA_DEFN, ONLY: EXTRACT_SOA, UPDATE_ORGVAPOR
+	  USE SOA_DEFN, ONLY: EXTRACT_SOA, UPDATE_ORGVAPOR
       USE AEROMET_DATA, ONLY: AIRTEMP, AIRPRES, AIRQV, AIRDENS, AIRRH, 
      &                        H2OSATVP, H2OVP, MWWAT, MWAIR
       USE UTILIO_DEFN, ONLY: OPEN3, INTERPX, WRITE3, FSREAD3, ALLVAR3,
@@ -411,6 +411,8 @@ C *** Grid cell meteorological data.
 
 C *** Extract grid cell concentrations of aero species from CGRID
 C     into aerospc_conc in aero_data module (set minimum)
+
+
 #ifdef sens
                CALL EXTRACT_AERO( CGRID( C,R,L,: ), .TRUE., SENGRID( C,R,L,:,: ), .TRUE. )
 #else
@@ -434,10 +436,11 @@ C *** Calculate PHG_RATE stored in module
 C *** Extract soa concentrations from CGRID and 
 C     convert M2 to wet
                CALL EXTRACT_SOA( CGRID( C,R,L,: ) )
-               
+
+                              
 C *** Aerosol process routines
                CALL AEROPROC( DT, C, R, L )
-               			   
+                             			   
 C *** Update aerosol variables conc back into CGRID (set minimum) 
 C     and convert M2 to dry and save as surface area
 #ifdef sens
@@ -451,6 +454,21 @@ C *** Update precursor variables conc back into CGRID
 
 C *** Update gas soa concentrations back to CGRID
                CALL UPDATE_ORGVAPOR( CGRID( C,R,L,: ) )
+               
+C              IF (C .EQ. 34) THEN
+C              IF (R .EQ. 34) THEN
+C              IF (L .EQ. 34) THEN
+C              	WRITE(*,*) 'VLVOO1, x, row 34, layer 34'
+C              	WRITE(*,*) REAL(CGRID(:,34,34,113)%x,4)
+C              	WRITE(*,*) 'VLVOO1, x, row 34, layer 2'
+C              	WRITE(*,*) REAL(CGRID(:,34,2,113)%x, 4)
+C              	WRITE(*,*) 'CAER(:)'
+C              	WRITE(*,*) REAL(caer%x, 4)
+C              	WRITE(*,*) 'CTOTF(:)'
+C              	WRITE(*,*) REAL(ctotf%x, 4)
+C              ENDIF
+C              ENDIF
+C              ENDIF               
 
 C *** OUTPUT DIAGNOSTIC INFORMATION
 C *** Get wet moment info (dry will be converted to wet)

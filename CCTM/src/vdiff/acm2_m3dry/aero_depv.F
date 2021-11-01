@@ -230,7 +230,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 C  Put the grid cell physical data in the block arrays
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-      
       DO R = 1, NROWS
       DO C = 1, NCOLS
 

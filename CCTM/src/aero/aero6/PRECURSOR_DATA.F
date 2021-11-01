@@ -260,6 +260,7 @@ C HS  03/10/11 Changed vtmp and gasconv to real(8)
 C-----------------------------------------------------------------------
 
       Use aeromet_data, only: airdens, inv_mwair, min_gasconc
+      USE HDMod
 
       Implicit None
 

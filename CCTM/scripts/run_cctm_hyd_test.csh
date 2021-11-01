@@ -1,19 +1,19 @@
 #!/bin/csh -f
 
 ### Job Name
-#PBS -N hyd_aero+vdiff
+#PBS -N ASO4J_Test_with_ISORROPIA
 
 ### Project code
 #PBS -A UDRE0001                                                                                                                                                                             
 
-#PBS -l walltime=00:30:00
+#PBS -l walltime=01:30:00
 #PBS -q regular
 #PBS -j oe
 #PBS -k eod
 
 ### Select 2 node with 36 cores (72 in total), 109 GB of memory
 
-#PBS -l select=1:ncpus=36:mpiprocs=36:mem=109GB   
+#PBS -l select=2:ncpus=36:mpiprocs=36:mem=109GB   
 
 ### Send email on abort, begin, and end
 #PBS -M jiachen.liu.app@gmail.com
@@ -52,7 +52,7 @@ echo 'Start Model Run At ' `date`
 
 #> Set General Parameters for Configuring the Simulation
  set VRSN      = v532              #> Code Version
- set PROC      = mpi               #> serial or mpi
+ set PROC      = mpi             #> serial or mpi
  set MECH      = cb6r3_ae6_aq      #> Mechanism ID
  set APPL      = Bench_2016_12SE1  #> Application Name (e.g. Gridname)
                                                        
@@ -71,7 +71,7 @@ echo 'Start Model Run At ' `date`
 
 #> Set Working, Input, and Output Directories
  setenv WORKDIR ${CMAQ_HOME}/CCTM/scripts          #> Working Directory. Where the runscript is.
- setenv OUTDIR  ${CMAQ_DATA}/output_CCTM_${RUNID}_hyd_cpdcp  #> Output Directory
+ setenv OUTDIR  ${CMAQ_DATA}/output_CCTM_${RUNID}_chem_full_iso_check_funco7  #> Output Directory
  setenv INPDIR  /glade/work/edliu/models/inputs/SEv5.3.2.BENCH/CMAQv5.3.2_Benchmark_2Day_Input/2016_12SE1            #> Input Directory
  setenv LOGDIR  ${OUTDIR}/LOGS     #> Log Directory Location
  setenv NMLpath ${BLD}             #> Location of Namelists. Common places are: 
@@ -137,7 +137,8 @@ set NCELLS = `echo "${NX} * ${NY} * ${NZ}" | bc -l`
 
 #> Output Species and Layer Options
    #> CONC file species; comment or set to "ALL" to write all species to CONC
-   setenv CONC_SPCS "NO2 N2O5 HNO3 HCL ASO4J ASO4I ANH4J ANH4I ANO3J ANO3I AECJ AECI AH2OJ AH2OI ANAJ ACLJ ACLI NH3" 
+#    setenv CONC_SPCS "ASO4J SO2 NH3 ANH4J ANO3J ANH4K ANH4J"
+#    setenv CONC_SPCS "NO2 N2O5 HNO3 HCL ASO4J ASO4I ANH4J ANH4I ANO3J ANO3I AECJ AECI AH2OJ AH2OI ANAJ ACLJ ACLI NH3" 
    setenv CONC_BLEV_ELEV "1 35" #> CONC file layer range; comment to write all layers to CONC
 
    #> ACONC file species; comment or set to "ALL" to write all species to ACONC

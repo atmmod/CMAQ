@@ -33,6 +33,7 @@ C
 C   18 Jul 14 B.Hutzell: revised to use real(8) variables
 C**********************************************************************
       USE HRDATA
+      USE HDMod
 
       IMPLICIT NONE
 

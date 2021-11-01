@@ -219,6 +219,7 @@
 
 
        USE RXNS_DATA
+       USE HDMod
 
         IMPLICIT NONE  
 
@@ -228,11 +229,11 @@
         REAL( 8 ),           INTENT( IN  ) :: BLKPRES( : )      ! pressure, Atm
         REAL( 8 ),           INTENT( IN  ) :: BLKH2O ( : )      ! water mixing ratio, ppm 
         REAL( 8 ),           INTENT( IN  ) :: RJBLK  ( :, : )   ! photolysis rates, 1/min 
-        REAL( 8 ),           INTENT( IN  ) :: BLKHET ( :, : )   ! heterogeneous rate constants, ???/min
+        TYPE(hyperdual),           INTENT( IN  ) :: BLKHET ( :, : )   ! heterogeneous rate constants, ???/min
         INTEGER,             INTENT( IN  ) :: NUMCELLS          ! Number of cells in block 
         LOGICAL,             INTENT( IN  ) :: LSUNLIGHT         ! Is there sunlight? 
         LOGICAL,             INTENT( IN  ) :: LAND( : )         ! Is the surface totally land? 
-        REAL( 8 ),           INTENT( OUT ) :: RKI ( :, : )      ! reaction rate constant, ppm/min 
+        TYPE(hyperdual),           INTENT( OUT ) :: RKI ( :, : )      ! reaction rate constant, ppm/min 
 !..Parameters: 
 
         REAL( 8 ), PARAMETER :: COEF1  = 7.33981D+15     ! Molec/cc to ppm conv factor 

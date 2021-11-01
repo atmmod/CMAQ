@@ -74,6 +74,9 @@ C***********************************************************************
      &          YC(   NUMB_MECH_SPC),
      &          YC0(  NUMB_MECH_SPC),
      &          YCP(  NUMB_MECH_SPC),
+     &          YC_DX1( NUMB_MECH_SPC),
+     &          YC_DX2( NUMB_MECH_SPC),
+     &          YC_DX1X2( NUMB_MECH_SPC),
      &          PROD( NUMB_MECH_SPC),
      &          LOSS( NUMB_MECH_SPC),
      &          PNEG( N_SPEC),
@@ -152,7 +155,30 @@ c..Allocate and define ebi species
          MSG = 'Error allocating EBISP' 
          CALL M3EXIT( PNAME, 0, 0, MSG, XSTAT1 )
       END IF
-
+      
+      N_NOT_EBISP = 14
+      ALLOCATE( NOT_EBISP ( N_NOT_EBISP ), STAT = IOS )
+      
+      IF ( IOS .NE. 0 ) THEN
+         MSG = 'Error allocating NOT_EBISP' 
+         CALL M3EXIT( PNAME, 0, 0, MSG, XSTAT1 )
+      END IF
+      
+C     NOT_EBISP( 1 )  = NO2
+C     NOT_EBISP( 2 )  = NO
+C     NOT_EBISP( 3 )  = O
+C     NOT_EBISP( 4 )  = O3
+C     NOT_EBISP( 5 )  = NO3
+C     NOT_EBISP( 6 )  = O1D
+C     NOT_EBISP( 7 )  = OH
+C     NOT_EBISP( 8 )  = HO2
+C     NOT_EBISP( 9 )  = N2O5
+C     NOT_EBISP( 10 ) = HONO
+C     NOT_EBISP( 11 ) = PNA
+C     NOT_EBISP( 12 ) = C2O3
+C     NOT_EBISP( 13 ) = PAN
+C     NOT_EBISP( 14 ) = KET
+      
       EBISP(   1 ) = H2O2
       EBISP(   2 ) = HNO3
       EBISP(   3 ) = SO2

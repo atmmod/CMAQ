@@ -87,7 +87,7 @@
         setenv NETCDFF_LIB_DIR  /glade/work/edliu/libs/netcdf-fortran-4.4.5/netcdf-fortran-4.4.5-intel19.0.5/lib  #> netCDF Fortran directory path
         setenv NETCDFF_INCL_DIR /glade/work/edliu/libs/netcdf-fortran-4.4.5/netcdf-fortran-4.4.5-intel19.0.5/include  #> netCDF Fortran directory path
         setenv MPI_LIB_DIR      /glade/u/apps/ch/opt/openmpi/4.0.5/intel/19.0.5     #> MPI directory path
-    
+
         #> Compiler Aliases and Flags
         #> set the compiler flag -qopt-report=5 to get a model optimization report in the build directory with the optrpt extension
         setenv myFC mpifort

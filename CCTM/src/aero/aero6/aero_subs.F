@@ -239,7 +239,7 @@ C *** local variables
       REAL         XLM        ! atmospheric mean free path [m]
       REAL         AMU        ! atmospheric dynamic viscosity [kg/m s]
 
-      TYPE(hyperdual) :: CGR( N_MODE-1 ) ! Aitken & Accum. modes
+      REAL( 8 ) :: CGR( N_MODE-1 ) ! Aitken & Accum. modes
 
       REAL( 8 ) :: LAMDA      ! mean free path [ m ]
       REAL( 8 ) :: KNC        ! KNC = TWO3 * BOLTZMANN *  AIRTEMP / AMU
@@ -274,9 +274,9 @@ C *** variables for advancing concentrations one time step
       TYPE(hyperdual) :: Y0, Y
       TYPE(hyperdual) :: EXPDT
       TYPE(hyperdual) :: LOSS, PROD, POL
-      TYPE(hyperdual)         TMASS
-      TYPE(hyperdual)         FACTRANS ! special factor to compute mass transfer
-      TYPE(hyperdual)         M20      ! for initial condidtions in time stepping
+      TYPE(hyperdual) :: TMASS
+      TYPE(hyperdual) :: FACTRANS ! special factor to compute mass transfer
+      TYPE(hyperdual) :: M20      ! for initial condidtions in time stepping
 
 C *** Variables for mode merging
       TYPE(hyperdual) ::  GETAF
@@ -302,8 +302,7 @@ C-----------------------------------------------------------------------
          write( logdev,* ) 'aero_subs: nomm'
 #endif
       end if
-	  	  
-	  
+
 C *** square root of the ambient temperature for later use
       SQRT_TEMP = SQRT( AIRTEMP )
  
@@ -321,7 +320,6 @@ C     where beta = 1.458e-6 [ kg sec^-1 K**-0.5 ], s = 110.4 [ K ].
       AMU = 1.458E-6 * AIRTEMP * SQRT_TEMP / ( AIRTEMP + 110.4 )
 
 C *** Set minimums for coarse mode
-C     The MAX has problem?????
       MOMENT0_CONC( N_MODE ) = MAX( AEROMODE_MINNUM( N_MODE ),
      &                              MOMENT0_CONC( N_MODE ) )
 	  
@@ -351,7 +349,7 @@ C *** Update size parameters (distribution is wet from ORGAER)
 ! *** Process Budget is calculated inside this routine because NPF and
 ! *** condensation are calculated simultaneously
 !     Turned off by J.E.L. 
-      ! CALL VOLINORG( DT, COL, ROW, LAYER, DV_SO4, CGR )
+      CALL VOLINORG( DT, COL, ROW, LAYER, DV_SO4, CGR )
 
 ! *** Coagulation
 !     Calculate coagulation coefficients using a method dictated by
@@ -656,15 +654,15 @@ C *** Factors used in error function calls for M2 and M3 mode merging
 
 C *** Calculate the fractions of the number, 2nd, and 3rd moment
 C     distributions with diameter greater than the intersection diameter
-         FNUM  = 0.5 * ERFC( XNUM )            ! Eq 10a of B&R 2003
-         FM2   = 0.5 * ERFC( XM2 )             ! Eq 10b of B&R 2003
-         FM3   = 0.5 * ERFC( XM3 )             ! Eq 10b of B&R 2003
+         FNUM  = 0.5 * HDERFC( XNUM )            ! Eq 10a of B&R 2003
+         FM2   = 0.5 * HDERFC( XM2 )             ! Eq 10b of B&R 2003
+         FM3   = 0.5 * HDERFC( XM3 )             ! Eq 10b of B&R 2003
 
 C *** Calculate the fractions of the number, 2nd, and 3rd moment
 C     distributions with diameters less than the intersection diameter.
-         PHNUM = 0.5 * ( 1.0 + ERF( XNUM ) )  ! Eq 10c of B&R 2003
-         PHM2  = 0.5 * ( 1.0 + ERF( XM2 ) )   ! Eq 10d of B&R 2003
-         PHM3  = 0.5 * ( 1.0 + ERF( XM3 ) )   ! Eq 10d of B&R 2003
+         PHNUM = 0.5 * ( 1.0 + HDERF( XNUM ) )  ! Eq 10c of B&R 2003
+         PHM2  = 0.5 * ( 1.0 + HDERF( XM2 ) )   ! Eq 10d of B&R 2003
+         PHM3  = 0.5 * ( 1.0 + HDERF( XM3 ) )   ! Eq 10d of B&R 2003
 
 C *** Update accumulation-mode moment concentrations using
 C     Equations 11a - 11c of Binkowski and Roselle (2003).
@@ -677,13 +675,13 @@ C     Equations 11d - 11f of Binkowski and Roselle (2003).
          MOMENT0_CONC( 1 ) = MOMENT0_CONC( 1 ) * PHNUM
          MOMENT2_CONC( 1 ) = MOMENT2_CONC( 1 ) * PHM2
          MOMENT3_CONC( 1 ) = MOMENT3_CONC( 1 ) * PHM3
- 
+
 C *** Rename masses of each species from Aitken mode to acumulation mode
 C     using Equation 11b of Binkowski and Roselle (2003). Do this for
 C     all species, even the aerosol water.
          DO SPC = 1, N_AEROSPC
             IF ( AERO_MISSING(SPC,1) ) CYCLE
-
+ 
             AEROSPC_CONC( SPC,2 ) = AEROSPC_CONC( SPC,2 ) + AEROSPC_CONC( SPC,1 ) * FM3
             AEROSPC_CONC( SPC,1 ) = AEROSPC_CONC( SPC,1 ) * PHM3
          END DO
@@ -718,18 +716,18 @@ C    &          GROWTH_BUDGET( AEROSPC_MAP(SPC,:) )=
 C    &              AEROSPC_CONC(SPC,:) - CBUDGET0_MASS(SPC,:)
 C     END DO
 	  
- 	  DO MODE = 1, N_MODE
- 	 	GROWTH_BUDGET(AERONUM_MAP(MODE)) = MOMENT0_CONC(MODE) - CBUDGET0_NUM(MODE)
- 		GROWTH_BUDGET(AEROSRF_MAP(MODE)) = MOMENT0_CONC(MODE) - CBUDGET0_NUM(MODE)
- 	  ENDDO 
+      DO MODE = 1, N_MODE
+ 	      GROWTH_BUDGET(AERONUM_MAP(MODE)) = MOMENT0_CONC(MODE) - CBUDGET0_NUM(MODE)
+ 	      GROWTH_BUDGET(AEROSRF_MAP(MODE)) = MOMENT0_CONC(MODE) - CBUDGET0_NUM(MODE)
+      ENDDO 
    
- 	  DO SPC = 1,N_AEROSPC
- 		DO MODE = 1,N_MODE
- 		   IF (AEROSPC_MAP(SPC, MODE) .NE. 0) THEN
- 	         GROWTH_BUDGET( AEROSPC_MAP(SPC, MODE) ) = AEROSPC_CONC(SPC, MODE) - CBUDGET0_MASS(SPC, MODE)
- 	       ENDIF 
- 	 	ENDDO
- 	  ENDDO 
+      DO SPC = 1,N_AEROSPC
+            DO MODE = 1,N_MODE
+                  IF (AEROSPC_MAP(SPC, MODE) .NE. 0) THEN
+                  GROWTH_BUDGET( AEROSPC_MAP(SPC, MODE) ) = AEROSPC_CONC(SPC, MODE) - CBUDGET0_MASS(SPC, MODE)
+ 	            ENDIF 
+            ENDDO
+      ENDDO 
 	  
 		  
       RETURN
@@ -779,13 +777,13 @@ C 3. Fountoukis C, Nenes, A (2007) ISORROPIA II: a comnputationally efficient
 C    thermodynamic equilibrium model for K+-Ca2+-Mg2+-NH4+-SO42--NO3--Cl-H2O 
 C    aerosols. ATMOSPHERIC CHEMISTRY AND PHYSICS. 7, 4639-4659
 
-      USE AERO_DATA
-      USE PRECURSOR_DATA
-      USE SOA_DEFN
-      USE AEROMET_DATA
-      USE UTILIO_DEFN
-	  USE HDMod 
-	  use ISORROPIAII_MAIN_MOD, ONLY : ISOROPIA
+       USE AERO_DATA
+       USE PRECURSOR_DATA
+       USE SOA_DEFN
+       USE AEROMET_DATA
+       USE UTILIO_DEFN
+	 USE HDMod 
+   	 USE ISORROPIAII_MAIN_MOD, ONLY : ISOROPIA
 	  
       IMPLICIT NONE
 
@@ -796,7 +794,7 @@ C *** Arguments:
       INTEGER LAYER           ! model layer index
       REAL    DV_SO4          ! molecular diffusivity of H2SO4 vapor 
                               ! after correction for ambient conditions
-      TYPE(hyperdual) :: CGR( N_MODE-1 ) ! 3rd moment SO4 growth rate [m^3/m^3-s]
+      REAL( 8 ) :: CGR( N_MODE-1 ) ! 3rd moment SO4 growth rate [m^3/m^3-s]
 
 C *** Parameters: 
       INTEGER, PARAMETER :: NINORG = 9      ! number of inorganic species
@@ -847,7 +845,7 @@ C     defined in Equations A17-A18 of [Binkowski & Shankar,1995]
       TYPE(hyperdual) :: TOTAER( NINORG )! Total aerosol component across multiple modes 
 
 C *** Variables for new particle formation:
-      TYPE(hyperdual)    XH2SO4            ! steady state H2SO4 concentration
+      TYPE(hyperdual) :: XH2SO4            ! steady state H2SO4 concentration
       TYPE(hyperdual) :: DMDT_SO4  ! particle mass production rate [ ug/m**3 s ]
       TYPE(hyperdual) :: DNDT      ! particle number production rate [ # / m**3 s ]
       TYPE(hyperdual) :: DM2DT     ! second moment production rate [ m**2 / m**3 s]
@@ -863,8 +861,8 @@ C *** Size-dependent portion of mass-transfer rate equation
       
 C *** ISORROPIA input variables
       TYPE(hyperdual) :: WI( NINORG - 1 )     ! species array [ mol/m**3 ]
-      TYPE(hyperdual) :: RHI                  ! relative humidity [ fraction ]
-      TYPE(hyperdual) :: TEMPI                ! temperature   [ deg K]
+      REAL( 8 ) :: RHI                  ! relative humidity [ fraction ]
+      REAL( 8 ) :: TEMPI                ! temperature   [ deg K]
       REAL :: CNTRL( 2 )           ! ISOROPIA control parameters 
 
 C *** ISORROPIA output variables
@@ -888,7 +886,6 @@ C *** Initial (double-precision) concentrations [ug/m3]
 
 C *** Variables for volatile species mass transfer between gas and aerosol and
 C     mass partitioning between the modes 
-C *** Prevent calling isorev
       LOGICAL, SAVE   :: HYBRID = .FALSE. ! mass transfer option flag (mass transfer if .TRUE.)
       REAL( 8 )       :: DELT                 ! time step DT [s]
       TYPE(hyperdual) :: HPLUS( N_MODE )      ! scratch var for H+ [umol/m**3]
@@ -903,12 +900,12 @@ C *** Prevent calling isorev
                                           ! SO4,NO3,CL,H2O [ug/m**3]
       TYPE(hyperdual) :: PMCwVOLS               ! anthrop coarse material before removal
                                           ! of SO4,NO3,CL,H2O [ug/m**3]
-      TYPE(hyperdual) :: INT_TIME               ! internal mass transfer time (s)
-      TYPE(hyperdual) :: TSTEP                  ! mass transfer time step [s]
+      REAL( 8 ) :: INT_TIME               ! internal mass transfer time (s)
+      REAL( 8 ) :: TSTEP                  ! mass transfer time step [s]
       TYPE(hyperdual) :: DRYM20, Y              ! scratch vars for 2nd moment [m**2/m**3]
       TYPE(hyperdual) :: M3OTHR                 ! vars for 3rd moment calculation [m**3/m**3]
-      TYPE(hyperdual), SAVE :: DF( NVOLINORG )  ! scratch array for mole -> ug conversion
-      TYPE(hyperdual), SAVE :: DFH2OR8          ! mole -> ug conversion for H2O
+      REAL( 8 ), SAVE :: DF( NVOLINORG )  ! scratch array for mole -> ug conversion
+      REAL( 8 ), SAVE :: DFH2OR8          ! mole -> ug conversion for H2O
       TYPE(hyperdual) :: J( NVOLINORG )         ! condensation/evaporation flux [mol/m**3-s]
       TYPE(hyperdual) :: CFINAL( NVOLINORG,N_MODE ) ! conc after mass xfer step [ug/m**3]
       TYPE(hyperdual) :: H2O                    ! Scratch LWC variable for output
@@ -1046,7 +1043,7 @@ C *** Determine if Hybrid
 
       DELT  = REAL( DT, 8 )
       TEMPI = REAL( AIRTEMP, 8)             ! assume const within synch timestep
-      RHI   = MIN( 0.95D0, AIRRH )  ! "        "     "      "     "
+      RHI   = MIN( 0.95D0, REAL( AIRRH , 8 ) )  ! "        "     "      "     "
 
 C *** Calculate molecular velocities (temperature dependent) and
 C     H+ concentration
@@ -1069,7 +1066,7 @@ C     needed for the calculation of new particle production.  See
 C     Section 3.3 of Jiang & Roth (2003) for a detailed discussion.
 C    
 C *** Set moments using Equation 4 of Binkowski & Shankar
-C     (1995) or Equation 3 of Binkowski and Roselle (2003).
+C     (1995) or Equation 3 of Binkowaski and Roselle (2003).
 C     N.B: these are for a "wet" size distribution
 
       DO I = 1, N_MODE
@@ -1086,7 +1083,7 @@ C     Equations A13-A14 of Binkowski & Shankar (1995).
       DO I = 1, N_MODE
          CALL HCOND3( AM0( I ), AM1( I ), AM2( I ),
      &                DV_SO4, ALPHSULF, CBAR_SO4, FCONC_OUT )
-         FCONC_SO4( I, : ) = FCONC_OUT( : )
+         FCONC_SO4( I, : ) = FCONC_OUT( : )  
       END DO 
 
       IF ( .NOT. HYBRID ) THEN
@@ -1157,7 +1154,9 @@ C     calculated using Equation A17 of Binkowski & Shankar (1995). The
 C     condensation rate for accumulation mode (fine-equilibrium scheme) or 
 C     coarse mode (hybrid and dynamic schemes) is computed by difference, 
 C     to avoid mass conservation violations arising from numerical error.
-      TMP = 0.0D0
+      
+      TMP = 0.d0
+
       DO I = 1, N_MODE
          TMP = TMP + FCONC_SO4( I,2 )
       END DO
@@ -1167,8 +1166,9 @@ C     to avoid mass conservation violations arising from numerical error.
       OMEGA_AC_SO4 = FCONCM1_SO4 * FCONC_SO4( 2,2 )
 
 C *** Growth values for mode merge condition
-      CGR( 1 ) = SO4FAC * SCONDRATE * OMEGA_AT_SO4
-      CGR( 2 ) = SO4FAC * SCONDRATE * OMEGA_AC_SO4
+      CGR( 1 ) = SO4FAC * SCONDRATE%x * OMEGA_AT_SO4%x
+      CGR( 2 ) = SO4FAC * SCONDRATE%x * OMEGA_AC_SO4%x
+
 
 ! *** Initialize Budget Counter Variables         
       CBUDGET0_NUM( : ) = MOMENT0_CONC( : )
@@ -1228,6 +1228,8 @@ C     Equations A13-A14 of Binkowski & Shankar (1995).
             CALL HCOND3( AM0( IMODE ), AM1( IMODE ), AM2( IMODE ), DV_SO4, ALPHSULF, 
      &                      CBAR_SO4, FCONC_OUT )  ! adapted from Eq A14
             FCONC_SO4( IMODE, : ) = FCONC_OUT( : )
+            !   FCONC_SO4( IMODE, 1 ) = FCONC_OUT( 1 )
+            !   FCONC_SO4( IMODE, 2 ) = FCONC_OUT( 2 )
 
             GRFAC1( IMODE ) = FCONC_SO4( IMODE,1 ) 
             GRFAC2( IMODE ) = FCONC_SO4( IMODE,2 ) 
@@ -1341,6 +1343,7 @@ C     than the minimum aerosol conc.
                CALL COMPUTE_FLUX( NVOLINORG, GNH3R8, GNO3R8, GCLR8, KNH4,
      &                            KNO3, KCL, GAS( 1:3 ), GRFAC2( IMODE ),
      &                            AERLIQ( 1 ), RATE, J )
+     		   J( : ) = 0.0D0 
             ELSE
                J( : ) = 0.0D0
             END IF 
@@ -1389,7 +1392,7 @@ C *** Equilibrate aerosol LWC with CFINAL by calling CALC_H2O
             WI( 7 ) = CINORG( KK,  IMODE ) * CFAC_AK
             WI( 8 ) = CINORG( KMG, IMODE ) * CFAC_AMG
 
-            CALL CALC_H2O( WI, RHI, TEMPI, H2O_NEW ) 
+            CALL CALC_H2O( WI, RHI, TEMPI, H2O_NEW )
 
             H2O = H2O_NEW * DFH2OR8 
 
@@ -1764,7 +1767,7 @@ C *** Arguments:
       TYPE(hyperdual), INTENT( IN ) :: AM2   ! second moment of mode  [ m**2/m**3 ]
       REAL,            INTENT( IN ) :: Dv    ! molecular diffusivity of the
                                        ! condensing vapor  [ m**2/s ]
-      TYPE(hyperdual),      INTENT( IN ) :: ALPHA ! accommodation coefficient
+      REAL,      INTENT( IN ) :: ALPHA ! accommodation coefficient
       REAL,      INTENT( IN ) :: CBAR  ! kinetic velocity of condensing vapor [ m/s ]
 
       TYPE(hyperdual), INTENT( OUT ) :: F( 2 ) ! size-dependent term in condensational-growth
@@ -1825,8 +1828,12 @@ C     sulfuric acid-water nucleation rates for tropospheric and stratospheric
 C     conditions.  JGR, v107(D22).    
    
 C..Inputs: 
-      TYPE(hyperdual), INTENT(IN ) :: RH              ! fractional relative humidity      
-      TYPE(hyperdual), INTENT(IN)  :: T               ! Ambient temperature [ K ]
+C     The RH and T here are AIRRH and AIRTEMP from AEROMET_DATA
+C     They are real numbers and not the same one in ISORROPIA
+c     These should be single precision reals
+
+      REAL, INTENT(IN ) :: RH              ! fractional relative humidity      
+      REAL, INTENT(IN)  :: T               ! Ambient temperature [ K ]
       TYPE(hyperdual), INTENT(IN)  :: XH2SO4          ! sulfuric acid concentration [ ug/m**3 ]
       TYPE(hyperdual), INTENT(IN)  :: SO4RATE         ! gas-phase H2SO4 production rate [ ug/m**3 s ]
 
@@ -1861,11 +1868,10 @@ C.. Set constants and local variables for Vehkamaki et al. (2002) scheme
 
       TYPE(hyperdual) :: XSTAR           ! mole fraction of sulfuric acid in the critical cluster
       TYPE(hyperdual) :: NA              ! total gas phase concentration of H2SO4  [ #/cm**3 ]
-      TYPE(hyperdual) :: TEMP            ! ambient temperature
-      TYPE(hyperdual) :: LNRH, LNNA      ! LN(RH), LN(Na)
-      TYPE(hyperdual) :: LNRH2, LNNA2    ! LN(RH)**2, LN(Na)**2
-      TYPE(hyperdual) :: LNRH3, LNNA3    ! LN(RH)**3, LN(Na)**3  
-      TYPE(hyperdual) :: TEMP2, TEMP3    ! TEMP**2, TEMP**3
+      REAL :: TEMP            ! ambient temperature
+      REAL            :: LNRH, LNRH2, LNRH3
+      TYPE(hyperdual) :: LNNA, LNNA2, LNNA3
+      REAL :: TEMP2, TEMP3    ! TEMP**2, TEMP**3
       TYPE(hyperdual) :: XFAC       ! exponential term for the nucleation rate  
       TYPE(hyperdual) :: Jnuc       ! nucleation rate [ #/cm**3 s ]
       
@@ -1898,8 +1904,8 @@ C.. Calculate sulfuric acid concentration in molecules/cm3
       NA = XH2SO4 * MUG2G * AVO * SCALEFAC / MW_H2SO4     
 
 C.. The parameterization is valid at sulfuric acid concentrations of 1.0E4 - 1.0E11 molecules cm-3
-      NA  = MAX (NA, 1.0E4)
-      NA  = MIN (1.0E11, NA)
+      NA  = MAX (NA, 1.0D4)
+      NA  = MIN (1.0D11, NA)
 
 C.. The parameterization is valid at temperatures of 190.00-305.15 K
       TEMP = MAX (T, 190.00)
@@ -2149,7 +2155,7 @@ C Parameters:
 
 C Arguments:
       TYPE(hyperdual), INTENT( IN )  :: WI( NCMP )
-      TYPE(hyperdual), INTENT( IN )  :: RH, T
+      REAL( 8 ), INTENT( IN )  :: RH, T
       TYPE(hyperdual), INTENT( OUT ) :: H2O_NEW
 
 C Local Variables:
@@ -2460,14 +2466,15 @@ C     M0I : Single-solute molalities (mol/kg-H2O) for 13 salts
  
 C-----------------------------------------------------------------------
 
-!     implicit none
+     
 
 	  use HDMod 
 	  use ISORROPIAII_MAIN_MOD
+	  implicit none
     ! INCLUDE 'h_isrpia.inc'
 
 C Arguments
-      TYPE(hyperdual), INTENT( IN )  :: RHIN
+      REAL( 8 ), INTENT( IN )  :: RHIN
     
     ! Find M0I and put in 23 here. J.E.L. 
     
@@ -2477,7 +2484,7 @@ C Arguments
 
 C Location in pure molality array (function of RH)
 C force convert for IZ here
-      IZ = MIN( INT( RHIN%x * NZSR  + 0.5D0 ), NZSR )
+      IZ = MIN( INT( RHIN * NZSR  + 0.5D0 ), NZSR )
       IZ = MAX( IZ, 1 )
 
 C Default value
@@ -2511,7 +2518,7 @@ C Actual values (10,11 not provided)
       END SUBROUTINE GETM0I               
 
 C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-      SUBROUTINE GETSC ( CONC, RH_getsc, T, SC )
+      SUBROUTINE GETSC ( CONC, RH, T, SC )
  
 C Description
 C   Determines the sub-case to use for water uptake calculations.
@@ -2531,7 +2538,7 @@ C     SC   : Sub-case for aerosol composition
 C-----------------------------------------------------------------------
 
 	  use HDMod 
-      use ISORROPIAII_MAIN_MOD 
+      use ISORROPIAII_MAIN_MOD, ONLY : GETASR 
 	  
       IMPLICIT NONE
 
@@ -2541,15 +2548,15 @@ C-----------------------------------------------------------------------
 C Arguments:
 !     REAL( 8 ), INTENT( IN )    :: CONC(  NCMP )
       TYPE(hyperdual), INTENT( INOUT ) :: CONC(  NCMP )
-      TYPE(hyperdual), INTENT( IN )    :: RH_getsc, T
+      REAL( 8 ), INTENT( IN )    :: RH, T
       CHARACTER( 3 ), INTENT( OUT ) :: SC
             
 C Local Variables:
-      TYPE(hyperdual) :: T0, TCF                     ! DRH(T) factor
+      REAL( 8 ) :: T0, TCF                     ! DRH(T) factor
       TYPE(hyperdual) :: S4RAT, S4RATW, NaRAT, SRI   ! sulfate & sodium ratios
       TYPE(hyperdual) :: CRAT                        ! crustals ratio
       TYPE(hyperdual) :: FSO4                        ! "free" sulfate
-      TYPE(hyperdual) :: DNACL, DNH4CL, DNANO3, DNH4NO3, DNH42S4 ! DRH values
+      REAL( 8 ) :: DNACL, DNH4CL, DNANO3, DNH4NO3, DNH42S4 ! DRH values
 
 C     TYPE(hyperdual) :: GETASR    ! ISORROPIA function for sulfate ratio
 
@@ -2580,7 +2587,7 @@ C     See if any components are negligible (see isocom.for)
 C     Deliquescence RH calculations
       DNH42S4 = 0.7997D0
       DNH4NO3 = 0.6183D0
-      IF ( INT( T%x ) .NE. 298 ) THEN
+      IF ( INT( T ) .NE. 298 ) THEN
          T0      = 298.15D0
          TCF     = 1.0D0 / T - 1.0D0 / T0
          DNH4NO3 = DNH4NO3 * EXP( 852.0D0 * TCF )
@@ -2591,8 +2598,8 @@ C     Deliquescence RH calculations
 C     Find sub-case "SC"
       IF ( SCP1R ) THEN ! NH4-S04 system
 
-         IF ( RH_getsc .GE. DNH42S4 ) THEN
-            S4RATW = GETASR( CONC( 2 ), RH_getsc ) ! aerosol sulfate ratio
+         IF ( RH .GE. DNH42S4 ) THEN
+            S4RATW = GETASR( CONC( 2 ), RH ) ! aerosol sulfate ratio
          ELSE
             S4RATW = 2.0D0                ! dry aerosol sulfate ratio
          END IF
@@ -2608,8 +2615,8 @@ C     Find sub-case "SC"
 
       ELSE IF ( SCP2R ) THEN ! NH4-SO4-NO3 system
 
-         IF ( RH_getsc .GE. DNH4NO3 ) THEN
-            S4RATW = GETASR( CONC( 2 ), RH_getsc )
+         IF ( RH .GE. DNH4NO3 ) THEN
+            S4RATW = GETASR( CONC( 2 ), RH )
          ELSE
             S4RATW = 2.0D0               ! dry aerosol ratio
          END IF
@@ -2629,17 +2636,17 @@ C        Adjust DRH of NH4NO3 for low temperature
          DNACL  = 0.7528D0
          DNANO3 = 0.7379D0
          DNH4CL = 0.7710D0
-         IF ( INT_HDUAL( T ) .NE. 298 ) THEN
+         IF ( INT( T ) .NE. 298 ) THEN
             DNACL   = DNACL  * EXP(  25.0D0 * TCF )
             DNANO3  = DNANO3 * EXP( 304.0D0 * TCF )
             DNH4CL  = DNH4Cl * EXP( 239.0D0 * TCF )
             DNH4NO3 = MIN ( DNH4NO3, DNH4CL, DNANO3, DNACL )
          END IF
 
-         IF ( RH_getsc .GE. DNH4NO3 ) THEN
+         IF ( RH .GE. DNH4NO3 ) THEN
             FSO4   = CONC( 2 ) - CONC( 1 ) / 2.0D0   ! sulfate unbound by Na+
             FSO4   = MAX ( FSO4, SMALL )
-            SRI    = GETASR ( FSO4, RH_getsc )
+            SRI    = GETASR ( FSO4, RH )
             S4RATW = ( CONC( 1 ) + FSO4 * SRI ) / CONC( 2 )
             S4RATW = MIN ( S4RATW, 2.0D0 )
          ELSE
@@ -2664,7 +2671,7 @@ C        Adjust DRH of NH4NO3 for low temperature
          FSO4   = CONC( 2 ) - CONC( 1 ) / 2.0D0
      &          - CONC( 6 ) - CONC( 7 ) / 2.0D0 - CONC( 8 )  ! sulfate unbound by sodium,calcium,pottasium,magnesium
          FSO4   = MAX ( FSO4, SMALL )
-         SRI    = GETASR( FSO4, RH_getsc )                         ! sulfate ratio for NH4+
+         SRI    = GETASR( FSO4, RH )                         ! sulfate ratio for NH4+
          S4RATW = ( CONC( 1 ) + FSO4 * SRI + CONC( 6 )
      &            + CONC( 7 ) + CONC( 8 ) ) / CONC( 2 )      ! limiting sulfate ratio
          S4RATW = MIN ( S4RATW, 2.0D0 )
@@ -2692,7 +2699,7 @@ C        Adjust DRH of NH4NO3 for low temperature
       END SUBROUTINE GETSC
 
 C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-      FUNCTION GETAF( NI, NJ, DGNI, DGNJ, XLSGI, XLSGJ, SQRT2) RESULT(GETAF_RESULT)
+      TYPE(hyperdual) FUNCTION GETAF( NI, NJ, DGNI, DGNJ, XLSGI, XLSGJ, SQRT2)
 
 C  Returns the value of "Xnum" in Equations 10a and 10c
 C  of Binkowski and Roselle (2003), given the number concentrations,
@@ -2718,9 +2725,9 @@ C      Cambridge University Press, 1992.
 	  use HDMod 
       IMPLICIT NONE
 
-      TYPE(hyperdual) :: NI, NJ, DGNI, DGNJ, XLSGI, XLSGJ, SQRT2
+      TYPE(hyperdual) :: NI, NJ, DGNI, DGNJ, XLSGI, XLSGJ
+      REAL :: SQRT2
       TYPE(hyperdual) :: AA, BB, CC, DISC, QQ, ALFA, L, YJI
-      TYPE(hyperdual) :: GETAF_RESULT
 
 C-----------------------------------------------------------------------
 
@@ -2739,7 +2746,7 @@ C *** Calculate quadratic equation coefficients & discriminant
 C *** If roots are imaginary, return a negative GETAF value so that no
 C     mode merging takes place.
       IF ( DISC .LT. 0.0 ) THEN
-         GETAF_RESULT = - 5.0D0       ! error in intersection
+         GETAF = - 5.0D0       ! error in intersection
          RETURN
       END IF
 
@@ -2749,7 +2756,7 @@ C *** Equation 5.6.4 of Press et al.
 C *** Return solution of the quadratic equation that corresponds to a
 C     diameter of intersection lying between the median diameters of
 C     the 2 modes.
-      GETAF_RESULT = CC / QQ       ! See Equation 5.6.5 of Press et al.
+      GETAF = CC / QQ       ! See Equation 5.6.5 of Press et al.
 
       RETURN
       END FUNCTION GETAF
@@ -2883,11 +2890,11 @@ C     Cutoffs
       ! from Meng & Seinfeld (1994) and modified form of Fk(X) equation
       ! in Step#6 of Jiang et al. (2006).
       ERFARG = ( LOG( D_ST1 ) - LOG( DG ) ) / ( SQRT2 * XXLSG ) - 3.0 * XXLSG / SQRT2
-      fPM1   = 0.5 * ( 1.0 + ERF( ERFARG ) )
+      fPM1   = 0.5 * ( 1.0 + HDERF( ERFARG ) )
       ERFARG = ( LOG( D_ST25 ) - LOG( DG ) ) / ( SQRT2 * XXLSG ) - 3.0 * XXLSG / SQRT2
-      fPM25  = 0.5 * ( 1.0 + ERF( ERFARG ) )
+      fPM25  = 0.5 * ( 1.0 + HDERF( ERFARG ) )
       ERFARG = ( LOG( D_ST10 ) - LOG( DG ) ) / ( SQRT2 * XXLSG ) - 3.0 * XXLSG / SQRT2
-      fPM10  = 0.5 * ( 1.0 + ERF( ERFARG ) )
+      fPM10  = 0.5 * ( 1.0 + HDERF( ERFARG ) )
 
       END SUBROUTINE AERO_INLET
 
@@ -3031,8 +3038,8 @@ C     Appendix B in Ensberg et al., 2013).
       LOG_LO   = LOG( DBlo_st/DGv )
 
       TERM1 = LOG( DGv/DBlo_st ) / LOG_HILO
-      TERM2 =  ERF( LOG_HI / SQRT2LSG )
-     &        -ERF( LOG_LO / SQRT2LSG )
+      TERM2 =  HDERF( LOG_HI / SQRT2LSG )
+     &        -HDERF( LOG_LO / SQRT2LSG )
       TERM3 = XXLSG / ( LOG_HILO * (pi/2.0) ** 0.5 )
       TERM4 = EXP( -1.0 * ( LOG_LO / SQRT2LSG ) ** 2 )
       TERM5 = EXP( -1.0 * ( LOG_HI / SQRT2LSG ) ** 2 )
@@ -3043,8 +3050,8 @@ C     Appendix B in Ensberg et al., 2013).
       DBlo_st = DBhi_st         ! Stokes Lower Bound [um]
       DBhi_st = 0.55 * DENSFAC  ! Stokes Upper Bound [um]
 
-      TERM1 = ERF( LOG( DBhi_st/DGv ) / SQRT2LSG )
-      TERM2 = ERF( LOG( DBlo_st/DGv ) / SQRT2LSG )
+      TERM1 = HDERF( LOG( DBhi_st/DGv ) / SQRT2LSG )
+      TERM2 = HDERF( LOG( DBlo_st/DGv ) / SQRT2LSG )
       fAMS = fAMS +  (TERM1 - TERM2)
 
       ! Third Piece of Function [T(%) = 1.0 - 0.6805 * (Dva - 0.55) ]
@@ -3056,8 +3063,8 @@ C     Appendix B in Ensberg et al., 2013).
       LOG_LO   = LOG( DBlo_st/DGv )
 
       TERM1 = LOG( DGv/DBhi_st ) / LOG_LOHI
-      TERM2 =  ERF( LOG_HI / SQRT2LSG )
-     &        -ERF( LOG_LO / SQRT2LSG )
+      TERM2 =  HDERF( LOG_HI / SQRT2LSG )
+     &        -HDERF( LOG_LO / SQRT2LSG )
       TERM3 = XXLSG / ( LOG_LOHI * (pi/2.0) ** 0.5 )
       TERM4 = EXP( -1.0 * ( LOG_LO / SQRT2LSG ) ** 2 )
       TERM5 = EXP( -1.0 * ( LOG_HI / SQRT2LSG ) ** 2 )

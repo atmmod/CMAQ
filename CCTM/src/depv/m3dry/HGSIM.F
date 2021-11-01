@@ -307,8 +307,8 @@ C Arguments passed to and from m3dry
          TYPE(hyperdual), SAVE :: Cm         ! mesophyll Hg(0) concentrations
          TYPE(hyperdual), SAVE :: CgHg       ! Soil Hg(0) concentrations
          TYPE(hyperdual), SAVE :: CHgzo      ! Hg(0) concentrations at z = zo
-         TYPE(hyperdual), SAVE :: CgHgII0    ! Soil Hg(II) concentrations
-         TYPE(hyperdual) :: vdHgt   ! sum of Hg deposition velocities
+         REAL(8), SAVE :: CgHgII0    ! Soil Hg(II) concentrations
+         REAL(8) :: vdHgt   ! sum of Hg deposition velocities
 !********* reduction and partioning terms *******************************
          REAL(8) :: kr      ! soil divalent mercury reduction term
          REAL(8) :: Kam     ! air mesophyll partitioning coefficient for Hg(II)
