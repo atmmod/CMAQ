@@ -254,8 +254,9 @@ C-----------------------------------------------------------------------
  	  IF (JTIME .EQ. 0) THEN
 c        Hyperdual perturbation at the very first, ASO4J -> 130 ; ANO3J -> 134
 C        Isoprene is 55
- 	    CGRID(:, :, 1, 130) = CGRID(:, :, 1, 130) + PERT_HYPERDUAL_1
- 	    CGRID(:, :, 1, 134) = CGRID(:, :, 1, 134) + PERT_HYPERDUAL_2
+c        OLE is 53 ; IOLE is 54
+ 	    CGRID(:, :, 1, 53) = CGRID(:, :, 1, 53) + PERT_HYPERDUAL
+C	    CGRID(:, :, 1, 134) = CGRID(:, :, 1, 134) + PERT_HYPERDUAL_2
  	    
 c       Hyperdual <-- CD
  	    DO V = 1, N_CSPCS

@@ -331,7 +331,7 @@ C     partitioning between the particle and vapor phases.  Assume all
 C     SOA resides in the accumulation mode.
 C
 C     Aerosol is wet when it enters orgaer
-C     CALL ORGAER( DT, LAYER )
+      CALL ORGAER( DT, LAYER )
 
 C *** Secondary Inorganics
 C     The VOLINORG subroutine includes the treatment of new particle

@@ -14643,7 +14643,11 @@ c      & (Z(I+4)+Z(J+3)) - H
 !
       DO 200 I=1,NPAIR
          GAMA(I)=MAX(-5.0d0, MIN(GAMA(I),5.0d0) ) ! F77 LIBRARY ROUTINE
-         GAMA(I)=10.0_PRhyd**GAMA(I)
+         GAMA(I)=10.0D0**GAMA(I)
+                 
+C        IF (GAMA(I)%dx1x2 .GT. 1e5) THEN 
+C        	GAMA(I) = hyperdual(GAMA(I)%x, 0.d0, 0.d0, 0.d0)
+C        ENDIF
 !C         GAMA(I)=EX10(SNGL(GAMA(I)), 5.0)    ! CUTOFF SET TO [-5,5]
   200 CONTINUE
 !
@@ -24855,6 +24859,8 @@ C        CALL CALCK4                 ! Only liquid (metastable)
       type(hyperdual) :: X1, Y1, X2, Y2, X3, Y3, YLO, YHI, DX
       type(hyperdual) :: CAFR, NAFR, SO4FR, KAPA2, DELTA
       type(hyperdual) :: PSI6LO, PSI6HI
+      type(hyperdual) :: Y3_before
+      type(hyperdual) :: Y3_after
       Integer :: I
       !
       !Real(kind=fp) :: LAMDA
@@ -24940,7 +24946,16 @@ C     WATER = TINY
 20    DO 30 I=1,MAXIT
          X3 = 0.5*(X1+X2)
          CALL RSTGAMP ! Reinitialize activity coefficients (SLC C2012-01-01)
-         Y3 = FUNCO7 (X3)
+         Y3 = FUNCO7 (X3) 
+         
+C        IF (I .EQ. 1) THEN
+C        	Y3_before = hyperdual(Y3%x, Y3%dx1, Y3%dx2, Y3%dx1x2)
+C        ENDIF
+C        
+C        IF (Y3%dx1x2 .GT. 1.d4) THEN
+C        	Y3 = hyperdual(Y3%x, Y3_before%dx1, Y3_before%dx2, Y3_before%dx1x2)
+C        ENDIF
+         
          IF (SIGN(ONE,Y1)*SIGN(ONE,Y3) .LE. ZERO) THEN  ! (Y1*Y3 .LE. ZERO)
             Y2    = Y3
             X2    = X3
@@ -24955,6 +24970,7 @@ C     WATER = TINY
 ! *** CONVERGED ; RETURN **********************************************
 !
 40    X3 = 0.5*(X1+X2)
+
       CALL RSTGAMP ! Reinitialize activity coefficients (SLC C2012-01-01)
       Y3 = FUNCO7 (X3)
 !
@@ -25023,28 +25039,28 @@ C     WATER = TINY
 ! *** SOLVE EQUATIONS ; WITH ITERATIONS FOR ACTIVITY COEF. ************
 !
       DO 10 I=1,NSWEEP
-
-            
+	 
       A4  = (XK2/XKW)*R*TEMP*(GAMA(10)/GAMA(5))**2.0_PRhyd
       
       A5  = XK4 *R*TEMP*(WATER/GAMA(10))**2.0_PRhyd
       
       A6  = XK3 *R*TEMP*(WATER/GAMA(11))**2.0_PRhyd         
-                     	
-	  IF (ABS(A5%dx1x2) > ABS(1d2 * A5%dx1)) THEN
+	  
+	  IF (ABS(A5%x) < 1E-25) THEN
 	  	A5%dx1 = 0.d0
 	  	A5%dx2 = 0.d0
 	  	A5%dx1x2 = 0.d0
-	  ENDIF
+	  ENDIF 
 	  
-	  IF (ABS(A6%dx1x2) > ABS(1d2 * A6%dx1)) THEN
+	  IF (ABS(A6%x) < 1E-25) THEN
 	  	A6%dx1 = 0.d0
 	  	A6%dx2 = 0.d0
 	  	A6%dx1x2 = 0.d0
-	  ENDIF	  
-
-
-
+	  ENDIF
+	  
+C  IF (ABS(A5%dx1x2) > 1d6 * ABS(A5%x) ) THEN
+C  	
+	  	  
       IF (CHI5.GE.TINY) THEN
          PSI5 = PSI6*CHI5/(A6/A5*(CHI6-PSI6) + PSI6)
          PSI5 = MIN (PSI5,CHI5)
