@@ -68,9 +68,6 @@
 ! CCTM Output Files:
 
       CHARACTER( 16 ) :: CTM_CONC_1      ! On-Hour Concentrations, %x
-      CHARACTER( 16 ) :: CTM_CONC_2      ! On-Hour Concentrations, %dx1
-      CHARACTER( 16 ) :: CTM_CONC_3      ! On-Hour Concentrations, %dx2
-      CHARACTER( 16 ) :: CTM_CONC_4      ! On-Hour Concentrations, %dx1x2      
       CHARACTER( 16 ) :: CTM_VEXT_1      ! On-Hour 3D Concentration at select sites
       CHARACTER( 16 ) :: CTM_DRY_DEP_1   ! Hourly Dry Deposition
       CHARACTER( 16 ) :: CTM_WET_DEP_1   ! Wet Deposition from all Clouds
@@ -117,6 +114,11 @@
        
       CHARACTER( 16 ) :: CTM_SD_TS ! Sub Domain Time Step
 
+! Hyperdual Files: 
+
+      CHARACTER( 16 ) :: CTM_DX1         ! On-Hour Sensitivities, %dx1
+      CHARACTER( 16 ) :: CTM_DX2         ! On-Hour Sensitivities, %dx2
+      CHARACTER( 16 ) :: CTM_DX1X2       ! On-Hour Second Order Sensitivities, %dx1x2      
 
 ! DDM Files:
 

@@ -251,22 +251,23 @@ C-----------------------------------------------------------------------
       CALL LOG_MESSAGE( LOGDEV, XMSG )
 
 
- 	  IF (JTIME .EQ. 0) THEN
+ 	   IF (JTIME .EQ. 0) THEN
 c        Hyperdual perturbation at the very first, ASO4J -> 130 ; ANO3J -> 134
-C        Isoprene is 55
-c        OLE is 53 ; IOLE is 54
- 	    CGRID(:, :, 1, 53) = CGRID(:, :, 1, 53) + PERT_HYPERDUAL
+C        Isoprene is 55, NH3 is 213, ANH4K -> 171
+c        OLE is 53 ; IOLE is 54, still true for aero7
+C	    CGRID(:, :, 1, 171)%x = CGRID(:, :, 1, 171)%x * 0.99 
+  	    CGRID(:, :, 1, 171) = CGRID(:, :, 1, 171) + PERT_HYPERDUAL
 C	    CGRID(:, :, 1, 134) = CGRID(:, :, 1, 134) + PERT_HYPERDUAL_2
  	    
 c       Hyperdual <-- CD
- 	    DO V = 1, N_CSPCS
-         	S = CONC_MAP( V )
-         	SGRID( :,:,:,V ) = REAL ( CGRID( :,:, CONC_BLEV:CONC_ELEV,S )%x , 4 )
+ 	      DO V = 1, N_CSPCS
+         	      S = CONC_MAP( V )
+         	      SGRID( :,:,:,V ) = REAL ( CGRID( :,:, CONC_BLEV:CONC_ELEV,S )%x , 4 )
       	END DO
       	
       	CALL WR_CONC ( JDATE, JTIME, TSTEP( 1 ) )
  	    
- 	  END IF
+ 	    END IF
 	  
 	  
 C Synchronization Step Physical Processes Sequence
@@ -317,10 +318,10 @@ C     CALL PHOT ( CGRID, JDATE, JTIME, TSTEP )
 C     IF ( CKSUM ) CALL CKSUMMER ( 'PHOT', CGRID, JDATE, JTIME )
 C     IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'PHOT' )
 C
-C     CALL CLDPROC ( CGRID, JDATE, JTIME, TSTEP )
-C     IF ( CKSUM ) CALL CKSUMMER ( 'CLDPROC', CGRID, JDATE, JTIME )
-C     ! IF ( LIPR ) CALL PA_UPDATE ( 'CLDS', CGRID, JDATE, JTIME, TSTEP )
-C     IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CLDPROC' )
+      CALL CLDPROC ( CGRID, JDATE, JTIME, TSTEP )
+      IF ( CKSUM ) CALL CKSUMMER ( 'CLDPROC', CGRID, JDATE, JTIME )
+      ! IF ( LIPR ) CALL PA_UPDATE ( 'CLDS', CGRID, JDATE, JTIME, TSTEP )
+      IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CLDPROC' )
 C
       IF ( STM ) CALL STM_WRAP_GAS ( CGRID, JDATE, JTIME, .TRUE. )
       CALL CHEM ( CGRID, JDATE, JTIME, TSTEP )

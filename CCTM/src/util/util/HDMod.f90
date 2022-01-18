@@ -4881,7 +4881,26 @@ Module HDMod
           res = qleft * inv_hdual(qright)
         
         end function hdual_div_hdual
+        
+        function hdual_div_hdual2(qleft, qright) result(res)
 
+          implicit none
+          TYPE(hyperdual), intent(in) :: qleft, qright
+          TYPE(hyperdual)             :: res
+
+          res = qleft * hdual_pow_dble(qright, -1.0_PRhyd)
+        
+        end function hdual_div_hdual2
+        
+        function hdual_div_hdual3(qleft, qright) result(res)
+
+          implicit none
+          TYPE(hyperdual), intent(in) :: qleft, qright
+          TYPE(hyperdual)             :: res
+
+          res = qleft * hdexp( -1.0_PRhyd * hdlog(qright))
+        
+        end function hdual_div_hdual3        
 !       The calculation 
 !         function hdual_div_hdual(qleft, qright) result(res)
 !         
@@ -5373,6 +5392,8 @@ Module HDMod
             write(*,*) 'incorrect, hdual_array_div_hdual_array'
 
           endif
+          
+          
           do i = 1, size(qright) 
             inv(i) = inv_hdual(qright(i))
             res(i) = qleft(i) * inv(i)
@@ -5390,7 +5411,25 @@ Module HDMod
             
             ! Only works when qleft > 0
             
+            ! Let's define this explicitly. 
             res = hdexp(qright*hdlog(qleft))
+            
+!           	
+!             res%x = qleft%x ** qright%x
+!             
+!             res%dx1 = qright%x * qleft%x ** (qright%x - 1.0_PRhyd) * qleft%dx1 + qright%dx1 * qleft%x ** qright%x * log(qleft%x)
+!             res%dx2 = qright%x * qleft%x ** (qright%x - 1.0_PRhyd) * qleft%dx2 + qright%dx2 * qleft%x ** qright%x * log(qleft%x)
+!             
+!             res%dx1x2 = qright%x ** 2.0_PRhyd * qleft%x ** (qright%x - 2.0_PRhyd) * qleft%dx1 * qleft%dx2 + &
+!             		    qright%x * qright%dx2 * qleft%x ** (qright%x - 1.0_PRhyd) * qleft%dx1 * log(qleft%x) + &
+!             		    qright%x * qright%dx1 * qleft%x ** (qright%x - 1) * qleft%dx2 * log(qleft%x) + & 
+!             		    qright%dx1 * qright%dx2 * qleft%x ** qright%x * log(qleft%x) ** 2.0_PRhyd - & 
+!             		    qright%x * qleft%x ** (qright%x - 2.0_PRhyd) * qleft%dx1 * qleft%dx2 + & 
+!             		    qright%x * qleft%dx1x2 * qleft%x ** (qright%x - 1.0_PRhyd) + & 
+!             		    qright%dx2 * qleft%x ** (qright%x - 1.0_PRhyd) * qleft%dx1 + & 
+!             		    qright%dx1 * qleft%x ** (qright%x - 1.0_PRhyd) * qleft%dx2 + & 
+!             		    qright%dx1x2 * qleft%x ** qright%x * log(qleft%x)
+            
   
           end function hdual_pow_hdual
   
@@ -5406,24 +5445,32 @@ Module HDMod
           TYPE(hyperdual)                :: res
   
           xval = qleft%x 
-          tol = 1.0e-15
-          if (abs(xval) < tol) then
-            
-            if (xval >= 0) then 
-              xval = tol
-            endif 
-  
-            if (xval < 0) then
-              xval = -tol
-            endif
-  
-          endif 
+          if ((xval .eq. 0) .AND. (iright .lt. 1.)) then
+            res%x = 0.d0
+            res%dx1 = 0.d0
+            res%dx2 = 0.d0
+            res%dx1x2 = 0.d0
+          else
+!           tol = 1.0e-15
+!           if (abs(xval) < tol) then
+!             
+!             if (xval >= 0) then 
+!               xval = tol
+!             endif 
+!   
+!             if (xval < 0) then
+!               xval = -tol
+!             endif
+!   
+!           endif 
           deriv = iright * xval**(iright - 1.0_PRhyd)
           
           res%x = qleft%x**iright
           res%dx1 = qleft%dx1 * deriv
           res%dx2 = qleft%dx2 * deriv
           res%dx1x2 = qleft%dx1x2 * deriv + iright * (iright - 1.0_PRhyd) * qleft%dx1 * qleft%dx2 * xval**(iright - 2.0_PRhyd)
+          
+          endif
         
         end function hdual_pow_dble
         
@@ -5439,18 +5486,25 @@ Module HDMod
             TYPE(hyperdual)             :: res
     
             xval = qleft%x 
-            tol = 1.0e-15
-            if (abs(xval) < tol) then
-              
-              if (xval >= 0) then 
-                xval = tol
-              endif 
-    
-              if (xval < 0) then
-                xval = -tol
-              endif
-    
-            endif 
+            if ((xval .eq. 0) .AND. (iright .lt. 1.)) then
+            	res%x = 0.d0
+            	res%dx1 = 0.d0
+            	res%dx2 = 0.d0
+            	res%dx1x2 = 0.d0
+            else
+            
+!             tol = 1.0e-15
+!             if (abs(xval) < tol) then
+!               
+!               if (xval >= 0) then 
+!                 xval = tol
+!               endif 
+!     
+!               if (xval < 0) then
+!                 xval = -tol
+!               endif
+!     
+!             endif 
             deriv = REAL(iright,PRhyd) * xval**(REAL(iright,PRhyd) - 1.0_PRhyd)
             
             res%x = qleft%x**REAL(iright,PRhyd)
@@ -5458,7 +5512,8 @@ Module HDMod
             res%dx2 = qleft%dx2 * deriv
             res%dx1x2 = qleft%dx1x2 * deriv + REAL(iright,PRhyd) * (REAL(iright,PRhyd) - 1.0_PRhyd) * &
                           qleft%dx1 * qleft%dx2 * xval**(REAL(iright,PRhyd) - 2.0_PRhyd)
-          
+            endif
+            
           end function hdual_pow_dble_SPRhyd
   
 
@@ -5473,24 +5528,32 @@ Module HDMod
           TYPE(hyperdual)             :: res
   
           xval = qleft%x 
-          tol = 1.0e-15
-          if (abs(xval) < tol) then
-            
-            if (xval >= 0) then 
-              xval = tol
-            endif 
-  
-            if (xval < 0) then
-              xval = -tol
-            endif
-  
-          endif 
+          if ((xval .eq. 0) .AND. (iright .lt. 1.)) then
+            res%x = 0.d0
+            res%dx1 = 0.d0
+            res%dx2 = 0.d0
+            res%dx1x2 = 0.d0
+        else
+!           tol = 1.0e-15
+!           if (abs(xval) < tol) then
+!             
+!             if (xval >= 0) then 
+!               xval = tol
+!             endif 
+!   
+!             if (xval < 0) then
+!               xval = -tol
+!             endif
+!   
+!           endif 
           deriv = iright * xval**(iright - 1.0_PRhyd)
           
           res%x = qleft%x**iright
           res%dx1 = qleft%dx1 * deriv
           res%dx2 = qleft%dx2 * deriv
           res%dx1x2 = qleft%dx1x2 * deriv + iright * (iright - 1.0_PRhyd) * qleft%dx1 * qleft%dx2 * xval**(iright - 2.0_PRhyd)
+          
+          endif
   
         end function hdual_pow_int
           
@@ -5498,11 +5561,42 @@ Module HDMod
         function dble_pow_hdual(xleft, qright) result(res) 
             
             implicit none
-            real(PRhyd), intent(in)        :: xleft
-            TYPE(hyperdual), intent(in) :: qright
-            TYPE(hyperdual)             :: res
+            real(PRhyd), intent(in)      :: xleft
+            TYPE(hyperdual), intent(in)  :: qright
+            TYPE(hyperdual)              :: res
+            REAL(PRhyd)                  :: tol
+            REAL(PRhyd)                  :: xval
   
-            res = hdexp(qright*log(xleft))
+!             res = hdexp(qright*log(xleft))
+ 			xval = xleft
+ 		   if ((xval .eq. 0) .AND. (qright%x .lt. 1.)) then
+            	res%x = 0.d0
+            	res%dx1 = 0.d0
+            	res%dx2 = 0.d0
+            	res%dx1x2 = 0.d0
+            else
+!           	tol = 1.0e-15
+!           	
+!           	if (abs(xval) < tol) then
+!             
+!             	if (xval >= 0) then 
+!               		xval = tol
+!             	endif 
+!   
+!             	if (xval < 0) then
+!               		xval = -tol
+!             	endif
+!   
+!           	endif 
+
+		    res%x = xval ** qright%x
+		    res%dx1 = qright%dx1 * xval ** qright%x * log(xval)
+			res%dx2 = qright%dx2 * xval ** qright%x * log(xval)
+			res%dx1x2 = qright%dx1 * qright%dx2 * xval ** qright%x * log(xval) ** 2.0_PRhyd + & 
+						qright%dx1x2 * xval ** qright%x * log(xval)    
+			
+			endif
+		
   
         end function dble_pow_hdual
   
@@ -5713,7 +5807,7 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: q2
             TYPE(hyperdual)             :: q_out
   
-            if (q1 .GE. q2) then
+            if (q1%x .GE. q2%x) then
               q_out = q1
             else
               q_out = q2
@@ -5729,7 +5823,7 @@ Module HDMod
             real(PRhyd), intent(in)     :: x2
             TYPE(hyperdual)             :: q_out
   
-            if (q1%x .GE. x2) then
+            if (q1%x .GT. x2) then
               q_out = q1
             else
               q_out%x = x2
@@ -5748,7 +5842,7 @@ Module HDMod
               real(SPRhyd), intent(in)    :: x2
               TYPE(hyperdual)             :: q_out
     
-              if (q1 .GE. REAL(x2,PRhyd)) then
+              if (q1%x .GT. REAL(x2,PRhyd)) then
                 q_out = q1
               else
                 q_out%x = REAL(x2,PRhyd)
@@ -5807,7 +5901,7 @@ Module HDMod
             Integer                                            :: I
   
             do I = 1, size(q1)
-              if (q1(I)%x .GE. x1) then
+              if (q1(I)%x .GT. x1) then
                 q_out(I) = q1(I)
               else
                 q_out(I)%x = x1
@@ -5830,7 +5924,7 @@ Module HDMod
   
             do I = 1, size(q1,1)
               do J = 1, size(q1, 2)
-                if (q1(I,J)%x .GE. x1) then
+                if (q1(I,J)%x .GT. x1) then
                   q_out(I,J) = q1(I,J)
                 else
                   q_out(I,J)%x = x1
@@ -5854,7 +5948,7 @@ Module HDMod
   
             do I = 1, size(q1,1)
               do J = 1, size(q1, 2)
-                if (q1(I,J)%x .GE. REAL(x1,PRhyd)) then
+                if (q1(I,J)%x .GT. REAL(x1,PRhyd)) then
                   q_out(I,J) = q1(I,J)
                 else
                   q_out(I,J)%x = REAL(x1,PRhyd)
@@ -5879,7 +5973,7 @@ Module HDMod
             do I = 1, size(q1,1)
               do J = 1, size(q1, 2)
                 do K = 1, size(q1, 3)
-                  if (q1(I,J,K)%x .GE. x1) then
+                  if (q1(I,J,K)%x .GT. x1) then
                     q_out(I,J,K) = q1(I,J,K)
                   else
                     q_out(I,J,K)%x = x1
@@ -5905,7 +5999,7 @@ Module HDMod
             do I = 1, size(q1,1)
               do J = 1, size(q1, 2)
                 do K = 1, size(q1, 3)
-                  if (q1(I,J,K)%x .GE. REAL(x1,PRhyd)) then
+                  if (q1(I,J,K)%x .GT. REAL(x1,PRhyd)) then
                     q_out(I,J,K) = q1(I,J,K)
                   else
                     q_out(I,J,K)%x = REAL(x1,PRhyd)
@@ -5935,7 +6029,7 @@ Module HDMod
               do J = 1,size(q1, 2)
                 do K = 1,size(q1, 3)
                   do L = 1,size(q1, 4)
-                    if (q1(I,J,K,L)%x .GE. x1) then
+                    if (q1(I,J,K,L)%x .GT. x1) then
                       q_out(I,J,K,L) = q1(I,J,K,L)
                     else
                       q_out(I,J,K,L)%x = x1
@@ -5966,7 +6060,7 @@ Module HDMod
               do J = 1,size(q1, 2)
                 do K = 1,size(q1, 3)
                   do L = 1,size(q1, 4)
-                    if (q1(I,J,K,L)%x .GE. x1) then
+                    if (q1(I,J,K,L)%x .GT. x1) then
                       q_out(I,J,K,L) = q1(I,J,K,L)
                     else
                       q_out(I,J,K,L)%x = REAL(x1,PRhyd)
@@ -6047,7 +6141,7 @@ Module HDMod
             real(PRhyd), intent(in)        :: x2
             TYPE(hyperdual)             :: q_out
   
-            if (q1%x .LE. x2) then
+            if (q1%x .LT. x2) then
               q_out = q1
             else
               q_out%x = x2
@@ -6066,7 +6160,7 @@ Module HDMod
             real(SPRhyd), intent(in)        :: x2
             TYPE(hyperdual)             :: q_out
   
-            if (q1%x .LE. REAL(x2,PRhyd)) then
+            if (q1%x .LT. REAL(x2,PRhyd)) then
               q_out = q1
             else
               q_out%x = REAL(x2,PRhyd)
@@ -6124,11 +6218,11 @@ Module HDMod
           
           q_out = q1
 
-          if  (q2 < q_out) then
+          if  (q2 .LT. q_out) then
             q_out = q2
           endif
 
-          if (q3 < q_out) then
+          if (q3 .LT. q_out) then
             q_out = q3
           endif
           
@@ -6143,15 +6237,15 @@ Module HDMod
 
             q_out = q1
           
-            if  (q2 < q_out) then
+            if  (q2 .LT. q_out) then
               q_out = q2
             endif
   
-            if (q3 < q_out) then
+            if (q3 .LT. q_out) then
               q_out = q3
             endif
 
-            if (q4 < q_out) then
+            if (q4 .LT. q_out) then
               q_out = q4
             endif
             
@@ -6167,19 +6261,19 @@ Module HDMod
 
             q_out = q1
           
-            if  (q2 < q_out) then
+            if  (q2 .LT. q_out) then
               q_out = q2
             endif
   
-            if (q3 < q_out) then
+            if (q3 .LT. q_out) then
               q_out = q3
             endif
 
-            if (q4 < q_out) then
+            if (q4 .LT. q_out) then
               q_out = q4
             endif
 
-            if (q5 < q_out) then
+            if (q5 .LT. q_out) then
               q_out = q5
             endif
             
