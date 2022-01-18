@@ -10354,7 +10354,7 @@ c #endif
 !=======================================================================
 !
       SUBROUTINE ISOROPIA (WI_IN, RHI_IN, TEMPI_IN,  CNTRL,
-     &                     WT, GAS, AERLIQ, AERSLD, SCASI, OTHER)
+     &                     WT, GAS, AERLIQ, AERSLD, SCASI, OTHER, COL, ROW, LAYER)
       ! Input parameters
 	  use HDMod 
 	  implicit none
@@ -10362,7 +10362,7 @@ c #endif
       type(hyperdual) :: WI_IN(NCOMP)
       REAL(kind=fp) :: RHI_IN
       REAL(kind=fp) :: TEMPI_IN
-      REAL :: Cntrl(NCtrl) ! Tried integer, no luck?
+      REAL( 8 ) :: Cntrl(NCtrl) ! Tried integer, no luck?
       ! complex(PR) :: a,b
       ! Output
       type(hyperdual) :: WT(NCOMP)
@@ -10371,6 +10371,7 @@ c #endif
       type(hyperdual) :: AerSld(NSlds)
       CHARACTER(Len=15) :: SCASI
       type(hyperdual) :: Other(NOther)
+      INTEGER :: COL, ROW, LAYER
 
       ! Intermediate variables
       Integer         :: I
@@ -10397,13 +10398,13 @@ c #endif
 ! *** SOLVE FOREWARD PROBLEM ********************************************
 !
 50    IF (IPROB.eq.0) THEN
-         IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN                                                 !Everything=0
+         IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE.  3.37d-15) THEN                                                 !Everything=0
             CALL INIT1 (WI, RHI, TEMPI)
-         ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN !Ca,K,Mg,Na,Cl,NO3=0
+         ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. 2.2393d-15) THEN !Ca,K,Mg,Na,Cl,NO3=0
             CALL ISRP1F (WI, RHI, TEMPI)
-         ELSE IF (WI(1)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN       !Ca,K,Mg,Na,Cl=0
+         ELSE IF (WI(1)+WI(5)+WI(6)+WI(7)+WI(8) .LE. 1.16193d-15) THEN       !Ca,K,Mg,Na,Cl=0
             CALL ISRP2F (WI, RHI, TEMPI)
-         ELSE IF (WI(6)+WI(7)+WI(8) .LE. TINY) THEN                   !Ca,K,Mg=0
+         ELSE IF (WI(6)+WI(7)+WI(8) .LE. 1.0349d-15) THEN                   !Ca,K,Mg=0
             CALL ISRP3F (WI, RHI, TEMPI)
          ELSE
             CALL ISRP4F (WI, RHI, TEMPI)
@@ -10419,16 +10420,16 @@ C           STOP
 !
       ELSE
 
-         IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN                                                 !Everything=0
+         IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. 3.37d-15) THEN                                                 !Everything=0
             CALL INIT1 (WI, RHI, TEMPI)
-         ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN !Ca,K,Mg,Na,Cl,NO3=0
+         ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. 2.2393d-15) THEN !Ca,K,Mg,Na,Cl,NO3=0
             CALL ISRP1R (WI, RHI, TEMPI)
-         ELSE IF (WI(1)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN       !Ca,K,Mg,Na,Cl=0
+         ELSE IF (WI(1)+WI(5)+WI(6)+WI(7)+WI(8) .LE. 1.16193d-15) THEN       !Ca,K,Mg,Na,Cl=0
             CALL ISRP2R (WI, RHI, TEMPI)
-         ELSE IF (WI(6)+WI(7)+WI(8) .LE. TINY) THEN                  !Ca,K,Mg=0
+         ELSE IF (WI(6)+WI(7)+WI(8) .LE. 1.0349d-15) THEN                  !Ca,K,Mg=0
             CALL ISRP3R (WI, RHI, TEMPI)
          ELSE
-            CALL ISRP4R (WI, RHI, TEMPI)
+            CALL ISRP4R (WI, RHI, TEMPI, COL, ROW, LAYER)
          ENDIF
       ENDIF
 !
@@ -14439,8 +14440,10 @@ C           STOP
       ! The pre-v22 code incorrectly forces the most complex calculation under
       ! all circumstances; kept for legacy reasons
 ! #if defined( ISORROPIA_V22 )
-	use HDMod 
-	implicit none 
+	  use HDMod 
+	  implicit none 
+	  
+	  IF (IPROB.eq.0) THEN 
       IF (W(1)+W(4)+W(5)+W(6)+W(7)+W(8) .LE. (6.d0*TINY)) THEN     !Ca,K,Mg,Na,Cl,NO3=0
             CALL CALCACT1
          ELSE IF (W(1)+W(5)+W(6)+W(7)+W(8) .LE. (5.d0*TINY)) THEN   !Ca,K,Mg,Na,Cl=0
@@ -14449,6 +14452,20 @@ C           STOP
             CALL CALCACT3
          ELSE
             CALL CALCACT4
+      ENDIF
+      
+      ELSE
+      
+      IF (WAER(1)+WAER(4)+WAER(5)+WAER(6)+WAER(7)+WAER(8) .LE. (6.d0*TINY)) THEN     !Ca,K,Mg,Na,Cl,NO3=0
+            CALL CALCACT1
+         ELSE IF (WAER(1)+WAER(5)+WAER(6)+WAER(7)+WAER(8) .LE. (5.d0*TINY)) THEN   !Ca,K,Mg,Na,Cl=0
+            CALL CALCACT2
+         ELSE IF (WAER(6)+WAER(7)+WAER(8) .LE. (3.d0*TINY)) THEN              !Ca,K,Mg=0
+            CALL CALCACT3
+         ELSE
+            CALL CALCACT4
+      ENDIF      
+      
       ENDIF
 ! #else
 !       IF (W(1)+W(4)+W(5)+W(6)+W(7)+W(8) .LE. TINY) THEN     !Ca,K,Mg,Na,Cl,NO3=0
@@ -15150,6 +15167,7 @@ C        ENDIF
          IONIC=IONIC + MOLAL(I)*Z(I)*Z(I)
 30    CONTINUE
       IONIC = MAX(MIN(0.5_PRhyd*IONIC/WATER,100.d0), TINY)
+      
 !
 ! *** CALCULATE BINARY ACTIVITY COEFFICIENTS ***************************
 !
@@ -17901,7 +17919,7 @@ C  *** CALCULATE RATIOS *************************************************
  !
        IF(METSTBL.eq.1) THEN
          SCASE = 'L9'
-C        CALL CALCL9                ! Only liquid (metastable)
+         CALL CALCL9                ! Only liquid (metastable)
        ELSE
  !
          IF (RH.LT.DRNH4HS4) THEN
@@ -17951,7 +17969,7 @@ C        CALL CALCL9                ! Only liquid (metastable)
  !
        IF(METSTBL.eq.1) THEN
          SCASE = 'K4'
-C        CALL CALCK4                 ! Only liquid (metastable)
+         CALL CALCK4                 ! Only liquid (metastable)
        ELSE
  !
          IF (RH.LT.DRNH4HS4) THEN                   ! RH < 0.4
@@ -24912,7 +24930,6 @@ C        CALL CALCK4                 ! Only liquid (metastable)
 !
       WATER  = CHI2/M0(4) + CHI1/M0(2) + CHI7/M0(17) + CHI8/M0(21)
       WATER  = MAX (WATER , TINY)
-C     WATER = TINY
 !
 ! *** INITIAL VALUES FOR BISECTION ************************************
 !
@@ -24946,16 +24963,7 @@ C     WATER = TINY
 20    DO 30 I=1,MAXIT
          X3 = 0.5*(X1+X2)
          CALL RSTGAMP ! Reinitialize activity coefficients (SLC C2012-01-01)
-         Y3 = FUNCO7 (X3) 
-         
-C        IF (I .EQ. 1) THEN
-C        	Y3_before = hyperdual(Y3%x, Y3%dx1, Y3%dx2, Y3%dx1x2)
-C        ENDIF
-C        
-C        IF (Y3%dx1x2 .GT. 1.d4) THEN
-C        	Y3 = hyperdual(Y3%x, Y3_before%dx1, Y3_before%dx2, Y3_before%dx1x2)
-C        ENDIF
-         
+         Y3 = FUNCO7 (X3)          
          IF (SIGN(ONE,Y1)*SIGN(ONE,Y3) .LE. ZERO) THEN  ! (Y1*Y3 .LE. ZERO)
             Y2    = Y3
             X2    = X3
@@ -25044,22 +25052,7 @@ C        ENDIF
       
       A5  = XK4 *R*TEMP*(WATER/GAMA(10))**2.0_PRhyd
       
-      A6  = XK3 *R*TEMP*(WATER/GAMA(11))**2.0_PRhyd         
-	  
-	  IF (ABS(A5%x) < 1E-25) THEN
-	  	A5%dx1 = 0.d0
-	  	A5%dx2 = 0.d0
-	  	A5%dx1x2 = 0.d0
-	  ENDIF 
-	  
-	  IF (ABS(A6%x) < 1E-25) THEN
-	  	A6%dx1 = 0.d0
-	  	A6%dx2 = 0.d0
-	  	A6%dx1x2 = 0.d0
-	  ENDIF
-	  
-C  IF (ABS(A5%dx1x2) > 1d6 * ABS(A5%x) ) THEN
-C  	
+      A6  = XK3 *R*TEMP*(WATER/GAMA(11))**2.0_PRhyd  
 	  	  
       IF (CHI5.GE.TINY) THEN
          PSI5 = PSI6*CHI5/(A6/A5*(CHI6-PSI6) + PSI6)
@@ -34834,10 +34827,6 @@ C     A6%dx1x2 = 0.d0
       DO 10 I=1,NSWEEP
 !
 	  A9 = XK1 *WATER/GAMA(7)*(GAMA(8)/GAMA(7))**2.0_PRhyd
-C     A9%x = XK1 *WATER%x/GAMA(7)%x*(GAMA(8)%x/GAMA(7)%x)**2.0_PRhyd
-C     A9%dx1 = 0.d0
-C     A9%dx2 = 0.d0
-C     A9%dx1x2 = 0.d0
 !
 !  CALCULATE DISSOCIATION QUANTITIES
 !
@@ -38063,8 +38052,8 @@ C     A4%dx1x2 = 0.d0
       End Function Funck1
 
       Subroutine Init_IsoData()
-	use HDMod 
-	implicit none 
+	  use HDMod 
+	  implicit none 
       Integer :: I
       
       Temp      = 298.0_PRhyd
@@ -38636,7 +38625,6 @@ C
       
       type(hyperdual) :: WI(NCOMP)
       REAL(kind=fp) :: RHI, TEMPI
-      type(hyperdual) :: DC
       ! DIMENSION WI(NCOMP)
 C
 C *** INITIALIZE COMMON BLOCK VARIABLES *********************************
@@ -39148,13 +39136,14 @@ C *** UPDATE|ADJOINT BY SHANNON CAPPS
 C
 C=======================================================================
 C
-      SUBROUTINE ISRP4R (WI, RHI, TEMPI)
+      SUBROUTINE ISRP4R (WI, RHI, TEMPI, COL, ROW, LAYER)
       type(hyperdual) :: WI(NCOMP)
       REAL(kind=fp) :: RHI, TEMPI
       TYPE(hyperdual) :: FRSO4, SRI
       INTEGER         :: I
       ! DIMENSION WI(NCOMP)
       LOGICAL   TRYLIQ
+      INTEGER         :: COL, ROW, LAYER
 ccC
 ccC *** ADJUST FOR TOO LITTLE AMMONIUM AND CHLORIDE ***********************
 ccC
@@ -39286,7 +39275,8 @@ C
 C
         IF(METSTBL.EQ.1) THEN
          SCASE = 'W13'
-         CALL CALCW13                 ! Only liquid (metastable)
+         CALL CALCW13(COL, ROW, LAYER)                 ! Only liquid (metastable)
+C        CALL CALCL9
         ELSE
 C
            IF (RH.LT.DRCACL2) THEN
@@ -39344,7 +39334,7 @@ C
 C
            ELSEIF (DRK2SO4.LE.RH) THEN
              SCASE = 'W13'
-             CALL CALCW13            ! CaSO4
+             CALL CALCW13(COL, ROW, LAYER)            ! CaSO4
            ENDIF
          ENDIF
 C        CALL CALCNH3
@@ -46773,7 +46763,7 @@ C *** UPDATE|ADJOINT BY SHANNON CAPPS
 C
 C=======================================================================
 C
-      SUBROUTINE CALCW13
+      SUBROUTINE CALCW13(COL, ROW, LAYER)
 
       USE HDMod
       implicit none
@@ -46782,6 +46772,7 @@ C
       TYPE(hyperdual) :: AKW, HSO4I, SO4I, CLI, GG, KCL
       TYPE(hyperdual) :: BB, CC, DD, HI, OHI, DEL, A2, A3, A4
       INTEGER         :: ISLV, I
+      INTEGER         :: COL, ROW, LAYER
 C
 !       COMMON /SOLUT/ CHI1, CHI2, CHI3, CHI4, CHI5, CHI6, CHI7, CHI8,
 !      &               CHI9, CHI10, CHI11, CHI12, CHI13, CHI14, CHI15,
@@ -46839,6 +46830,11 @@ C
       CAI    = ZERO
       KI     = WAER(7)
       MGI    = WAER(8)
+      
+      
+C     IF (I .EQ. 1) THEN
+C     		NH4I   = NH4I + hyperdual(0.d0, 1.d-3, 1.d-3, 0.d0)
+C     ENDIF
 C
 C SOLUTION ACIDIC OR BASIC?
 C
@@ -46876,7 +46872,7 @@ C         ENDIF
 C
 C CONCENTRATION ADJUSTMENTS ; HSO4 minor species.
 C
-         CALL CALCHS4(HI, SO4I, ZERO_HD, DEL)
+         CALL CALCHS4(HI, SO4I, ZERO_HD, DEL) 
       else
         del= zero
       ENDIF
@@ -46903,6 +46899,9 @@ C
       MOLAL(8) = CAI
       MOLAL(9) = KI
       MOLAL(10)= MGI
+      
+          
+      
 C
 C *** CALCULATE ACTIVITIES OR TERMINATE INTERNAL LOOP *****************
 C
@@ -46922,12 +46921,12 @@ C
 C
       GNH3    = NH4I/HI/A2
       GHNO3   = HI*NO3I/A3
-      GHCL    = HI*CLI /A4
-C
+      GHCL    = HI*CLI/A4
+      
       GASAQ(1)= NH3AQ
       GASAQ(2)= CLAQ
       GASAQ(3)= NO3AQ
-C
+      
       CNH42S4 = ZERO
       CNH4NO3 = ZERO
       CNH4CL  = ZERO

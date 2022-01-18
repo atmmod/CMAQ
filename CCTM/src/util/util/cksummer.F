@@ -96,8 +96,9 @@ C Local variables:
       TYPE(hyperdual) :: DBL_CKSUM
       TYPE(hyperdual) :: GC_CKSUM, AE_CKSUM, NR_CKSUM, TR_CKSUM
       ! Sum by species
-      TYPE(hyperdual) :: AE_CKSUM_SPECIES_DX2( 86 )
-      TYPE(hyperdual) :: AE_CKSUM_SPECIES_DX1X2( 86 )
+      REAL( 8 ) :: AE_CKSUM_SPECIES_DX2( 86 )
+      REAL( 8 ) :: AE_CKSUM_SPECIES_DX1X2( 86 )
+      REAL( 8 ), ALLOCATABLE :: CGRID_DX1X2(:,:,:,:)
 
       
       REAL, SAVE :: LCELLS
@@ -111,6 +112,7 @@ C-----------------------------------------------------------------------
          FIRSTIME = .FALSE.
 
          LCELLS = FLOAT( NCOLS * NROWS * NLAYS )
+         ALLOCATE(CGRID_DX1X2( SIZE(CGRID,1) , SIZE(CGRID, 2), SIZE(CGRID,3), SIZE(CGRID,4) ))
          DEVNAME = PRESTR // CMYPE // '.' // TRIM( APPL_NAME )
       END IF
 
@@ -267,6 +269,10 @@ C-----------------------------------------------------------------------
          GC_CKSUM = SUM( CGRID( :,:,:,GC_STRT : ( GC_STRT - 1 + N_GC_SPC ) ) ) 
          AE_CKSUM = SUM( CGRID( :,:,:,AE_STRT : ( AE_STRT - 1 + N_AE_SPC ) ) ) 
          NR_CKSUM = SUM( CGRID( :,:,:,NR_STRT : ( NR_STRT - 1 + N_NR_SPC ) ) ) 
+         
+
+         CGRID_DX1X2 = CGRID(:, :, :, :)%dx1x2
+         
          
          AE_CKSUM_SPECIES_DX2( : ) = SUM( SUM( SUM( CGRID(:, :, :, AE_STRT : (AE_STRT - 1 + N_AE_SPC))%dx2, 1  ), 1), 1 ) 
          AE_CKSUM_SPECIES_DX1X2( : ) = SUM ( SUM( SUM( CGRID(:, :, :, AE_STRT : (AE_STRT - 1 + N_AE_SPC))%dx1x2, 1  ) , 1 ), 1 ) 

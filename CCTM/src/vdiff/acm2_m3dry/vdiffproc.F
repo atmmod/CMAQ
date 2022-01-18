@@ -418,7 +418,7 @@ C read & interpolate deposition velocities
 C Get gravitational settling velocity for the vsed aero species:
 C AERO_SEDV assumes that every aero species is dry deposited and is diffused (trns)
 C Calculate the changes in the layer J-,K-mode aerosol concentrations
-         CALL SEDI( MDATE, MTIME, DTSEC, VSED_AE, CGRID, CNGRD )
+          CALL SEDI( MDATE, MTIME, DTSEC, VSED_AE, CGRID, CNGRD )
       END IF
 
 C read & interpolate emissions data => VDEMIS_DIFF from EMIS_DEFN module
@@ -461,7 +461,7 @@ C EDDYV returned = Kz, where Kz is in m**2/sec
 C Calculate the change in concentration and dry dep from vertical diffusion and vsed
 C Note: cngrd is the argument keyword (from the INTERFACE); CNGRD is the actual argument
 
-      CALL VDIFFACMX( DTSEC, SEDDY, DDEP, ICMP, CNGRD )
+       CALL VDIFFACMX( DTSEC, SEDDY, DDEP, ICMP, CNGRD )
 
       IF ( VDIFFDIAG ) THEN
          NTICS = NTICS + 1

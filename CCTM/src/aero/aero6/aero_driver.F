@@ -272,6 +272,7 @@ C *** Coefficients for the equation, ESATL defining saturation vapor pressure
       CHARACTER( 16 ) :: AVG_FILE_ENDTIME = 'AVG_FILE_ENDTIME'
 
       TYPE(hyperdual), ALLOCATABLE, SAVE :: TEMP_DATA(:)
+      TYPE(hyperdual), parameter :: PERT_HYPERDUAL = hyperdual(0.0D0, 1.D-3, 1.D-3, 0.0D0)
 
 C *** values of AL, BL, and CL are from:
 C     Alduchov and Eskridge, "Improved Magnus Form Approximations of
@@ -389,11 +390,13 @@ C --------------------- Begin loops over grid cells --------------------------
 C *** initialize conc arrays
 
       N_APMDIAG_STEP = N_APMDIAG_STEP + 1
-
+      
+C     CGRID(:,:,:,213) = CGRID(:,:,:,213) + PERT_HYPERDUAL
       DO L = 1, NLAYS
          DO R = 1, NROWS
             DO C = 1, NCOLS
-
+			   
+			   
 C *** Grid cell meteorological data.
                AIRTEMP  = TA   ( C,R,L )
                AIRPRES  = PRES ( C,R,L )   ! Note pascals
@@ -437,7 +440,7 @@ C *** Extract soa concentrations from CGRID and
 C     convert M2 to wet
                CALL EXTRACT_SOA( CGRID( C,R,L,: ) )
 
-                              
+               
 C *** Aerosol process routines
                CALL AEROPROC( DT, C, R, L )
                              			   
@@ -454,22 +457,7 @@ C *** Update precursor variables conc back into CGRID
 
 C *** Update gas soa concentrations back to CGRID
                CALL UPDATE_ORGVAPOR( CGRID( C,R,L,: ) )
-               
-C              IF (C .EQ. 34) THEN
-C              IF (R .EQ. 34) THEN
-C              IF (L .EQ. 34) THEN
-C              	WRITE(*,*) 'VLVOO1, x, row 34, layer 34'
-C              	WRITE(*,*) REAL(CGRID(:,34,34,113)%x,4)
-C              	WRITE(*,*) 'VLVOO1, x, row 34, layer 2'
-C              	WRITE(*,*) REAL(CGRID(:,34,2,113)%x, 4)
-C              	WRITE(*,*) 'CAER(:)'
-C              	WRITE(*,*) REAL(caer%x, 4)
-C              	WRITE(*,*) 'CTOTF(:)'
-C              	WRITE(*,*) REAL(ctotf%x, 4)
-C              ENDIF
-C              ENDIF
-C              ENDIF               
-
+                           
 C *** OUTPUT DIAGNOSTIC INFORMATION
 C *** Get wet moment info (dry will be converted to wet)
                CALL calcmoments( .true. )
@@ -588,7 +576,10 @@ C *** Accumulate wet diameters, 2nd, and 3rd moments to average aerosol diagnost
             END DO ! loop on COLS
          END DO ! loop on ROWS
       END DO ! loop on NLAYS
-
+            
+C  	  CGRID(:,:,:,:)%dx1 = 0.d0
+C     CGRID(:,:,:,:)%dx2 = 0.d0
+C     CGRID(:,:,:,:)%dx1x2 = 0.d0
 C *** From AEROPROC call to ORGAER...
 !     If ( pfc .gt. 0 ) Then
 !        Write( xmsg,'(a,i8)' ) 'possible false convergences in soa bisection:', pfc

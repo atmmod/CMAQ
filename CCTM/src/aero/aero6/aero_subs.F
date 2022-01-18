@@ -322,7 +322,6 @@ C     where beta = 1.458e-6 [ kg sec^-1 K**-0.5 ], s = 110.4 [ K ].
 C *** Set minimums for coarse mode
       MOMENT0_CONC( N_MODE ) = MAX( AEROMODE_MINNUM( N_MODE ),
      &                              MOMENT0_CONC( N_MODE ) )
-	  
 
 C *** Secondary Organics
 C     Update the secondary organic aerosol (SOA) mass concentrations
@@ -348,7 +347,6 @@ C *** Update size parameters (distribution is wet from ORGAER)
 ! *** Mass transfer of inorganic constituents      
 ! *** Process Budget is calculated inside this routine because NPF and
 ! *** condensation are calculated simultaneously
-!     Turned off by J.E.L. 
       CALL VOLINORG( DT, COL, ROW, LAYER, DV_SO4, CGR )
 
 ! *** Coagulation
@@ -467,7 +465,7 @@ C     Note: LOSS is assumed to be non-negative.
       END IF ! test on loss
 
 C *** Transfer new value of M2_Aitken to the array
-       MOMENT2_CONC( 1 ) = MAX( AEROMODE_MINM2( 1 ), Y )
+      MOMENT2_CONC( 1 ) = MAX( AEROMODE_MINM2( 1 ), Y )
 
 C *** Accumulation mode: initial value of M2
       M20 = MOMENT2_CONC( 2 )
@@ -582,7 +580,7 @@ C     intermodal coagulation.
  
          TMASS = AEROSPC_CONC( SPC,1 ) + AEROSPC_CONC( SPC,2 )
          IF( SPC .EQ. APHGJ_IDX  )THEN 
- ! assumes all production adsorb onto accumulation mode
+! assumes all production adsorb onto accumulation mode
              TMASS = TMASS + PHG_RATE * DT
          END IF
 
@@ -654,15 +652,15 @@ C *** Factors used in error function calls for M2 and M3 mode merging
 
 C *** Calculate the fractions of the number, 2nd, and 3rd moment
 C     distributions with diameter greater than the intersection diameter
-         FNUM  = 0.5 * HDERFC( XNUM )            ! Eq 10a of B&R 2003
-         FM2   = 0.5 * HDERFC( XM2 )             ! Eq 10b of B&R 2003
-         FM3   = 0.5 * HDERFC( XM3 )             ! Eq 10b of B&R 2003
+         FNUM  = 0.5 * ERFC( XNUM )            ! Eq 10a of B&R 2003
+         FM2   = 0.5 * ERFC( XM2 )             ! Eq 10b of B&R 2003
+         FM3   = 0.5 * ERFC( XM3 )             ! Eq 10b of B&R 2003
 
 C *** Calculate the fractions of the number, 2nd, and 3rd moment
 C     distributions with diameters less than the intersection diameter.
-         PHNUM = 0.5 * ( 1.0 + HDERF( XNUM ) )  ! Eq 10c of B&R 2003
-         PHM2  = 0.5 * ( 1.0 + HDERF( XM2 ) )   ! Eq 10d of B&R 2003
-         PHM3  = 0.5 * ( 1.0 + HDERF( XM3 ) )   ! Eq 10d of B&R 2003
+         PHNUM = 0.5 * ( 1.0 + ERF( XNUM ) )  ! Eq 10c of B&R 2003
+         PHM2  = 0.5 * ( 1.0 + ERF( XM2 ) )   ! Eq 10d of B&R 2003
+         PHM3  = 0.5 * ( 1.0 + ERF( XM3 ) )   ! Eq 10d of B&R 2003
 
 C *** Update accumulation-mode moment concentrations using
 C     Equations 11a - 11c of Binkowski and Roselle (2003).
@@ -675,13 +673,13 @@ C     Equations 11d - 11f of Binkowski and Roselle (2003).
          MOMENT0_CONC( 1 ) = MOMENT0_CONC( 1 ) * PHNUM
          MOMENT2_CONC( 1 ) = MOMENT2_CONC( 1 ) * PHM2
          MOMENT3_CONC( 1 ) = MOMENT3_CONC( 1 ) * PHM3
-
+ 
 C *** Rename masses of each species from Aitken mode to acumulation mode
 C     using Equation 11b of Binkowski and Roselle (2003). Do this for
 C     all species, even the aerosol water.
          DO SPC = 1, N_AEROSPC
             IF ( AERO_MISSING(SPC,1) ) CYCLE
- 
+
             AEROSPC_CONC( SPC,2 ) = AEROSPC_CONC( SPC,2 ) + AEROSPC_CONC( SPC,1 ) * FM3
             AEROSPC_CONC( SPC,1 ) = AEROSPC_CONC( SPC,1 ) * PHM3
          END DO
@@ -777,13 +775,13 @@ C 3. Fountoukis C, Nenes, A (2007) ISORROPIA II: a comnputationally efficient
 C    thermodynamic equilibrium model for K+-Ca2+-Mg2+-NH4+-SO42--NO3--Cl-H2O 
 C    aerosols. ATMOSPHERIC CHEMISTRY AND PHYSICS. 7, 4639-4659
 
-       USE AERO_DATA
-       USE PRECURSOR_DATA
-       USE SOA_DEFN
-       USE AEROMET_DATA
-       USE UTILIO_DEFN
-	 USE HDMod 
-   	 USE ISORROPIAII_MAIN_MOD, ONLY : ISOROPIA
+      USE AERO_DATA
+      USE PRECURSOR_DATA
+      USE SOA_DEFN
+      USE AEROMET_DATA
+      USE UTILIO_DEFN
+	  USE HDMod 
+   	  USE ISORROPIAII_MAIN_MOD, ONLY : ISOROPIA
 	  
       IMPLICIT NONE
 
@@ -845,7 +843,7 @@ C     defined in Equations A17-A18 of [Binkowski & Shankar,1995]
       TYPE(hyperdual) :: TOTAER( NINORG )! Total aerosol component across multiple modes 
 
 C *** Variables for new particle formation:
-      TYPE(hyperdual) :: XH2SO4            ! steady state H2SO4 concentration
+      TYPE(hyperdual) :: XH2SO4    ! steady state H2SO4 concentration
       TYPE(hyperdual) :: DMDT_SO4  ! particle mass production rate [ ug/m**3 s ]
       TYPE(hyperdual) :: DNDT      ! particle number production rate [ # / m**3 s ]
       TYPE(hyperdual) :: DM2DT     ! second moment production rate [ m**2 / m**3 s]
@@ -863,7 +861,7 @@ C *** ISORROPIA input variables
       TYPE(hyperdual) :: WI( NINORG - 1 )     ! species array [ mol/m**3 ]
       REAL( 8 ) :: RHI                  ! relative humidity [ fraction ]
       REAL( 8 ) :: TEMPI                ! temperature   [ deg K]
-      REAL :: CNTRL( 2 )           ! ISOROPIA control parameters 
+      REAL( 8 ) :: CNTRL( 2 )           ! ISOROPIA control parameters 
 
 C *** ISORROPIA output variables
       TYPE(hyperdual) :: WT( NINORG - 1 )     ! species output array (unused)
@@ -886,7 +884,7 @@ C *** Initial (double-precision) concentrations [ug/m3]
 
 C *** Variables for volatile species mass transfer between gas and aerosol and
 C     mass partitioning between the modes 
-      LOGICAL, SAVE   :: HYBRID = .FALSE. ! mass transfer option flag (mass transfer if .TRUE.)
+      LOGICAL         HYBRID ! mass transfer option flag (mass transfer if .TRUE.)
       REAL( 8 )       :: DELT                 ! time step DT [s]
       TYPE(hyperdual) :: HPLUS( N_MODE )      ! scratch var for H+ [umol/m**3]
 
@@ -1039,11 +1037,12 @@ C *** Determine if Hybrid
          IF ( AEROSPC( I )%CHARGE .NE. 0 ) TMP = TMP + AEROSPC_CONC( I,N_MODE )
       END DO
       HYBRID = ( TMP .GE. CUTOFF ) .AND. ( AIRRH .GE. 0.18 )
+C     HYBRID = .false. 
 #endif
 
       DELT  = REAL( DT, 8 )
-      TEMPI = REAL( AIRTEMP, 8)             ! assume const within synch timestep
-      RHI   = MIN( 0.95D0, REAL( AIRRH , 8 ) )  ! "        "     "      "     "
+      TEMPI = REAL( AIRTEMP , 8 )             ! assume const within synch timestep
+      RHI   = MIN( 0.95D0, REAL ( AIRRH, 8 ) )  ! "        "     "      "     "
 
 C *** Calculate molecular velocities (temperature dependent) and
 C     H+ concentration
@@ -1066,7 +1065,7 @@ C     needed for the calculation of new particle production.  See
 C     Section 3.3 of Jiang & Roth (2003) for a detailed discussion.
 C    
 C *** Set moments using Equation 4 of Binkowski & Shankar
-C     (1995) or Equation 3 of Binkowaski and Roselle (2003).
+C     (1995) or Equation 3 of Binkowski and Roselle (2003).
 C     N.B: these are for a "wet" size distribution
 
       DO I = 1, N_MODE
@@ -1083,7 +1082,7 @@ C     Equations A13-A14 of Binkowski & Shankar (1995).
       DO I = 1, N_MODE
          CALL HCOND3( AM0( I ), AM1( I ), AM2( I ),
      &                DV_SO4, ALPHSULF, CBAR_SO4, FCONC_OUT )
-         FCONC_SO4( I, : ) = FCONC_OUT( : )  
+         FCONC_SO4( I, : ) = FCONC_OUT( : )
       END DO 
 
       IF ( .NOT. HYBRID ) THEN
@@ -1169,7 +1168,6 @@ C *** Growth values for mode merge condition
       CGR( 1 ) = SO4FAC * SCONDRATE%x * OMEGA_AT_SO4%x
       CGR( 2 ) = SO4FAC * SCONDRATE%x * OMEGA_AC_SO4%x
 
-
 ! *** Initialize Budget Counter Variables         
       CBUDGET0_NUM( : ) = MOMENT0_CONC( : )
       CBUDGET0_NUM( 1 ) = CBUDGET0_NUM( 1 ) + DNDT * DELT
@@ -1196,7 +1194,7 @@ C *** Growth values for mode merge condition
 
 C *** For Hybrid approach, calculate dynamic mass trasfer for
 C     semi-volatile components of coarse mode (NO3, CL, NH4)  
-
+	  
       IF ( HYBRID ) THEN 
 
          CNTRL( 1 ) = 1.0D0 ! reverse problem
@@ -1228,8 +1226,6 @@ C     Equations A13-A14 of Binkowski & Shankar (1995).
             CALL HCOND3( AM0( IMODE ), AM1( IMODE ), AM2( IMODE ), DV_SO4, ALPHSULF, 
      &                      CBAR_SO4, FCONC_OUT )  ! adapted from Eq A14
             FCONC_SO4( IMODE, : ) = FCONC_OUT( : )
-            !   FCONC_SO4( IMODE, 1 ) = FCONC_OUT( 1 )
-            !   FCONC_SO4( IMODE, 2 ) = FCONC_OUT( 2 )
 
             GRFAC1( IMODE ) = FCONC_SO4( IMODE,1 ) 
             GRFAC2( IMODE ) = FCONC_SO4( IMODE,2 ) 
@@ -1284,7 +1280,7 @@ C              at the gas/particle interface of coarse mode aerosol.
 C                 GAS(1) = NH3, GAS(2) = HNO3, GAS(3) = HCl
                WI( 1 ) = CINORG( KNA, IMODE ) * CFAC_ANA
                WI( 2 ) =                  SO4 * CFAC_ASO4
-               WI( 3 ) = CINORG( KNH4,IMODE ) * CFAC_ANH4
+               WI( 3 ) = CINORG( KNH4,IMODE ) * CFAC_ANH4               
                WI( 4 ) = CINORG( KNO3,IMODE ) * CFAC_ANO3
                WI( 5 ) = CINORG( KCL, IMODE ) * CFAC_ACL
                WI( 6 ) = CINORG( KCA, IMODE ) * CFAC_ACA
@@ -1302,7 +1298,7 @@ C              Also obtain the aqueous H+ concentration, AERLIQ(1) [mol/m3]
 #endif
 
                CALL ISOROPIA( WI, RHI, TEMPI, CNTRL, WT, GAS, AERLIQ,  
-     &                        AERSLD, SCASI, OTHER )
+     &                        AERSLD, SCASI, OTHER, COL, ROW, LAYER )
 
                IF ( GAS( 1 ) .LT. 0.0D0 .OR. GAS( 2 ) .LT. 0.0D0 .OR.
      &              GAS( 3 ) .LT. 0.0D0 ) THEN
@@ -1342,8 +1338,7 @@ C     than the minimum aerosol conc.
             IF ( TrustIso ) THEN
                CALL COMPUTE_FLUX( NVOLINORG, GNH3R8, GNO3R8, GCLR8, KNH4,
      &                            KNO3, KCL, GAS( 1:3 ), GRFAC2( IMODE ),
-     &                            AERLIQ( 1 ), RATE, J )
-     		   J( : ) = 0.0D0 
+     &                            AERLIQ( 1 ), RATE, J, COL, ROW, LAYER )
             ELSE
                J( : ) = 0.0D0
             END IF 
@@ -1371,7 +1366,7 @@ C *** Integrate mass transfer equation, convert flux from molar to mass
 
 C *** Calculate updated H+ concentration 
 
-            HPLUS( IMODE ) = 0.0D0
+            HPLUS( IMODE ) = 0.0
      &                     - AEROSPC( ASO4_IDX )%CHARGE * SO4                  / AEROSPC_MW( ASO4_IDX )
      &                     - AEROSPC( ANO3_IDX )%CHARGE * CFINAL( KNO3,IMODE ) / AEROSPC_MW( ANO3_IDX )
      &                     - AEROSPC( ACL_IDX )%CHARGE  * CFINAL( KCL, IMODE ) / AEROSPC_MW( ACL_IDX )
@@ -1392,7 +1387,7 @@ C *** Equilibrate aerosol LWC with CFINAL by calling CALC_H2O
             WI( 7 ) = CINORG( KK,  IMODE ) * CFAC_AK
             WI( 8 ) = CINORG( KMG, IMODE ) * CFAC_AMG
 
-            CALL CALC_H2O( WI, RHI, TEMPI, H2O_NEW )
+            CALL CALC_H2O( WI, RHI, TEMPI, H2O_NEW ) 
 
             H2O = H2O_NEW * DFH2OR8 
 
@@ -1497,11 +1492,20 @@ C *** Set flags to account for mass conservation violations in ISRP3F
       END IF
          
 #ifndef noiso
+       
       CALL ISOROPIA( WI, RHI, TEMPI, CNTRL, WT, GAS, AERLIQ,
-     &               AERSLD, SCASI, OTHER )
+     &               AERSLD, SCASI, OTHER, COL, ROW, LAYER )
+
 
 C *** Save H+ concentration information in microgram/m3 for consistency
       EQLBHIJ = AERLIQ(1) * 1.0D6 * AEROSPC_MW( ah3op_idx)
+
+C     gas( 1 ) = precursor_conc( nh3_idx ) * CFAC_GNH3
+C     gas( 2 ) = precursor_conc( hno3_idx) * CFAC_GHNO3
+C     gas( 3 ) = precursor_conc( hcl_idx ) * CFAC_GHCL
+C
+C     EQLBHIJ =  HPLUS( 1 ) + HPLUS( 2 )  ! use charge balance if lacking isoropia info 
+
 
 #else
       gas( 1 ) = precursor_conc( nh3_idx ) * CFAC_GNH3
@@ -1724,6 +1728,7 @@ C *** Update gas-phase concentrations from Aitken and Accumulation Mode Partitio
      &                            -CFINAL( KNO3,1:2) ) * HNO3RAT  
       PRECURSOR_CONC( HCL_IDX )  = GCLR8 + sum( CINORG( KCL,1:2 )
      &                            -CFINAL( KCL,1:2) ) * HCLRAT 
+     
          
 2023  FORMAT( 1X, 'VOLINORG returning negative gas concentrations from ISOROPIA:'
      &       /10X, 'GAS(1) = NH3, GAS(2) = HNO3, GAS(3) = HCl' )
@@ -1999,7 +2004,8 @@ C   diameter is different.
 
 C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       SUBROUTINE Compute_Flux ( nvolinorg, GNH3R8, GNO3R8, GCLR8, KNH4,
-     &                          KNO3, KCL, Ceq, CondRate, Hplus, rate, J )
+     &                          KNO3, KCL, Ceq, CondRate, Hplus, rate, J, 
+     &							COL, ROW, LAYER )
  
 C Description
 C   Determines the evaporative/condensational flux of volatile
@@ -2051,6 +2057,7 @@ C     Arguments:
 C     Local Variables:
       REAL( 8 ),  PARAMETER :: Afact = 1.0D-01  ! factor for H+ limiter
       REAL( 8 ),  PARAMETER :: small = 1.0D-25
+      REAL( 8 ),  PARAMETER :: small_prod = 2.0D-22
       TYPE(hyperdual) :: Cinf( nvolinorg ) ! gas concentration in mol/m3
       TYPE(hyperdual) :: Qk              ! factor for modifying vapor press. based on H+ limit
       TYPE(hyperdual) :: Hflux           ! flux of H+ to mode from cond/evap
@@ -2059,6 +2066,7 @@ C     Local Variables:
       TYPE(hyperdual) :: JH2SO4          ! molar flux of H2SO4(g) [mol/m3/s]
       TYPE(hyperdual) :: CH2SO4          ! effective H2SO4(g) concentration [mol/m3]
       INTEGER      isp             ! inorganic species index
+      INTEGER         :: COL, ROW, LAYER
 
 C-----------------------------------------------------------------------
 
@@ -2088,11 +2096,11 @@ C     vapor pressures with Qk factor (Pilinis et al., 2000, AS&T).
 
 C        Solve quadratic for Qk: aa*Qk^2 + bb*Qk + cc = 0
          aa = Ceq( KCL ) + Ceq( KNO3 )
-
+C
          bb = Hlim / CondRate
      &      + Cinf( KNH4) - Cinf( KNO3 ) - Cinf( KCL ) - 2.0D0 * CH2SO4
          cc = -Ceq( KNH4 )
-
+C
          Qk = 0.0D0 ! initialize Qk
 
          IF ( aa .LT. small .AND. 0.0D0 .LT. bb ) THEN ! bb*Qk + cc = 0
@@ -2103,6 +2111,8 @@ C        Solve quadratic for Qk: aa*Qk^2 + bb*Qk + cc = 0
             Qk = -bb / aa
          ELSE IF (-cc .LT. small .AND. 0.0D0 .LE. bb ) THEN
             Qk = 0.0D0
+C        ELSE IF ( ABS(aa%x * cc%x) .LT. small_prod .AND. (0.0D0 .LT. bb) ) THEN
+C        	Qk = -cc / bb 
          ELSE
             Qk = ( -bb + SQRT ( bb**2 - 4.0D0 * aa * cc ) ) / ( 2.0D0 * aa )
             IF ( bb ** 2 - 4.0D0 * aa * cc .LT. 0.0D0 ) THEN
@@ -2110,7 +2120,7 @@ C        Solve quadratic for Qk: aa*Qk^2 + bb*Qk + cc = 0
                Qk = 0.0D0
             END IF
          END IF
-
+		 
 C     Modify vapor pressures and get new fluxes
          IF ( Qk .GT. small ) THEN
             Ceq( KNH4 ) = Ceq( KNH4 ) / Qk
@@ -2469,24 +2479,406 @@ C-----------------------------------------------------------------------
      
 
 	  use HDMod 
-	  use ISORROPIAII_MAIN_MOD
+C     use ISORROPIAII_MAIN_MOD
 	  implicit none
     ! INCLUDE 'h_isrpia.inc'
 
 C Arguments
+      INTEGER, PARAMETER :: NZSR = 100
+      INTEGER, PARAMETER :: NPAIR = 23
+      INTEGER :: IZ
       REAL( 8 ), INTENT( IN )  :: RHIN
-    
-    ! Find M0I and put in 23 here. J.E.L. 
+
     
       REAL( 8 ),       INTENT( OUT ) :: M0I( 23 )
-    
-      INTEGER IZ
+      
 
-C Location in pure molality array (function of RH)
-C force convert for IZ here
-      IZ = MIN( INT( RHIN * NZSR  + 0.5D0 ), NZSR )
+      
+      Real( 8 ) :: AWAS(NZSR), AWSS(NZSR), AWAC(NZSR), AWSC(NZSR)
+      Real( 8 ) :: AWAN(NZSR), AWSN(NZSR), AWSB(NZSR), AWAB(NZSR)
+      Real( 8 ) :: AWSA(NZSR), AWLC(NZSR), AWCS(NZSR), AWCN(NZSR)
+      Real( 8 ) :: AWCC(NZSR), AWPS(NZSR), AWPB(NZSR), AWPN(NZSR)
+      Real( 8 ) :: AWPC(NZSR), AWMS(NZSR), AWMN(NZSR), AWMC(NZSR)
+C   
+C     
+C
+CC Location in pure molality array (function of RH)
+CC force convert for IZ here
+CC     IZ = MIN( INT( RHIN * NZSR  + 0.5D0 ), NZSR )
+CC     IZ = MAX( IZ, 1 )
+C     
+      IZ = MIN( INT( RHIN * REAL( NZSR, 8 ) + 0.5D0 ), NZSR )
       IZ = MAX( IZ, 1 )
-
+C
+      AWAS(1:10)    = 187.72
+      AWAS(11:NZSR) = (/ 
+     & 158.13,134.41,115.37,100.10, 87.86, 78.00, 70.00, 63.45, 58.02,
+     &  53.46,
+     &  49.59, 46.26, 43.37, 40.84, 38.59, 36.59, 34.79, 33.16, 31.67,
+     &  30.31,
+     &  29.07, 27.91, 26.84, 25.84, 24.91, 24.03, 23.21, 22.44, 21.70,
+     &  21.01,
+     &  20.34, 19.71, 19.11, 18.54, 17.99, 17.46, 16.95, 16.46, 15.99,
+     &  15.54,
+     &  15.10, 14.67, 14.26, 13.86, 13.47, 13.09, 12.72, 12.36, 12.01,
+     &  11.67,
+     &  11.33, 11.00, 10.68, 10.37, 10.06,  9.75,  9.45,  9.15,  8.86,
+     &   8.57,
+     &   8.29,  8.01,  7.73,  7.45,  7.18,  6.91,  6.64,  6.37,  6.10,
+     &   5.83,
+     &   5.56,  5.29,  5.02,  4.74,  4.47,  4.19,  3.91,  3.63,  3.34,
+     &   3.05,
+     &   2.75,  2.45,  2.14,  1.83,  1.51,  1.19,  0.87,  0.56,  0.26,
+     &  0.1/)
+ !
+ ! awsn= sodium nitrate
+ !
+      AWSN(1:10)    = 394.54
+      AWSN(11:NZSR) = (/ 
+     & 338.91,293.01,254.73,222.61,195.56,172.76,153.53,137.32,123.65,
+     & 112.08,
+     & 102.26, 93.88, 86.68, 80.45, 75.02, 70.24, 66.02, 62.26, 58.89,
+     &  55.85,
+     &  53.09, 50.57, 48.26, 46.14, 44.17, 42.35, 40.65, 39.06, 37.57,
+     &  36.17,
+     &  34.85, 33.60, 32.42, 31.29, 30.22, 29.20, 28.22, 27.28, 26.39,
+     &  25.52,
+     &  24.69, 23.89, 23.12, 22.37, 21.65, 20.94, 20.26, 19.60, 18.96,
+     &  18.33,
+     &  17.72, 17.12, 16.53, 15.96, 15.40, 14.85, 14.31, 13.78, 13.26,
+     &  12.75,
+     &  12.25, 11.75, 11.26, 10.77, 10.29,  9.82,  9.35,  8.88,  8.42,
+     &   7.97,
+     &   7.52,  7.07,  6.62,  6.18,  5.75,  5.32,  4.89,  4.47,  4.05,
+     &   3.64,
+     &   3.24,  2.84,  2.45,  2.07,  1.70,  1.34,  0.99,  0.65,  0.31,
+     &  0.1/)
+ !
+ ! awsc= sodium chloride
+ !
+      AWSC(1:10) = 28.16
+      AWSC(11:NZSR) = (/
+     &  27.17, 26.27, 25.45, 24.69, 23.98, 23.33, 22.72, 22.14, 21.59,
+     &  21.08,
+     &  20.58, 20.12, 19.67, 19.24, 18.82, 18.43, 18.04, 17.67, 17.32,
+     &  16.97,
+     &  16.63, 16.31, 15.99, 15.68, 15.38, 15.08, 14.79, 14.51, 14.24,
+     &  13.97,
+     &  13.70, 13.44, 13.18, 12.93, 12.68, 12.44, 12.20, 11.96, 11.73,
+     &  11.50,
+     &  11.27, 11.05, 10.82, 10.60, 10.38, 10.16,  9.95,  9.74,  9.52,
+     &   9.31,
+     &   9.10,  8.89,  8.69,  8.48,  8.27,  8.07,  7.86,  7.65,  7.45,
+     &   7.24,
+     &   7.04,  6.83,  6.62,  6.42,  6.21,  6.00,  5.79,  5.58,  5.36,
+     &   5.15,
+     &   4.93,  4.71,  4.48,  4.26,  4.03,  3.80,  3.56,  3.32,  3.07,
+     &   2.82,
+     &   2.57,  2.30,  2.04,  1.76,  1.48,  1.20,  0.91,  0.61,  0.30,
+     &  0.1/)
+ !
+ ! awac= ammonium chloride
+ !
+      AWAC(1:10) = 1209.00
+      AWAC(11:NZSR) = (/
+     & 1067.60,949.27,848.62,761.82,686.04,619.16,559.55,505.92,457.25,
+     & 412.69,
+     & 371.55,333.21,297.13,262.81,229.78,197.59,165.98,135.49,108.57,
+     &  88.29,
+     &  74.40, 64.75, 57.69, 52.25, 47.90, 44.30, 41.27, 38.65, 36.36,
+     &  34.34,
+     &  32.52, 30.88, 29.39, 28.02, 26.76, 25.60, 24.51, 23.50, 22.55,
+     &  21.65,
+     &  20.80, 20.00, 19.24, 18.52, 17.83, 17.17, 16.54, 15.93, 15.35,
+     &  14.79,
+     &  14.25, 13.73, 13.22, 12.73, 12.26, 11.80, 11.35, 10.92, 10.49,
+     &  10.08,
+     &   9.67,  9.28,  8.89,  8.51,  8.14,  7.77,  7.42,  7.06,  6.72,
+     &   6.37,
+     &   6.03,  5.70,  5.37,  5.05,  4.72,  4.40,  4.08,  3.77,  3.45,
+     &   3.14,
+     &   2.82,  2.51,  2.20,  1.89,  1.57,  1.26,  0.94,  0.62,  0.31,
+     &  0.1/)
+ !
+ ! awss= sodium sulfate
+ !
+      AWSS(1:10) = 24.10
+      AWSS(11:NZSR) = (/
+     &  23.17, 22.34, 21.58, 20.90, 20.27, 19.69, 19.15, 18.64, 18.17,
+     &  17.72,
+     &  17.30, 16.90, 16.52, 16.16, 15.81, 15.48, 15.16, 14.85, 14.55,
+     &  14.27,
+     &  13.99, 13.73, 13.47, 13.21, 12.97, 12.73, 12.50, 12.27, 12.05,
+     &  11.84,
+     &  11.62, 11.42, 11.21, 11.01, 10.82, 10.63, 10.44, 10.25, 10.07,
+     &   9.89,
+     &   9.71,  9.53,  9.36,  9.19,  9.02,  8.85,  8.68,  8.51,  8.35,
+     &   8.19,
+     &   8.02,  7.86,  7.70,  7.54,  7.38,  7.22,  7.06,  6.90,  6.74,
+     &   6.58,
+     &   6.42,  6.26,  6.10,  5.94,  5.78,  5.61,  5.45,  5.28,  5.11,
+     &   4.93,
+     &   4.76,  4.58,  4.39,  4.20,  4.01,  3.81,  3.60,  3.39,  3.16,
+     &   2.93,
+     &   2.68,  2.41,  2.13,  1.83,  1.52,  1.19,  0.86,  0.54,  0.25,
+     &  0.1/)
+ !
+ ! awab= ammonium bisulfate
+ !
+      AWAB(1:10) = 312.84
+      AWAB(11:NZSR) = (/
+     & 271.43,237.19,208.52,184.28,163.64,145.97,130.79,117.72,106.42,
+     &  96.64,
+     &  88.16, 80.77, 74.33, 68.67, 63.70, 59.30, 55.39, 51.89, 48.76,
+     &  45.93,
+     &  43.38, 41.05, 38.92, 36.97, 35.18, 33.52, 31.98, 30.55, 29.22,
+     &  27.98,
+     &  26.81, 25.71, 24.67, 23.70, 22.77, 21.90, 21.06, 20.27, 19.52,
+     &  18.80,
+     &  18.11, 17.45, 16.82, 16.21, 15.63, 15.07, 14.53, 14.01, 13.51,
+     &  13.02,
+     &  12.56, 12.10, 11.66, 11.24, 10.82, 10.42, 10.04,  9.66,  9.29,
+     &   8.93,
+     &   8.58,  8.24,  7.91,  7.58,  7.26,  6.95,  6.65,  6.35,  6.05,
+     &   5.76,
+     &   5.48,  5.20,  4.92,  4.64,  4.37,  4.09,  3.82,  3.54,  3.27,
+     &   2.99,
+     &   2.70,  2.42,  2.12,  1.83,  1.52,  1.22,  0.90,  0.59,  0.28,
+     &  0.1/)
+ !
+ ! awsa= sulfuric acid
+ !
+      AWSA = (/34.00, 33.56, 29.22, 26.55, 24.61, 23.11, 21.89, 20.87,
+     &  19.99, 18.45,
+     &  17.83, 17.26, 16.73, 16.25, 15.80, 15.38, 14.98, 14.61, 14.26,
+     &  13.93,
+     &  13.61, 13.30, 13.01, 12.73, 12.47, 12.21, 11.96, 11.72, 11.49,
+     &  11.26,
+     &  11.04, 10.83, 10.62, 10.42, 10.23, 10.03,  9.85,  9.67,  9.49,
+     &   9.31,
+     &   9.14,  8.97,  8.81,  8.65,  8.49,  8.33,  8.18,  8.02,  7.87,
+     &   7.73,
+     &   7.58,  7.44,  7.29,  7.15,  7.01,  6.88,  6.74,  6.61,  6.47,
+     &   6.34,
+     &   6.21,  6.07,  5.94,  5.81,  5.68,  5.55,  5.43,  5.30,  5.17,
+     &   5.04,
+     &   4.91,  4.78,  4.65,  4.52,  4.39,  4.26,  4.13,  4.00,  3.86,
+     &   3.73,
+     &   3.59,  3.45,  3.31,  3.17,  3.02,  2.87,  2.71,  2.56,  2.39,
+     &   2.22,
+     &   2.05,  1.87,  1.68,  1.48,  1.27,  1.04,  0.80,  0.55,  0.28,
+     &  0.1/)
+ !
+ ! awlc= (NH4)3H(SO4)2
+ !
+      AWLC(1:10) = 125.37
+      AWLC(11:NZSR) = (/
+     & 110.10, 97.50, 86.98, 78.08, 70.49, 63.97, 58.33, 53.43, 49.14,
+     &  45.36,
+     &  42.03, 39.07, 36.44, 34.08, 31.97, 30.06, 28.33, 26.76, 25.32,
+     &  24.01,
+     &  22.81, 21.70, 20.67, 19.71, 18.83, 18.00, 17.23, 16.50, 15.82,
+     &  15.18,
+     &  14.58, 14.01, 13.46, 12.95, 12.46, 11.99, 11.55, 11.13, 10.72,
+     &  10.33,
+     &   9.96,  9.60,  9.26,  8.93,  8.61,  8.30,  8.00,  7.72,  7.44,
+     &   7.17,
+     &   6.91,  6.66,  6.42,  6.19,  5.96,  5.74,  5.52,  5.31,  5.11,
+     &   4.91,
+     &   4.71,  4.53,  4.34,  4.16,  3.99,  3.81,  3.64,  3.48,  3.31,
+     &   3.15,
+     &   2.99,  2.84,  2.68,  2.53,  2.37,  2.22,  2.06,  1.91,  1.75,
+     &   1.60,
+     &   1.44,  1.28,  1.12,  0.95,  0.79,  0.62,  0.45,  0.29,  0.14,
+     &  0.1/)
+ !
+ ! awan= ammonium nitrate
+ !
+      AWAN(1:10) = 960.19
+      AWAN(11:NZSR) = (/
+     & 853.15,763.85,688.20,623.27,566.92,517.54,473.91,435.06,400.26,
+     & 368.89,
+     & 340.48,314.63,291.01,269.36,249.46,231.11,214.17,198.50,184.00,
+     & 170.58,
+     & 158.15,146.66,136.04,126.25,117.24,108.97,101.39, 94.45, 88.11,
+     &  82.33,
+     &  77.06, 72.25, 67.85, 63.84, 60.16, 56.78, 53.68, 50.81, 48.17,
+     &  45.71,
+     &  43.43, 41.31, 39.32, 37.46, 35.71, 34.06, 32.50, 31.03, 29.63,
+     &  28.30,
+     &  27.03, 25.82, 24.67, 23.56, 22.49, 21.47, 20.48, 19.53, 18.61,
+     &  17.72,
+     &  16.86, 16.02, 15.20, 14.41, 13.64, 12.89, 12.15, 11.43, 10.73,
+     &  10.05,
+     &   9.38,  8.73,  8.09,  7.47,  6.86,  6.27,  5.70,  5.15,  4.61,
+     &   4.09,
+     &   3.60,  3.12,  2.66,  2.23,  1.81,  1.41,  1.03,  0.67,  0.32,
+     &  0.1/)
+ !
+ ! awsb= sodium bisulfate
+ !
+      AWSB(1:10) = 55.99
+      AWSB(11:NZSR) = (/
+     &  53.79, 51.81, 49.99, 48.31, 46.75, 45.28, 43.91, 42.62, 41.39,
+     &  40.22,
+     &  39.10, 38.02, 36.99, 36.00, 35.04, 34.11, 33.21, 32.34, 31.49,
+     &  30.65,
+     &  29.84, 29.04, 28.27, 27.50, 26.75, 26.01, 25.29, 24.57, 23.87,
+     &  23.17,
+     &  22.49, 21.81, 21.15, 20.49, 19.84, 19.21, 18.58, 17.97, 17.37,
+     &  16.77,
+     &  16.19, 15.63, 15.08, 14.54, 14.01, 13.51, 13.01, 12.53, 12.07,
+     &  11.62,
+     &  11.19, 10.77, 10.36,  9.97,  9.59,  9.23,  8.87,  8.53,  8.20,
+     &   7.88,
+     &   7.57,  7.27,  6.97,  6.69,  6.41,  6.14,  5.88,  5.62,  5.36,
+     &   5.11,
+     &   4.87,  4.63,  4.39,  4.15,  3.92,  3.68,  3.45,  3.21,  2.98,
+     &   2.74,
+     &   2.49,  2.24,  1.98,  1.72,  1.44,  1.16,  0.87,  0.57,  0.28,
+     &  0.1/)
+ !
+ ! awpc= potassium chloride
+ !
+      AWPC = (/172.62, 165.75, 159.10, 152.67, 146.46, 140.45, 134.64,
+     &          129.03, 123.61, 118.38, 113.34, 108.48, 103.79, 99.27,
+     &          94.93, 90.74, 86.71, 82.84, 79.11, 75.53, 72.09, 68.79,
+     &          65.63, 62.59, 59.68, 56.90, 54.23, 51.68, 49.24, 46.91,
+     &          44.68, 42.56, 40.53, 38.60, 36.76, 35.00, 33.33, 31.75,
+     &          30.24, 28.81, 27.45, 26.16, 24.94, 23.78, 22.68, 21.64,
+     &          20.66, 19.74, 18.86, 18.03, 17.25, 16.51, 15.82, 15.16,
+     &          14.54, 13.96, 13.41, 12.89, 12.40, 11.94, 11.50, 11.08,
+     &          10.69, 10.32, 9.96, 9.62, 9.30, 8.99, 8.69, 8.40, 8.12,
+     &          7.85, 7.59, 7.33, 7.08, 6.83, 6.58, 6.33, 6.08, 5.84,
+     &          5.59, 5.34, 5.09, 4.83, 4.57, 4.31, 4.04, 3.76, 3.48,
+     &          3.19, 2.90, 2.60, 2.29, 1.98, 1.66, 1.33, 0.99, 0.65,
+     &          0.30, 0.1/)
+ !
+ ! awps= potassium sulfate
+ !
+      AWPS = (/1014.82, 969.72, 926.16, 884.11, 843.54, 804.41, 766.68,
+     &          730.32, 695.30, 661.58, 629.14, 597.93, 567.92, 539.09,
+     &          511.41, 484.83, 459.34, 434.89, 411.47, 389.04, 367.58,
+     &          347.05, 327.43, 308.69, 290.80, 273.73, 257.47, 241.98,
+     &          227.24, 213.22, 199.90, 187.26, 175.27, 163.91, 153.15,
+     &          142.97, 133.36, 124.28, 115.73, 107.66, 100.08, 92.95,
+     &          86.26, 79.99, 74.12, 68.63, 63.50, 58.73, 54.27, 50.14,
+     &          46.30, 42.74, 39.44, 36.40, 33.59, 31.00, 28.63, 26.45,
+     &          24.45, 22.62, 20.95, 19.43, 18.05, 16.79, 15.64, 14.61,
+     &          13.66,  12.81, 12.03, 11.33, 10.68, 10.09, 9.55, 9.06,
+     &          8.60, 8.17, 7.76, 7.38, 7.02, 6.66, 6.32, 5.98, 5.65,
+     &          5.31, 4.98, 4.64, 4.31, 3.96, 3.62, 3.27, 2.92, 2.57,
+     &          2.22, 1.87, 1.53, 1.20, 0.87, 0.57, 0.28, 0.1/)
+ !
+ ! awpn= potassium nitrate
+ !
+      AWPN(1:44) = 1000.00
+      AWPN(45:NZSR) = (/ 953.05, 881.09, 813.39,
+     &          749.78, 690.09, 634.14, 581.77, 532.83, 487.16, 444.61,
+     &          405.02, 368.26, 334.18, 302.64, 273.51, 246.67, 221.97,
+     &          199.31, 178.56, 159.60, 142.33, 126.63, 112.40, 99.54,
+     &          87.96, 77.55, 68.24, 59.92, 52.53, 45.98, 40.2, 35.11,
+     &          30.65, 26.75, 23.35, 20.40, 17.85, 15.63, 13.72, 12.06,
+     &          10.61, 9.35, 8.24, 7.25, 6.37, 5.56, 4.82, 4.12, 3.47,
+     &          2.86, 2.28, 1.74, 1.24, 0.79, 0.40, 0.1/)
+ !
+ ! awpb= potassium bisulfate
+ !
+      AWPB(1:10) = 55.99
+      AWPB(11:NZSR) = (/
+     &  53.79, 51.81, 49.99, 48.31, 46.75, 45.28, 43.91, 42.62, 41.39,
+     &  40.22,
+     &  39.10, 38.02, 36.99, 36.00, 35.04, 34.11, 33.21, 32.34, 31.49,
+     &  30.65,
+     &  29.84, 29.04, 28.27, 27.50, 26.75, 26.01, 25.29, 24.57, 23.87,
+     &  23.17,
+     &  22.49, 21.81, 21.15, 20.49, 19.84, 19.21, 18.58, 17.97, 17.37,
+     &  16.77,
+     &  16.19, 15.63, 15.08, 14.54, 14.01, 13.51, 13.01, 12.53, 12.07,
+     &  11.62,
+     &  11.19, 10.77, 10.36,  9.97,  9.59,  9.23,  8.87,  8.53,  8.20,
+     &   7.88,
+     &   7.57,  7.27,  6.97,  6.69,  6.41,  6.14,  5.88,  5.62,  5.36,
+     &   5.11,
+     &   4.87,  4.63,  4.39,  4.15,  3.92,  3.68,  3.45,  3.21,  2.98,
+     &   2.74,
+     &   2.49,  2.24,  1.98,  1.72,  1.44,  1.16,  0.87,  0.57,  0.28,
+     &  0.1/)
+ !
+ ! awcc= calcium chloride
+ !
+      AWCC = (/19.9, 19.0, 18.15, 17.35, 16.6, 15.89, 15.22, 14.58,
+     &          13.99, 13.43, 12.90, 12.41, 11.94, 11.50, 11.09, 10.7,
+     &          10.34, 9.99, 9.67, 9.37, 9.09, 8.83, 8.57, 8.34, 8.12,
+     &          7.91, 7.71, 7.53, 7.35, 7.19, 7.03, 6.88, 6.74, 6.6,
+     &          6.47, 6.35, 6.23, 6.12, 6.01, 5.90, 5.80, 5.70, 5.61,
+     &          5.51, 5.42, 5.33, 5.24, 5.16, 5.07, 4.99, 4.91, 4.82,
+     &          4.74, 4.66, 4.58, 4.50, 4.42, 4.34, 4.26, 4.19, 4.11,
+     &          4.03, 3.95, 3.87, 3.79, 3.72, 3.64, 3.56, 3.48, 3.41,
+     &          3.33, 3.25, 3.17, 3.09, 3.01, 2.93, 2.85, 2.76, 2.68,
+     &          2.59, 2.50, 2.41, 2.32, 2.23, 2.13, 2.03, 1.93, 1.82,
+     &          1.71, 1.59, 1.47, 1.35, 1.22, 1.07, 0.93, 0.77, 0.61,
+     &          0.44, 0.25, 0.1/)
+ !
+ ! awcn= calcium nitrate
+ !
+      AWCN = (/32.89, 31.46, 30.12, 28.84, 27.64, 26.51, 25.44, 24.44,
+     &          23.49, 22.59, 21.75, 20.96, 20.22, 19.51, 18.85, 18.23,
+     &          17.64, 17.09, 16.56, 16.07, 15.61, 15.17, 14.75, 14.36,
+     &          13.99, 13.63, 13.3, 12.98, 12.68, 12.39, 12.11, 11.84,
+     &          11.59, 11.35, 11.11, 10.88, 10.66, 10.45, 10.24, 10.04,
+     &          9.84, 9.65, 9.46, 9.28, 9.1, 8.92, 8.74, 8.57, 8.4,
+     &          8.23, 8.06, 7.9, 7.73, 7.57, 7.41, 7.25, 7.1,6.94, 6.79,
+     &          6.63, 6.48, 6.33, 6.18, 6.03, 5.89, 5.74, 5.60, 5.46,
+     &          5.32, 5.17, 5.04, 4.9, 4.76, 4.62, 4.49, 4.35, 4.22,
+     &          4.08, 3.94, 3.80, 3.66, 3.52, 3.38, 3.23, 3.08, 2.93,
+     &          2.77, 2.60, 2.43, 2.25, 2.07, 1.87, 1.67, 1.45, 1.22,
+     &          0.97, 0.72, 0.44, 0.14, 0.1/)
+ !
+ ! awmc= magnesium chloride
+ !
+      AWMC = (/11.24, 10.99, 10.74, 10.5, 10.26, 10.03, 9.81, 9.59,
+     &          9.38, 9.18, 8.98, 8.79, 8.60, 8.42, 8.25, 8.07, 7.91,
+     &          7.75, 7.59, 7.44, 7.29, 7.15, 7.01, 6.88, 6.75, 6.62,
+     &          6.5, 6.38, 6.27, 6.16, 6.05, 5.94, 5.85, 5.75, 5.65,
+     &          5.56, 5.47, 5.38, 5.30, 5.22, 5.14, 5.06, 4.98, 4.91,
+     &          4.84, 4.77, 4.7, 4.63, 4.57, 4.5, 4.44, 4.37, 4.31,
+     &          4.25, 4.19, 4.13, 4.07, 4.01, 3.95, 3.89, 3.83, 3.77,
+     &          3.71, 3.65, 3.58, 3.52, 3.46, 3.39, 3.33, 3.26, 3.19,
+     &          3.12, 3.05, 2.98, 2.9, 2.82, 2.75, 2.67, 2.58, 2.49,
+     &          2.41, 2.32, 2.22, 2.13, 2.03, 1.92, 1.82, 1.71, 1.60,
+     &          1.48, 1.36, 1.24, 1.11, 0.98, 0.84, 0.70, 0.56, 0.41,
+     &          0.25, 0.1/)
+ !
+ ! awmn= magnesium nitrate
+ !
+      AWMN = (/12.00, 11.84, 11.68, 11.52, 11.36, 11.2, 11.04, 10.88,
+     &          10.72, 10.56, 10.40, 10.25, 10.09, 9.93, 9.78, 9.63,
+     &          9.47, 9.32, 9.17, 9.02, 8.87, 8.72, 8.58, 8.43, 8.29,
+     &          8.15, 8.01, 7.87, 7.73, 7.59, 7.46, 7.33, 7.2, 7.07,
+     &          6.94, 6.82, 6.69, 6.57, 6.45, 6.33, 6.21, 6.01, 5.98,
+     &          5.87, 5.76, 5.65, 5.55, 5.44, 5.34, 5.24, 5.14, 5.04,
+     &          4.94, 4.84, 4.75, 4.66, 4.56, 4.47, 4.38, 4.29, 4.21,
+     &          4.12, 4.03, 3.95, 3.86, 3.78, 3.69, 3.61, 3.53, 3.45,
+     &          3.36, 3.28, 3.19, 3.11, 3.03, 2.94, 2.85, 2.76, 2.67,
+     &          2.58, 2.49, 2.39, 2.3, 2.2, 2.1, 1.99, 1.88, 1.77, 1.66,
+     &          1.54, 1.42, 1.29, 1.16, 1.02, 0.88, 0.73, 0.58, 0.42,
+     &          0.25, 0.1/)
+ !
+ ! awmn= magnesium sulfate
+ !
+      AWMS = (/0.93, 2.5, 3.94, 5.25, 6.45, 7.54, 8.52, 9.40, 10.19,
+     &          10.89, 11.50, 12.04, 12.51, 12.90, 13.23, 13.50, 13.72,
+     &          13.88, 13.99, 14.07, 14.1, 14.09, 14.05, 13.98, 13.88,
+     &          13.75, 13.6, 13.43, 13.25, 13.05, 12.83, 12.61, 12.37,
+     &          12.13, 11.88, 11.63, 11.37, 11.12, 10.86, 10.60, 10.35,
+     &          10.09, 9.85, 9.6, 9.36, 9.13, 8.9, 8.68, 8.47, 8.26,
+     &          8.07, 7.87, 7.69, 7.52, 7.35, 7.19, 7.03, 6.89, 6.75,
+     &          6.62, 6.49, 6.37, 6.26, 6.15, 6.04, 5.94, 5.84, 5.75,
+     &          5.65, 5.56, 5.47, 5.38, 5.29, 5.20, 5.11, 5.01, 4.92,
+     &          4.82, 4.71, 4.60, 4.49, 4.36, 4.24, 4.10, 3.96, 3.81,
+     &          3.65, 3.48, 3.30, 3.11, 2.92, 2.71, 2.49, 2.26, 2.02,
+     &          1.76, 1.50, 1.22, 0.94, 0.64/)
 C Default value
       M0I = 1.0D+5   ! array assignment
 
@@ -2760,11 +3152,6 @@ C     the 2 modes.
 
       RETURN
       END FUNCTION GETAF
-      
-      
-      
-      ! Rewrite the statement function in the original AERO_INLET code
-      
 
 C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       SUBROUTINE AERO_INLET ( DGN, XXLSG, RHOP, fPM1, fPM25, fPM10 )
@@ -2890,11 +3277,11 @@ C     Cutoffs
       ! from Meng & Seinfeld (1994) and modified form of Fk(X) equation
       ! in Step#6 of Jiang et al. (2006).
       ERFARG = ( LOG( D_ST1 ) - LOG( DG ) ) / ( SQRT2 * XXLSG ) - 3.0 * XXLSG / SQRT2
-      fPM1   = 0.5 * ( 1.0 + HDERF( ERFARG ) )
+      fPM1   = 0.5 * ( 1.0 + ERF( ERFARG ) )
       ERFARG = ( LOG( D_ST25 ) - LOG( DG ) ) / ( SQRT2 * XXLSG ) - 3.0 * XXLSG / SQRT2
-      fPM25  = 0.5 * ( 1.0 + HDERF( ERFARG ) )
+      fPM25  = 0.5 * ( 1.0 + ERF( ERFARG ) )
       ERFARG = ( LOG( D_ST10 ) - LOG( DG ) ) / ( SQRT2 * XXLSG ) - 3.0 * XXLSG / SQRT2
-      fPM10  = 0.5 * ( 1.0 + HDERF( ERFARG ) )
+      fPM10  = 0.5 * ( 1.0 + ERF( ERFARG ) )
 
       END SUBROUTINE AERO_INLET
 
@@ -3038,8 +3425,8 @@ C     Appendix B in Ensberg et al., 2013).
       LOG_LO   = LOG( DBlo_st/DGv )
 
       TERM1 = LOG( DGv/DBlo_st ) / LOG_HILO
-      TERM2 =  HDERF( LOG_HI / SQRT2LSG )
-     &        -HDERF( LOG_LO / SQRT2LSG )
+      TERM2 =  ERF( LOG_HI / SQRT2LSG )
+     &        -ERF( LOG_LO / SQRT2LSG )
       TERM3 = XXLSG / ( LOG_HILO * (pi/2.0) ** 0.5 )
       TERM4 = EXP( -1.0 * ( LOG_LO / SQRT2LSG ) ** 2 )
       TERM5 = EXP( -1.0 * ( LOG_HI / SQRT2LSG ) ** 2 )
@@ -3050,8 +3437,8 @@ C     Appendix B in Ensberg et al., 2013).
       DBlo_st = DBhi_st         ! Stokes Lower Bound [um]
       DBhi_st = 0.55 * DENSFAC  ! Stokes Upper Bound [um]
 
-      TERM1 = HDERF( LOG( DBhi_st/DGv ) / SQRT2LSG )
-      TERM2 = HDERF( LOG( DBlo_st/DGv ) / SQRT2LSG )
+      TERM1 = ERF( LOG( DBhi_st/DGv ) / SQRT2LSG )
+      TERM2 = ERF( LOG( DBlo_st/DGv ) / SQRT2LSG )
       fAMS = fAMS +  (TERM1 - TERM2)
 
       ! Third Piece of Function [T(%) = 1.0 - 0.6805 * (Dva - 0.55) ]
@@ -3063,8 +3450,8 @@ C     Appendix B in Ensberg et al., 2013).
       LOG_LO   = LOG( DBlo_st/DGv )
 
       TERM1 = LOG( DGv/DBhi_st ) / LOG_LOHI
-      TERM2 =  HDERF( LOG_HI / SQRT2LSG )
-     &        -HDERF( LOG_LO / SQRT2LSG )
+      TERM2 =  ERF( LOG_HI / SQRT2LSG )
+     &        -ERF( LOG_LO / SQRT2LSG )
       TERM3 = XXLSG / ( LOG_LOHI * (pi/2.0) ** 0.5 )
       TERM4 = EXP( -1.0 * ( LOG_LO / SQRT2LSG ) ** 2 )
       TERM5 = EXP( -1.0 * ( LOG_HI / SQRT2LSG ) ** 2 )

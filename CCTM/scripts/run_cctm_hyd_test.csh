@@ -30,6 +30,9 @@
 #> Runtime Environment Options
 # ===================================================================
 
+# module load openmpi
+# module load arm-forge/21.0.3
+
 echo 'Start Model Run At ' `date`
 
 #> Toggle Diagnostic Mode which will print verbose information to 
@@ -53,7 +56,7 @@ echo 'Start Model Run At ' `date`
 #> Set General Parameters for Configuring the Simulation
  set VRSN      = v532              #> Code Version
  set PROC      = mpi             #> serial or mpi
- set MECH      = cb6r3_ae6_aq      #> Mechanism ID
+ set MECH      = cb6r3_ae7_aq      #> Mechanism ID
  set APPL      = Bench_2016_12SE1  #> Application Name (e.g. Gridname)
                                                        
 #> Define RUNID as any combination of parameters above or others. By default,
@@ -71,7 +74,7 @@ echo 'Start Model Run At ' `date`
 
 #> Set Working, Input, and Output Directories
  setenv WORKDIR ${CMAQ_HOME}/CCTM/scripts          #> Working Directory. Where the runscript is.
- setenv OUTDIR  ${CMAQ_DATA}/output_CCTM_${RUNID}_chem_full_iso_check_funco7  #> Output Directory
+ setenv OUTDIR  ${CMAQ_DATA}/output_CCTM_${RUNID}_ANH4K_6hr  #> Output Directory
  setenv INPDIR  /glade/work/edliu/models/inputs/SEv5.3.2.BENCH/CMAQv5.3.2_Benchmark_2Day_Input/2016_12SE1            #> Input Directory
  setenv LOGDIR  ${OUTDIR}/LOGS     #> Log Directory Location
  setenv NMLpath ${BLD}             #> Location of Namelists. Common places are: 
