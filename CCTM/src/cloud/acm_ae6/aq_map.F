@@ -111,11 +111,11 @@ C Arguments:
       REAL,    INTENT( IN )    :: TAUCLD    ! cloud lifetime
       TYPE(hyperdual),    INTENT( IN )    :: POLC ( : )  ! avg vert conc incloud (moles/mole)
       TYPE(hyperdual),    INTENT( INOUT ) :: CEND ( : )  ! ending incloud conc (moles/mole)
-      REAL,    INTENT( INOUT ) :: REMOV( : )  ! moles/m2 or mm*mol/lit scavenged
-      REAL,    INTENT( INOUT ) :: REMOVAC   ! variable storing H+ deposition
-      REAL,    INTENT( IN )    :: ALFA0     ! scav coef for aitken aerosol number
-      REAL,    INTENT( IN )    :: ALFA2     ! scav coef for aitken aerosol sfc area
-      REAL,    INTENT( IN )    :: ALFA3     ! scav coef for aitken aerosol mass
+      TYPE(hyperdual),    INTENT( INOUT ) :: REMOV( : )  ! moles/m2 or mm*mol/lit scavenged
+      TYPE(hyperdual),    INTENT( INOUT ) :: REMOVAC   ! variable storing H+ deposition
+      TYPE(hyperdual),    INTENT( IN )    :: ALFA0     ! scav coef for aitken aerosol number
+      TYPE(hyperdual),    INTENT( IN )    :: ALFA2     ! scav coef for aitken aerosol sfc area
+      TYPE(hyperdual),    INTENT( IN )    :: ALFA3     ! scav coef for aitken aerosol mass
       LOGICAL, INTENT( IN )    :: DARK      ! DARK = TRUE is night,  DARK = FALSE is day
 
 C Local Variables (scalars):
@@ -132,20 +132,20 @@ C Local Variables (scalars):
       INTEGER       SPC                 ! liquid species loop counter
       INTEGER ::    STAT
 
-      REAL( 8 )  :: BETASO4
-      REAL       :: EALFA2T                ! EXP( -ALFA2 * TAUCLD )
+      TYPE(hyperdual)  :: BETASO4
+      TYPE(hyperdual)  :: EALFA2T                ! EXP( -ALFA2 * TAUCLD )
       TYPE(hyperdual)  :: M3NEW( NMODES )        ! modal mass at time t
       TYPE(hyperdual)  :: M3OLD( NMODES )        ! modal mass at time 0
       TYPE(hyperdual)  :: Dens_wmean_old( NMODES ) ! concentration weighted molecular weight g/mol
       TYPE(hyperdual)  :: Dens_wmean_new( NMODES ) ! concentration weighted molecular weight g/mol
 
-      REAL       :: HPWDEP                        ! hydrogen wet dep (mm mol/liter)
-      REAL( 8 ), ALLOCATABLE, SAVE :: GAS    ( : )    ! gas phase conc (mol/mol)
-      REAL( 8 ), ALLOCATABLE, SAVE :: GASWDEP( : )    ! gas phase wet dep array (mm mol/liter)
-      REAL( 8 ), ALLOCATABLE, SAVE :: AEROSOL( :, :)  ! aerosol conc (mol/mol)
-      REAL( 8 ), ALLOCATABLE, SAVE :: AERWDEP( :, :)  ! aerosol wet dep array (mm mol/liter)
-      REAL( 8 )  :: WSRGGAS( NGAS, MXSRG)             ! weights for surrogate
-      REAL( 8 )  :: WSRGAER( MAX_NAER, NMODES, MXSRG) ! weights for surrogate
+      TYPE(hyperdual)      :: HPWDEP                        ! hydrogen wet dep (mm mol/liter)
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: GAS    ( : )    ! gas phase conc (mol/mol)
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: GASWDEP( : )    ! gas phase wet dep array (mm mol/liter)
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: AEROSOL( :, :)  ! aerosol conc (mol/mol)
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: AERWDEP( :, :)  ! aerosol wet dep array (mm mol/liter)
+      TYPE(hyperdual)  :: WSRGGAS( NGAS, MXSRG)             ! weights for surrogate
+      TYPE(hyperdual)  :: WSRGAER( MAX_NAER, NMODES, MXSRG) ! weights for surrogate
 
 C External Functions:
 
@@ -156,24 +156,25 @@ C External Functions:
         SUBROUTINE AQCHEM ( JDATE, JTIME, TEMP, PRES_PA, TAUCLD, PRCRATE,
      &                      WCAVG, WTAVG, AIRM, ALFA0, ALFA2, ALFA3, GAS,
      &                      AEROSOL, GASWDEP, AERWDEP, HPWDEP, BETASO4, DARK )
+     	   USE HDMod
            INTEGER,   INTENT( IN )  :: JDATE  ! current model date, coded YYYYDDD
            INTEGER,   INTENT( IN )  :: JTIME  ! current model time, coded HHMMSS
            REAL,      INTENT( IN )  :: AIRM      ! total air mass in cloudy layers (mol/m2)
-           REAL,      INTENT( IN )  :: ALFA0     ! scav coef for aitken aerosol number
-           REAL,      INTENT( IN )  :: ALFA2     ! scav coef for aitken aerosol sfc area
-           REAL,      INTENT( IN )  :: ALFA3     ! scav coef for aitken aerosol mass
-           REAL,      INTENT( OUT ) :: HPWDEP    ! hydrogen wet deposition (mm mol/liter)
-           REAL( 8 ), INTENT( OUT ) :: BETASO4  
+           TYPE(hyperdual),      INTENT( IN )  :: ALFA0     ! scav coef for aitken aerosol number
+           TYPE(hyperdual),      INTENT( IN )  :: ALFA2     ! scav coef for aitken aerosol sfc area
+           TYPE(hyperdual),      INTENT( IN )  :: ALFA3     ! scav coef for aitken aerosol mass
+           TYPE(hyperdual),      INTENT( OUT ) :: HPWDEP    ! hydrogen wet deposition (mm mol/liter)
+           TYPE(hyperdual), INTENT( OUT ) :: BETASO4  
            REAL,      INTENT( IN )  :: PRCRATE   ! precip rate (mm/hr)
            REAL,      INTENT( IN )  :: PRES_PA   ! pressure (Pa)
            REAL,      INTENT( IN )  :: TAUCLD    ! timestep for cloud (s)
            REAL,      INTENT( IN )  :: TEMP      ! temperature (K)
            REAL,      INTENT( IN )  :: WCAVG     ! liquid water content (kg/m3)
            REAL,      INTENT( IN )  :: WTAVG     ! total water content (kg/m3)
-           REAL( 8 ), INTENT( INOUT ) :: GAS    ( : )   ! gas phase concentrations (mol/molV)
-           REAL( 8 ), INTENT( INOUT ) :: AEROSOL( :,: ) ! aerosol concentrations (mol/molV)
-           REAL( 8 ), INTENT( INOUT ) :: GASWDEP( : )   ! gas phase wet deposition array (mm mol/liter)
-           REAL( 8 ), INTENT( INOUT ) :: AERWDEP( :,: ) ! aerosol wet deposition array (mm mol/liter)
+           TYPE(hyperdual), INTENT( INOUT ) :: GAS    ( : )   ! gas phase concentrations (mol/molV)
+           TYPE(hyperdual), INTENT( INOUT ) :: AEROSOL( :,: ) ! aerosol concentrations (mol/molV)
+           TYPE(hyperdual), INTENT( INOUT ) :: GASWDEP( : )   ! gas phase wet deposition array (mm mol/liter)
+           TYPE(hyperdual), INTENT( INOUT ) :: AERWDEP( :,: ) ! aerosol wet deposition array (mm mol/liter)
            LOGICAL,   INTENT( IN )    :: DARK           ! DARK = TRUE is night,  DARK = FALSE is day
         END SUBROUTINE AQCHEM
       END INTERFACE      
@@ -253,7 +254,7 @@ C...load gas-phase concentrations
           PNTR = CGRID2AQ_MAP( LSRGGAS( IGAS, ISRG ) )
 C         GAS( IGAS ) = GAS( IGAS ) + REAL( POLC( PNTR ), 8 )
 C         Ignore sensitivity here J.E.L.
-		  GAS( IGAS ) = GAS( IGAS ) + REAL_HDUAL( POLC( PNTR ) )
+		  GAS( IGAS ) = GAS( IGAS ) + POLC( PNTR ) 
 #ifdef sens
           DO NP = 1, NPMAX
             S_GAS( NP, IGAS ) = S_GAS( NP, IGAS ) + S_POLC ( NP, PNTR )
@@ -264,7 +265,7 @@ C         Ignore sensitivity here J.E.L.
         IF ( GAS( IGAS ) .GT. 0.0D0 ) THEN
           DO ISRG = 1, NSRGGAS( IGAS )
             PNTR = CGRID2AQ_MAP( LSRGGAS( IGAS, ISRG ) )
-            WSRGGAS( IGAS, ISRG ) =  REAL_HDUAL( POLC( PNTR ) )  / GAS( IGAS )
+            WSRGGAS( IGAS, ISRG ) =  POLC( PNTR ) / GAS( IGAS )
 #ifdef sens
             DO NP = 1, NPMAX
                IF ( S_GAS( NP, IGAS ) .NE. 0.0D0 ) THEN
@@ -323,7 +324,7 @@ C...load aerosol concentrations
 #endif
             DO ISRG = 1, NSRGAER( IAER, IMODE )
               PNTR = CGRID2AQ_MAP( LSRGAER( IAER, IMODE, ISRG ) )
-              AEROSOL( IAER, IMODE ) = AEROSOL( IAER, IMODE ) + REAL_HDUAL ( POLC( PNTR ) )
+              AEROSOL( IAER, IMODE ) = AEROSOL( IAER, IMODE ) +  POLC( PNTR ) 
 #ifdef sens
               DO NP = 1, NPMAX
                 S_AEROSOL( NP, IAER, IMODE ) = S_AEROSOL( NP, IAER, IMODE ) + S_POLC( NP, PNTR )
@@ -334,10 +335,9 @@ C...load aerosol concentrations
             IF ( AEROSOL( IAER, IMODE ) .GT. 0.0D0 ) THEN
               DO ISRG = 1, NSRGAER( IAER, IMODE )
                 PNTR = CGRID2AQ_MAP( LSRGAER( IAER, IMODE, ISRG ) )
-C               WSRGAER( IAER, IMODE, ISRG ) = REAL( POLC( PNTR ), 8 )
-C    &                                       / REAL( AEROSOL( IAER, IMODE ), 8 )
-     			WSRGAER( IAER, IMODE, ISRG ) = REAL_HDUAL( POLC( PNTR ) )
-     &                                       / REAL( AEROSOL( IAER, IMODE ), 8 )
+
+     			WSRGAER( IAER, IMODE, ISRG ) = POLC( PNTR ) 
+     &                                       / AEROSOL( IAER, IMODE )
 #ifdef sens
                DO NP = 1, NPMAX
                   IF ( S_AEROSOL( NP, IAER, IMODE ) .NE. 0.0D0 ) THEN
