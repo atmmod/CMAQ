@@ -90,6 +90,7 @@ C-----------------------------------------------------------------------
       USE ASX_DATA_MOD,  ONLY: MET_DATA
       USE PHOT_MOD,      ONLY: RJ, RJ_RES, RJ_SUB, LH2O2, LHNO3
       USE CENTRALIZED_IO_MODULE
+      USE HDMod
 #ifdef isam
       USE SA_DEFN, ONLY: ISAM, NSPC_SA, NTAG_SA, SPC_INDEX, OTHRTAG, 
      &                   SPC_NAME, DEPSUM_SAVE, DS4_SAVE, REMOV_SAVE,
@@ -113,13 +114,13 @@ C...........Includes:
       INCLUDE SUBST_FILES_ID             ! file name parameters
 
 C...........Arguments:
-      REAL, POINTER            :: CGRID( :,:,:,: ) ! concentrations
+      TYPE(hyperdual), POINTER            :: CGRID( :,:,:,: ) ! concentrations
       INTEGER, INTENT( IN )    :: JDATE            ! current model date, coded YYYYDDD
       INTEGER, INTENT( IN )    :: JTIME            ! current model time, coded HHMMSS
       INTEGER, INTENT( IN )    :: TSTEP( 3 )       ! model time steps, coded HHMMSS
       INTEGER, INTENT( IN )    :: N_SPC_WDEP       ! # of wet deposition species
       INTEGER, INTENT( IN )    :: WDEP_MAP( : )    ! wet deposition species map to CGRID
-      REAL,    INTENT( INOUT ) :: DEP( :,:,: )     ! wet deposition
+      TYPE(hyperdual),    INTENT( INOUT ) :: DEP( :,:,: )     ! wet deposition
       REAL,    INTENT( OUT )   :: RESTRANS( :,: )  ! resolved cloud transmissivity
 #ifdef isam
       REAL,    INTENT( INOUT ) :: SA_DEP( :,:,:,: )
@@ -160,9 +161,9 @@ C...........Local Variables:
       INTEGER       ALLOCSTAT           ! memory allocation status
 
       REAL          AIRM                ! total airmass (mol/m2) in cloudy air
-      REAL          ALFA0               ! aitken mode number scavenging coef
-      REAL          ALFA2               ! aitken mode sfc area scavenging coef
-      REAL          ALFA3               ! aitken mode mass scavenging coef
+      TYPE(hyperdual)          ALFA0               ! aitken mode number scavenging coef
+      TYPE(hyperdual)          ALFA2               ! aitken mode sfc area scavenging coef
+      TYPE(hyperdual)          ALFA3               ! aitken mode mass scavenging coef
       REAL          CTHK1               ! cloud thickness (m)
       REAL          METSTEP             ! timestep on the met file (hr)
       SAVE          METSTEP
@@ -173,7 +174,7 @@ C...........Local Variables:
       REAL          QRSGCOL             ! vert column integrated precip content
       REAL          QCICOL              ! vert column integrated cloud content
       REAL          RAIN                ! non-conv rainfall rate (mm/hr)
-      REAL          REMOVAC             ! variable storing H+ deposition
+      TYPE(hyperdual)          REMOVAC             ! variable storing H+ deposition
       REAL          TAUCLD              ! cloud lifetime (sec)
       REAL          TBARC               ! mean cloud temp (K)
       REAL          WCBAR               ! liq water content of cloud (kg/m3)
@@ -181,9 +182,9 @@ C...........Local Variables:
       REAL          WTBAR               ! total water content of cloud (kg/m3)
       REAL          LWP, CLOD
 
-      REAL, ALLOCATABLE, SAVE :: POLC ( : )   ! incloud conc (mol/mol)
-      REAL, ALLOCATABLE, SAVE :: CEND ( : )   ! ending conc (mol/mol)
-      REAL, ALLOCATABLE, SAVE :: REMOV( : )   ! moles/m2 or mm*mol/lit scavenged
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: POLC ( : )   ! incloud conc (mol/mol)
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: CEND ( : )   ! ending conc (mol/mol)
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: REMOV( : )   ! moles/m2 or mm*mol/lit scavenged
 
       REAL          RN   ( NCOLS, NROWS ) ! non-convective rainfall (cm)
       REAL          DENS ( NCOLS, NROWS, NLAYS )  ! air density (kg/m3)
@@ -221,24 +222,27 @@ C...........External Functions:
         SUBROUTINE SCAVWDEP ( JDATE, JTIME, WTBAR, WCBAR, TBARC, PBARC,
      &                        CTHK1, AIRM, PRATE1, TAUCLD, POLC, CEND,
      &                        REMOV, REMOVAC, ALFA0, ALFA2, ALFA3 )
+     	   USE HDMod
            INTEGER, INTENT( IN )  :: JDATE, JTIME
            REAL,    INTENT( IN )  :: WTBAR, WCBAR, TBARC, PBARC,
      &                               CTHK1, AIRM, PRATE1, TAUCLD
-           REAL,    INTENT( IN )  :: POLC ( : )
-           REAL,    INTENT( OUT ) :: REMOVAC
-           REAL,    INTENT( OUT ) :: CEND( : ), REMOV( : )
-           REAL,    INTENT( OUT ) :: ALFA0, ALFA2, ALFA3
+           TYPE(hyperdual),    INTENT( IN )  :: POLC ( : )
+           TYPE(hyperdual),    INTENT( OUT ) :: REMOVAC
+           TYPE(hyperdual),    INTENT( OUT ) :: CEND( : ), REMOV( : )
+           TYPE(hyperdual),    INTENT( OUT ) :: ALFA0, ALFA2, ALFA3
         END SUBROUTINE SCAVWDEP
         SUBROUTINE AQ_MAP( JDATE, JTIME, WTBAR, WCBAR, TBARC, PBARC,
      &                     CTHK1, AIRM, PRATE1, TAUCLD, POLC, CEND,
      &                     REMOV, REMOVAC, ALFA0, ALFA2, ALFA3, DARK )
+     	   
+     	   USE HDMod
            INTEGER, INTENT( IN )    :: JDATE, JTIME
            REAL,    INTENT( IN )    :: WTBAR, WCBAR, TBARC, PBARC,
      &                                 CTHK1, AIRM, PRATE1, TAUCLD
-           REAL,    INTENT( IN )    :: POLC ( : )
-           REAL,    INTENT( INOUT ) :: REMOVAC
-           REAL,    INTENT( INOUT ) :: CEND( : ), REMOV( : )
-           REAL,    INTENT( IN )    :: ALFA0, ALFA2, ALFA3
+           TYPE(hyperdual),    INTENT( IN )    :: POLC ( : )
+           TYPE(hyperdual),    INTENT( INOUT ) :: REMOVAC
+           TYPE(hyperdual),    INTENT( INOUT ) :: CEND( : ), REMOV( : )
+           TYPE(hyperdual),    INTENT( IN )    :: ALFA0, ALFA2, ALFA3
            LOGICAL, INTENT( IN )    :: DARK                  !Golam Sarwar, July 1, 2011
         END SUBROUTINE AQ_MAP
       END INTERFACE
@@ -577,7 +581,7 @@ C...  per mole air
                 DO SPC = 1, NSPCSD
                   POLC ( SPC ) = CGRID( COL, ROW, LAY, SPC )
                   CEND ( SPC ) = POLC( SPC )
-                  REMOV( SPC ) = 0.0
+                  REMOV( SPC ) = 0.0d0
                 END DO
 
 #ifdef isam

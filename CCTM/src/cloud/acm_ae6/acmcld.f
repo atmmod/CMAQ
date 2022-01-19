@@ -40,7 +40,7 @@ C     07/2005 J.Young         Clean up for CMAQ-F
 C     05/2015 J.Young         Clean up for CMAQv5.1
 C     01/2018 J.Pleim         Convert from sigma to Z for MPAS
 C-----------------------------------------------------------------------\
-
+	  USE HDMod
       IMPLICIT NONE
 
 C Arguments
@@ -48,9 +48,9 @@ C Arguments
       INTEGER, INTENT( IN ) :: NSP            ! no. of species
       INTEGER, INTENT( IN ) :: NLAYS          ! no. of model layers
       REAL, INTENT( IN )    :: F( : )         ! entrainment fraction
-      REAL, INTENT( INOUT ) :: C( :, : )      ! species concentration
+      TYPE(hyperdual), INTENT( INOUT ) :: C( :, : )      ! species concentration
       REAL, INTENT( IN )    :: DZH( : )
-      REAL, INTENT( INOUT ) :: CBELOW( : )    ! spec conc in layer below cld base
+      TYPE(hyperdual), INTENT( INOUT ) :: CBELOW( : )    ! spec conc in layer below cld base
       INTEGER, INTENT( IN ) :: CLBASE
       INTEGER, INTENT( IN ) :: CLTOP
       REAL, INTENT( IN )    :: FRAC           ! grid cell fractional cloud cover
@@ -67,12 +67,15 @@ C Local variables
       INTEGER NLP, K, NL, S          ! index variables
       INTEGER KB
 
-      REAL DTLIM, F1
-      REAL DTS, DELC, M1UP
+      REAL DTLIM
+      TYPE(hyperdual) :: F1
+      REAL DTS, M1UP
+      TYPE(hyperdual) :: DELC
       REAL( 8 ), ALLOCATABLE, SAVE :: AI( : ), BI( : ), EI( : )
-      REAL( 8 ), ALLOCATABLE, SAVE :: DI( : ), UI( : )
-      REAL( 8 ) :: ALPHA, BETA, GAMA
-      REAL, ALLOCATABLE, SAVE :: VCI( :,: )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DI( : ), UI( : )
+      REAL( 8 ) :: ALPHA, GAMA
+      TYPE(hyperdual) :: BETA
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: VCI( :,: )
       REAL, ALLOCATABLE, SAVE :: MBARKS( : ), MDWN( : )
 
 !--Local Arrays for MPAS implementation
@@ -121,10 +124,10 @@ C Compute ACM mixing rate
 
       DO S = 1, NSP
         VCI( KB, S ) = CBELOW( S )
-        VCI( CLTOP+1,S ) = 9999.0
+        VCI( CLTOP+1,S ) = 9999.0d0
         DO K = CLBASE, CLTOP
           VCI( K,S ) = C( S,K )
-          UI( K )  = 0.0           ! init variable for use below
+          UI( K )  = 0.0D0           ! init variable for use below
         END DO
       END DO
 
@@ -176,7 +179,7 @@ C Back substitution:
 
 C Update concentrations
           DO K = KB, CLTOP
-            VCI( K,S ) = REAL( UI( K ), 4 )
+            VCI( K,S ) =  UI( K ) 
           END DO
 
 1000    CONTINUE   ! end loop for species

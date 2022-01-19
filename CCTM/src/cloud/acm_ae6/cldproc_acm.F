@@ -64,6 +64,7 @@ C-----------------------------------------------------------------------
       USE CGRID_SPCS          ! CGRID mechanism species
       USE UTILIO_DEFN
       use CENTRALIZED_IO_MODULE, only : interpolate_var
+      USE HDMod
 
 #ifdef isam
       USE SA_DEFN, ONLY: ISAM, NSPC_SA, N_SPCTAG, TOT_SADEP, CONV_SADEP,
@@ -103,7 +104,7 @@ C...........ARGUMENTS
 
 !     REAL          CGRID( NCOLS, NROWS, NLAYS, * )  ! concentrations
 !     REAL       :: CGRID( :,:,:,: )                 ! concentrations
-      REAL, POINTER :: CGRID( :,:,:,: )                 ! concentrations
+      TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )                 ! concentrations
       INTEGER       JDATE            ! current model date, coded YYYYDDD
       INTEGER       JTIME            ! current model time, coded HHMMSS
       INTEGER       TSTEP( 3 )       ! model time step, coded HHMMSS
@@ -147,7 +148,7 @@ C...........Local Variables
       REAL, ALLOCATABLE, SAVE :: SUBTRANS( :,:,: ) ! subgrid cloud transmissivity
 
       REAL FAC                       ! temp conversion factor
-      REAL CCMIN
+      TYPE(hyperdual) CCMIN
 
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: BUFF2 ( :,: )
@@ -164,8 +165,9 @@ C...........EXTERNAL FUNCTIONS
          SUBROUTINE RESCLD ( CGRID, JDATE, JTIME, TSTEP,
      &                       N_SPC_WDEP, WDEP_MAP, DEP, RESTRANS )
 #endif
+			USE HDMod
             IMPLICIT NONE
-            REAL, POINTER            :: CGRID( :,:,:,: )
+            TYPE(hyperdual), POINTER            :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP( 3 )
             INTEGER, INTENT( IN )    :: N_SPC_WDEP
             INTEGER, INTENT( IN )    :: WDEP_MAP( : )
@@ -184,8 +186,9 @@ C...........EXTERNAL FUNCTIONS
          SUBROUTINE CONVCLD_ACM ( CGRID, JDATE, JTIME, TSTEP,
      &                            N_SPC_WDEP, WDEP_MAP, DEP, SUBTRANS )
 #endif
+			USE HDMod
             IMPLICIT NONE
-            REAL, POINTER            :: CGRID( :,:,:,: )
+            TYPE(hyperdual), POINTER            :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP( 3 )
             INTEGER, INTENT( IN )    :: N_SPC_WDEP
             INTEGER, INTENT( IN )    :: WDEP_MAP( : )

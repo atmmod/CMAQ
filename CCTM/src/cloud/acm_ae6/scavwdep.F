@@ -79,7 +79,7 @@ C-----------------------------------------------------------------------
 #ifdef sens
       USE DDM3D_DEFN, ONLY : NP, NPMAX, S_POLC, S_CEND, S_REMOV, S_REMOVAC
 #endif 
-
+	  USE HDMod
       IMPLICIT NONE
 
 C...........Includes:
@@ -115,13 +115,13 @@ C...........Arguments:
       REAL,    INTENT(  IN ) :: AIRM    ! total air mass (moles/m2) in cloudy air
       REAL,    INTENT(  IN ) :: PRATE1  ! storm rainfall rate (mm/hr)
       REAL,    INTENT(  IN ) :: TAUCLD  ! cloud lifetime
-      REAL,    INTENT( OUT ) :: ALFA0   ! scav coef for aitken aerosol number
-      REAL,    INTENT( OUT ) :: ALFA2   ! scav coef for aitken aerosol sfc area
-      REAL,    INTENT( OUT ) :: ALFA3   ! scav coef for aitken aerosol mass
+      TYPE(hyperdual),    INTENT( OUT ) :: ALFA0   ! scav coef for aitken aerosol number
+      TYPE(hyperdual),    INTENT( OUT ) :: ALFA2   ! scav coef for aitken aerosol sfc area
+      TYPE(hyperdual),    INTENT( OUT ) :: ALFA3   ! scav coef for aitken aerosol mass
       REAL,    INTENT( OUT ) :: REMOVAC ! variable storing H+ deposition
-      REAL,    INTENT(  IN ) :: POLC ( : )  ! avg vert conc incloud (moles/mole)
-      REAL,    INTENT( OUT ) :: CEND ( : )  ! ending incloud conc (moles/mole)
-      REAL,    INTENT( OUT ) :: REMOV( : )  ! moles/m2 or mm*mol/lit scavenged
+      TYPE(hyperdual),    INTENT(  IN ) :: POLC ( : )  ! avg vert conc incloud (moles/mole)
+      TYPE(hyperdual),    INTENT( OUT ) :: CEND ( : )  ! ending incloud conc (moles/mole)
+      TYPE(hyperdual),    INTENT( OUT ) :: REMOV( : )  ! moles/m2 or mm*mol/lit scavenged
 
 C...........Local Variables:
 
@@ -144,11 +144,11 @@ C...........Local Variables:
       INTEGER       SPC                 ! liquid species loop counter
       INTEGER       VAR                 ! variable loop counter
 
-      REAL          ALFA                ! scavenging coefficient (1/s)
+      TYPE(hyperdual)          ALFA                ! scavenging coefficient (1/s)
       REAL          KH                  ! Henry's law constant (mol/l/atm)
-      REAL          NUMAKN              ! Aitken mode aerosol # (#/m3)
-      REAL          MASAKN              ! Total Aitken mode mass (ug/m3)
-      REAL          SRFAKN
+      TYPE(hyperdual)          NUMAKN              ! Aitken mode aerosol # (#/m3)
+      TYPE(hyperdual)          MASAKN              ! Total Aitken mode mass (ug/m3)
+      TYPE(hyperdual)          SRFAKN
       REAL          ONE_OVER_TWASH      ! 1 / TWASH
       REAL,    SAVE :: HPLUS = 1.0E-4   ! typical value hydrogen ion concentration [mol/l]
       REAL          RHOAIR              ! air density in kg/m3
@@ -273,7 +273,7 @@ ccc          TWASH = AMAX1( TWASH, TAUCLD / 60.0 )   ! <different units?sec&min
 
 C...compute total Aitken mode number (#/m3)
 
-      NUMAKN = 0.0
+      NUMAKN = 0.0d0
 
       DO I = 1, N_NUMAKN
         PNTR = CGRID_SCAV_MAP( L_NUMAKN( I ) )
@@ -282,7 +282,7 @@ C...compute total Aitken mode number (#/m3)
 
 C...compute total Aitken mode mass (ug/m3)
 
-      MASAKN = 0.0
+      MASAKN = 0.0d0
 
       DO I = 1, N_MASAKN
         PNTR = CGRID_SCAV_MAP( L_MASAKN( I ) )
@@ -297,7 +297,7 @@ C...compute total Aitken mode mass (ug/m3)
 
 C...compute total Aitken mode surface area (m2/m3)
 
-      SRFAKN = 0.0
+      SRFAKN = 0.0d0
 
       DO I = 1, N_SRFAKN
         PNTR = CGRID_SCAV_MAP( L_SRFAKN( I ) )
@@ -323,7 +323,7 @@ C...gas scavenging and wet deposition
         PNTR = CGRID_SCAV_MAP( SPC )
         KH = HLCONST( CGRID_SCAV( SPC ), TBARC, .TRUE., HPLUS )
         IF ( KH .GT. 0.0 ) THEN
-          ALFA = CGRID_SCAV_FAC( SPC ) * ONE_OVER_TWASH / ( 1.0 + TWF / KH )
+          ALFA = REAL ( CGRID_SCAV_FAC( SPC ) * ONE_OVER_TWASH / ( 1.0 + TWF / KH ) , 8 )
           CEND ( PNTR ) = POLC( PNTR ) * EXP( -ALFA * TAUCLD )
           REMOV( PNTR ) = ( POLC( PNTR ) - CEND( PNTR ) ) * AIRM
 #ifdef sens
@@ -333,9 +333,9 @@ C...gas scavenging and wet deposition
           END DO
 #endif
         ELSE
-          ALFA = 0.0
+          ALFA = 0.0D0
           CEND ( PNTR ) = POLC( PNTR )
-          REMOV( PNTR ) = 0.0
+          REMOV( PNTR ) = 0.0D0
 #ifdef sens
           DO NP = 1, NPMAX
             S_CEND( NP, PNTR )  = S_POLC( NP, PNTR )
@@ -362,7 +362,7 @@ C...aerosol scavenging and wet deposition
           END IF
         ELSE
 csjr          IF ( INDEX( CGRID_SCAV( SPC ), 'SRF' ) .EQ. 0 ) THEN
-            ALFA = CGRID_SCAV_FAC( SPC ) * ONE_OVER_TWASH
+            ALFA = REAL ( CGRID_SCAV_FAC( SPC ) * ONE_OVER_TWASH , 8 )
 csjr          ELSE
 csjr            ALFA = CGRID_SCAV_FAC( SPC ) * TWOTHIRDS * ONE_OVER_TWASH
 csjr          END IF
@@ -371,12 +371,12 @@ csjr          END IF
         CEND ( PNTR ) = POLC( PNTR ) * EXP( -ALFA * TAUCLD )
         REMOV( PNTR ) = ( POLC( PNTR ) - CEND( PNTR ) ) * AIRM
 
-#ifdef sens
-        DO NP = 1, NPMAX
-          S_CEND ( NP,PNTR ) = S_POLC( NP,PNTR ) * EXP( -ALFA * TAUCLD )
-          S_REMOV( NP,PNTR ) = ( S_POLC( NP,PNTR ) - S_CEND( NP, PNTR ) ) * AIRM
-        ENDDO
-#endif
+C#ifdef sens
+C       DO NP = 1, NPMAX
+C         S_CEND ( NP,PNTR ) = S_POLC( NP,PNTR ) * EXP( -ALFA * TAUCLD )
+C         S_REMOV( NP,PNTR ) = ( S_POLC( NP,PNTR ) - S_CEND( NP, PNTR ) ) * AIRM
+C       ENDDO
+C#endif
 
       END DO
 
@@ -387,19 +387,19 @@ C...non-reactive scavenging and wet deposition
         PNTR = CGRID_SCAV_MAP( SPC )
         KH = HLCONST( CGRID_SCAV( SPC ), TBARC, .TRUE., HPLUS )
         IF ( KH .GT. 0.0 ) THEN
-          ALFA = CGRID_SCAV_FAC( SPC ) * ONE_OVER_TWASH / ( 1.0 + TWF / KH )
+          ALFA = REAL ( CGRID_SCAV_FAC( SPC ) * ONE_OVER_TWASH / ( 1.0 + TWF / KH ) , 8 )
           CEND ( PNTR ) = POLC( PNTR ) * EXP( -ALFA * TAUCLD )
           REMOV( PNTR ) = ( POLC( PNTR ) - CEND( PNTR ) ) * AIRM
-#ifdef sens
-          DO NP = 1, NPMAX
-            S_CEND ( NP, PNTR ) = S_POLC( NP,PNTR ) * EXP( -ALFA * TAUCLD )
-            S_REMOV( NP, PNTR ) = ( S_POLC( NP,PNTR ) - S_CEND( NP, PNTR ) ) * AIRM
-          END DO
-#endif
+C#ifdef sens
+C         DO NP = 1, NPMAX
+C           S_CEND ( NP, PNTR ) = S_POLC( NP,PNTR ) * EXP( -ALFA * TAUCLD )
+C           S_REMOV( NP, PNTR ) = ( S_POLC( NP,PNTR ) - S_CEND( NP, PNTR ) ) * AIRM
+C         END DO
+C#endif
         ELSE
-          ALFA = 0.0
+          ALFA = 0.0D0
           CEND ( PNTR ) = POLC( PNTR )
-          REMOV( PNTR ) = 0.0
+          REMOV( PNTR ) = 0.0D0
 #ifdef sens
           DO NP = 1, NPMAX
             S_CEND( NP, PNTR )  = S_POLC( NP, PNTR )
@@ -416,19 +416,19 @@ C...tracer scavenging and wet deposition
         PNTR = CGRID_SCAV_MAP( SPC )
         KH = HLCONST( CGRID_SCAV( SPC ), TBARC, .TRUE., HPLUS )
         IF ( KH .GT. 0.0 ) THEN
-          ALFA = CGRID_SCAV_FAC( SPC ) * ONE_OVER_TWASH / ( 1.0 + TWF / KH )
+          ALFA = REAL ( CGRID_SCAV_FAC( SPC ) * ONE_OVER_TWASH / ( 1.0 + TWF / KH ) , 8 )
           CEND ( PNTR ) = POLC( PNTR ) * EXP( -ALFA * TAUCLD )
           REMOV( PNTR ) = ( POLC( PNTR ) - CEND( PNTR ) ) * AIRM
-#ifdef sens
-          DO NP = 1, NPMAX
-            S_CEND ( NP, PNTR ) = S_POLC( NP,PNTR ) * EXP( -ALFA * TAUCLD )
-            S_REMOV( NP, PNTR ) = ( S_POLC( NP,PNTR ) - S_CEND( NP, PNTR ) ) * AIRM
-          END DO
-#endif
+C#ifdef sens
+C         DO NP = 1, NPMAX
+C           S_CEND ( NP, PNTR ) = S_POLC( NP,PNTR ) * EXP( -ALFA * TAUCLD )
+C           S_REMOV( NP, PNTR ) = ( S_POLC( NP,PNTR ) - S_CEND( NP, PNTR ) ) * AIRM
+C         END DO
+C#endif
         ELSE
-          ALFA = 0.0
+          ALFA = 0.0D0
           CEND ( PNTR ) = POLC( PNTR )
-          REMOV( PNTR ) = 0.0
+          REMOV( PNTR ) = 0.0D0
 #ifdef sens
           DO NP = 1, NPMAX
             S_CEND( NP, PNTR )  = S_POLC( NP, PNTR )

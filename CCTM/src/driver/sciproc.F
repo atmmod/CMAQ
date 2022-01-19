@@ -179,7 +179,8 @@ c      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
             INTEGER, INTENT( IN )     :: TSTEP( : )
          END SUBROUTINE PHOT
          SUBROUTINE CLDPROC ( CGRID, JDATE, JTIME, TSTEP )
-            REAL, POINTER             :: CGRID( :,:,:,: )
+         	USE HDMod
+            TYPE(hyperdual), POINTER             :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )     :: JDATE, JTIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
          END SUBROUTINE CLDPROC
