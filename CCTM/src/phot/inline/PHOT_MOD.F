@@ -106,26 +106,26 @@ C-----------------------------------------------------------------------
       
       INTEGER            :: N_TROPO_O3_TOGGLE      ! number of adjustments to ozone extinction 
  
-      REAL, ALLOCATABLE  :: RJ      ( :, :, :, : ) ! average grid cell J-values (min-1)
-      REAL, ALLOCATABLE  :: RJ_RES  ( :, :, :, : ) ! resolved cloud J-values (min-1)
-      REAL, ALLOCATABLE  :: RJ_SUB  ( :, :, :, : ) ! subgrid cloud J-values (min-1)
-      REAL, ALLOCATABLE  :: ETOT_SFC_WL ( :,:,: )  ! total downward irradiance at sfc [ Watts / m**2  ]
+      TYPE(hyperdual), ALLOCATABLE  :: RJ      ( :, :, :, : ) ! average grid cell J-values (min-1)
+      TYPE(hyperdual), ALLOCATABLE  :: RJ_RES  ( :, :, :, : ) ! resolved cloud J-values (min-1)
+      TYPE(hyperdual), ALLOCATABLE  :: RJ_SUB  ( :, :, :, : ) ! subgrid cloud J-values (min-1)
+      TYPE(hyperdual), ALLOCATABLE  :: ETOT_SFC_WL ( :,:,: )  ! total downward irradiance at sfc [ Watts / m**2  ]
       
       REAL, ALLOCATABLE  :: BLKHCHO( : )           ! formaldehyde concentration [ molecules/cm**3 ]
       REAL, ALLOCATABLE  :: BLKCO  ( : )           ! CO concentration [ molecules/cm**3 ]
       REAL, ALLOCATABLE  :: BLKSO2 ( : )           ! SO2 concentration [ molecules/cm**3 ]
       REAL, ALLOCATABLE  :: BLKDZ  ( : )           ! layer thicknesses [ m ]
-      REAL, ALLOCATABLE  :: GAS_EXTINCTION( :,: )  ! extinction from gases per layer [1/m]
-      REAL, ALLOCATABLE  :: EXTINCTION    ( :,: )  ! total extinction per layer [1/m]
-      REAL, ALLOCATABLE  :: ACTINIC_FLUX  ( :,: )  ! actinic fluxes, initially [Photons/(cm^2s)] then  [Watts/m^2] 
-      REAL, ALLOCATABLE  :: IRRADIANCE    ( :,: )  ! total downward irradiance [Watts/m^2]
-      REAL               :: REFLECTION             ! broad band reflection coefficient (diffuse) at model top 
-      REAL               :: TRANSMISSION           ! broad band transmission coefficient (diffuse) at surface
-      REAL               :: TRANS_DIRECT           ! broad band direct transmission coefficient at surface
-      REAL               :: TROPO_O3_COLUMN        ! ozone column density in the troposphere [Dobson Units]
-      REAL               :: TROPO_O3_TOGGLE        ! factor correcting tropospheric ozone column 
-      REAL               :: O3_TOGGLE_AVE          ! average of nonunity factors adjusting ozone extinction 
-      REAL               :: O3_TOGGLE_MIN          ! Max of nonunity factors adjusting ozone extinction 
+      TYPE(hyperdual), ALLOCATABLE  :: GAS_EXTINCTION( :,: )  ! extinction from gases per layer [1/m]
+      TYPE(hyperdual), ALLOCATABLE  :: EXTINCTION    ( :,: )  ! total extinction per layer [1/m]
+      TYPE(hyperdual), ALLOCATABLE  :: ACTINIC_FLUX  ( :,: )  ! actinic fluxes, initially [Photons/(cm^2s)] then  [Watts/m^2] 
+      TYPE(hyperdual), ALLOCATABLE  :: IRRADIANCE    ( :,: )  ! total downward irradiance [Watts/m^2]
+      TYPE(hyperdual)    :: REFLECTION             ! broad band reflection coefficient (diffuse) at model top 
+      TYPE(hyperdual)    :: TRANSMISSION           ! broad band transmission coefficient (diffuse) at surface
+      TYPE(hyperdual)    :: TRANS_DIRECT           ! broad band direct transmission coefficient at surface
+      TYPE(hyperdual)    :: TROPO_O3_COLUMN        ! ozone column density in the troposphere [Dobson Units]
+      TYPE(hyperdual)    :: TROPO_O3_TOGGLE        ! factor correcting tropospheric ozone column 
+      TYPE(hyperdual)    :: O3_TOGGLE_AVE          ! average of nonunity factors adjusting ozone extinction 
+      TYPE(hyperdual)    :: O3_TOGGLE_MIN          ! Max of nonunity factors adjusting ozone extinction 
       REAL               :: COS85                  ! cosine of 85 degrees
   
       LOGICAL            :: ONLY_SOLVE_RAD             ! only compute fluxes     
@@ -179,8 +179,8 @@ C-----------------------------------------------------------------------
               CALL M3EXIT ( 'INIT_PHOT_SHARED', 0, 0, XMSG, XSTAT1 )
           END IF
 
-          RJ = 0.0; RJ_RES = 0.0; RJ_SUB = 0.0
-          ETOT_SFC_WL = 0.0
+          RJ = 0.0D0; RJ_RES = 0.0D0; RJ_SUB = 0.0D0
+          ETOT_SFC_WL = 0.0D0
           
       END SUBROUTINE INIT_PHOT_SHARED
 
@@ -235,8 +235,8 @@ C-----------------------------------------------------------------------
       REAL,    INTENT(IN) :: BLKDENS( : )       ! Air density  [ molecules / cm**3 ]
       REAL,    INTENT(IN) :: BLKZH  ( : )       ! layer half-height [ m ]
       REAL,    INTENT(IN) :: BLKZF  ( : )       ! layer full height[ m ]
-      REAL,    INTENT(IN) :: BLKO3  ( : )       ! O3 concentration [ molecules / cm**3 ]
-      REAL,    INTENT(IN) :: BLKNO2 ( : )       ! NO2 concentration [ molecules / cm**3 ]
+      TYPE(hyperdual),    INTENT(IN) :: BLKO3  ( : )       ! O3 concentration [ molecules / cm**3 ]
+      TYPE(hyperdual),    INTENT(IN) :: BLKNO2 ( : )       ! NO2 concentration [ molecules / cm**3 ]
       REAL,    INTENT(IN) :: ZSFC               ! surface height (msl) [ m ]
       REAL,    INTENT(IN) :: COSZEN, SINZEN     ! sine and cosine of the zenith angle
       REAL,    INTENT(IN) :: RSQD               ! square of  solar distance [ au**2 ]
@@ -246,15 +246,15 @@ C-----------------------------------------------------------------------
       REAL,    INTENT(IN) :: CLDFRC( : )  ! fraction of gridcell covered by cloud
       
 
-      REAL,    INTENT(OUT) :: BLKRJ( :,: )  ! photolysis rates [ 1 / sec ]
+      TYPE(hyperdual),    INTENT(OUT) :: BLKRJ( :,: )  ! photolysis rates [ 1 / sec ]
 
       REAL,    INTENT(OUT) :: TAUC_AERO( :,: )  ! aerosol optical depth, bottom of layer
-      REAL,    INTENT(OUT) :: TAU_TOT  ( :,: )  ! total optical depth, bottom of layer
+      TYPE(hyperdual),    INTENT(OUT) :: TAU_TOT  ( :,: )  ! total optical depth, bottom of layer
       REAL,    INTENT(OUT) :: TAU_CLOUD( :,: )  ! cloud optical depth, bottom of layer
 
-      REAL,    INTENT(INOUT) :: TAUO3_TOP( : )  ! optical depth of ozone above model domain
+      TYPE(hyperdual),    INTENT(INOUT) :: TAUO3_TOP( : )  ! optical depth of ozone above model domain
       REAL,    INTENT(INOUT) :: TAU_RAY  ( : )  ! Rayleigh optical depth above model domain
-      REAL,    INTENT(OUT)   :: SSA_AERO ( : )  ! single scatering albedo for aerosol column
+      TYPE(hyperdual),    INTENT(OUT)   :: SSA_AERO ( : )  ! single scatering albedo for aerosol column
       
       REAL, INTENT(INOUT) :: TOTAL_O3_COLUMN  ! total ozone colum density [ DU ]
 
@@ -269,9 +269,9 @@ C-----------------------------------------------------------------------
       REAL SOLAR_FLUX        ! solar flux at atmosphere top in a wavelength band, [photons/(cm^2*s)]
       REAL INSOLATION        ! downward solar flux at atmosphere top summed over wavelength bands, [photons/(cm^2*s)]
 
-      REAL DELTA_O3_COLUMN   ! change in ozone column density [molecules/cm2]
-      REAL STRAT_O3_COLUMN   ! ozone column density in the stratosphere [molecules/cm2]
-      REAL STRAT_O3_COLMIN   ! ozone minium column density in the stratosphere [molecules/cm2]
+      TYPE(hyperdual) DELTA_O3_COLUMN   ! change in ozone column density [molecules/cm2]
+      TYPE(hyperdual) STRAT_O3_COLUMN   ! ozone column density in the stratosphere [molecules/cm2]
+      TYPE(hyperdual) STRAT_O3_COLMIN   ! ozone minium column density in the stratosphere [molecules/cm2]
       REAL TAU_O3            ! optical depth of stratospheric ozone [ m ]
       REAL DENSTOM           ! estimated air density at top of model [ molecules / cm**3 ]
       REAL LAMDA             ! wavelength  [ nm ]
@@ -281,8 +281,8 @@ C-----------------------------------------------------------------------
 !***working absorption cross sections [ cm**2 ]. These have been corrected
 !***  for ambient ( pressure and temperature ) conditions.
 
-      REAL AO3
-      REAL ANO2
+      TYPE(hyperdual) AO3
+      TYPE(hyperdual) ANO2
       REAL BETA_M     ! molecular scattering coefficient [ 1/m ]
       TYPE(hyperdual) BEXT       ! total aerosol extinction coefficient [ 1/m ]
       REAL VFAC, BSC  ! unit correction factors
@@ -294,7 +294,8 @@ C-----------------------------------------------------------------------
 
 !***scattering and absorption for the layer
 
-      REAL DTABS_A, DTABS_M, DTSCAT_A, DTSCAT_M, DTSCAT, DTABS
+      TYPE(hyperdual) DTABS_A, DTABS_M, DTSCAT_A, DTSCAT, DTABS
+      REAL :: DTSCAT_M
 
 !***variables describing the layer heights and slants
 !     REAL DJ, DF
@@ -305,36 +306,36 @@ C-----------------------------------------------------------------------
 
 !***Increment of optical depth
 
-      REAL, ALLOCATABLE, SAVE :: DTAU    ( : )   ! total depth at level
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DTAU    ( : )   ! total depth at level
       REAL, ALLOCATABLE, SAVE :: DT_AERO ( : )   ! aerosol contribution at level
       REAL, ALLOCATABLE, SAVE :: DT_CLOUD( : )   ! cloud contribution at level
 
 !***single scattering albedo for layer
 
-      REAL, ALLOCATABLE, SAVE :: OM( : )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: OM( : )
 
 !***asymmetry factor
 
-      REAL, ALLOCATABLE, SAVE :: G( : )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: G( : )
 
 !***arrays for fluxes and irradiances used in
 
 !***delta-Eddington code
 
-      REAL, ALLOCATABLE, SAVE :: FDIR( : )   ! direct actinic flux
-      REAL, ALLOCATABLE, SAVE :: FUP ( : )   ! diffuse upward actinic flux
-      REAL, ALLOCATABLE, SAVE :: FDN ( : )   ! diffuse downward flux
-      REAL, ALLOCATABLE, SAVE :: EDIR( : )   ! direct irradiance
-      REAL, ALLOCATABLE, SAVE :: EUP ( : )   ! diffuse upward irradiance
-      REAL, ALLOCATABLE, SAVE :: EDN ( : )   ! diffuse downward irradiance
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: FDIR( : )   ! direct actinic flux
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: FUP ( : )   ! diffuse upward actinic flux
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: FDN ( : )   ! diffuse downward flux
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: EDIR( : )   ! direct irradiance
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: EUP ( : )   ! diffuse upward irradiance
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: EDN ( : )   ! diffuse downward irradiance
 
 !***surface albedo
 
       REAL RSFC
 
       REAL FX
-      REAL, ALLOCATABLE, SAVE :: ESUM( : )   ! total downward irradiance
-      REAL, ALLOCATABLE, SAVE :: FSUM( : )   ! total actinic flux
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: ESUM( : )   ! total downward irradiance
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: FSUM( : )   ! total actinic flux
 
 !***needed for stratospheric Raleigh optical depth
       REAL, PARAMETER :: R_G = 100.0 * RDGAS / GRAV  ! dry air gas constant
@@ -368,7 +369,7 @@ C-----------------------------------------------------------------------
 
 !***arrays for fluxes and irradiances used in
       REAL, ALLOCATABLE, SAVE :: SRAYL( : )        ! Molecular scattering cross sections [ cm ** 2]
-      REAL, ALLOCATABLE, SAVE :: TAU_SCAT( : )     ! aerosol scattering optical depth
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: TAU_SCAT( : )     ! aerosol scattering optical depth
       REAL, ALLOCATABLE, SAVE :: CONV_WM2( : )     ! conversion factor [photons/(cm**2 s )] to [Watts/m**2]
 
 !***three-dimensional array for Cs and Qy
@@ -430,26 +431,26 @@ C-----------------------------------------------------------------------
 
 !***initialize BLKRJ and other layer variables
 
-      BLKRJ          = 0.0
+      BLKRJ          = 0.0D0
       BLKDZ          = 0.0
-      GAS_EXTINCTION = 0.0
-      EXTINCTION     = 0.0
-      ACTINIC_FLUX   = 0.0
-      IRRADIANCE     = 0.0
-      REFLECTION     = 0.0
-      TRANSMISSION   = 0.0
-      TRANS_DIRECT   = 0.0
+      GAS_EXTINCTION = 0.0D0
+      EXTINCTION     = 0.0D0
+      ACTINIC_FLUX   = 0.0D0
+      IRRADIANCE     = 0.0D0
+      REFLECTION     = 0.0D0
+      TRANSMISSION   = 0.0D0
+      TRANS_DIRECT   = 0.0D0
       INSOLATION     = 0.0
-      TROPO_O3_TOGGLE  = 1.0
+      TROPO_O3_TOGGLE  = 1.0D0
       STRATO3_MINS_MET = .TRUE.
 !***Initialize sums or set default values for outputs: 
 !   TAUC_AERO, TAU_TOT, TAUO3_TOP, TAU_RAY, SSA_AERO, etc.
 
       TAUC_AERO = 0.0
-      TAU_TOT   = 0.0
+      TAU_TOT   = 0.0D0
       TAU_CLOUD = 0.0
-      TAU_SCAT  = 0.0
-      SSA_AERO  = 0.0
+      TAU_SCAT  = 0.0D0
+      SSA_AERO  = 0.0D0
       TOTAL_TAU_CLD = 0.0
 #ifdef phot_debug      
       AVE_SSA_CLD   = 0.0
@@ -468,10 +469,10 @@ C-----------------------------------------------------------------------
 !***  equalt to 85 degrees. cos( 85 degrees ) equals 8.715574e-02.
 
       IF ( COSZEN .LE. COS85 ) THEN
-         TAUO3_TOP = 0.0
+         TAUO3_TOP = 0.0D0
          TAU_RAY   = 0.0
-         TROPO_O3_COLUMN = 0.0
-         TROPO_O3_TOGGLE = 1.0
+         TROPO_O3_COLUMN = 0.0D0
+         TROPO_O3_TOGGLE = 1.0D0
          RETURN
       END IF
 
@@ -508,11 +509,11 @@ C-----------------------------------------------------------------------
          CALL SLANTPATHTOP ( ZTOM, ZTOA, ZSFC, REARTH, SINZEN, DSDH_TOP )
 
 C*** find ozone column density for atmosphere, stratosphere, and troposphere
-         STRAT_O3_COLUMN = DU_TO_CONC * REAL( TOTAL_O3_COLUMN )
+         STRAT_O3_COLUMN = REAL ( DU_TO_CONC * TOTAL_O3_COLUMN , 8 ) 
 !         STRAT_O3_COLMIN = 0.10 * STRAT_O3_COLUMN
          STRAT_O3_COLMIN = MIN_STRATO3_FRAC * STRAT_O3_COLUMN
          SUCCESS = .TRUE.
-         TROPO_O3_COLUMN = 0.0
+         TROPO_O3_COLUMN = 0.0D0
          DO L = NLAYS, 1, -1
             DELTA_O3_COLUMN = 100.0 * BLKO3( L ) * BLKDZ( L )
             STRAT_O3_COLUMN = STRAT_O3_COLUMN - DELTA_O3_COLUMN
@@ -556,9 +557,9 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
                WRITE( LOGDEV, 99999)
                OBEY_STRATO3_MINS = .FALSE.
             END IF
-            IF( .NOT. ADJUST_OZONE ) TROPO_O3_TOGGLE = 1.0 ! reset toggle to one 
+            IF( .NOT. ADJUST_OZONE ) TROPO_O3_TOGGLE = 1.0D0 ! reset toggle to one 
          ELSE
-            TROPO_O3_TOGGLE = 1.0
+            TROPO_O3_TOGGLE = 1.0D0
          END IF
 
 
@@ -603,7 +604,7 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
 
 !*** initialize tau, delta tau's, other variables and loop over layers
 
-         DTAU         = 0.0
+         DTAU         = 0.0D0
          DT_AERO      = 0.0
          DT_CLOUD     = 0.0
          DTSCAT_CLOUD = 0.0
@@ -633,24 +634,23 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
 !***  are calculated separately to facilitate the calculation
 !***  of the total single scatering albedo of the column of aerosols
 !***  as measured by satellites.
-
-! *** Ignore sensitivity terms here for now J.E.L. 
+ 
 
             DTSCAT_M = BETA_M * BLKDZ( II ) ! molecular scattering
-            DTSCAT_A = real_hdual(BSCAT)  * BLKDZ( II ) ! particle scattering
+            DTSCAT_A = BSCAT  * BLKDZ( II ) ! particle scattering
 
             DTSCAT_M = MAX( DTSCAT_M, SMALL )
             DTSCAT_A = MAX( DTSCAT_A, SMALL )
 
 
             DTABS_M  = ( AO3 + ANO2  )  * BLKDZ( II ) ! molecular absorption
-            DTABS_A  = real_hdual( BEXT - BSCAT ) * BLKDZ( II ) ! particle absorption
+            DTABS_A  = ( BEXT - BSCAT ) * BLKDZ( II ) ! particle absorption
 
             DTABS_M  = MAX( DTABS_M, SMALL )
             DTABS_A  = MAX( DTABS_A, SMALL )
 
             GAS_EXTINCTION( II,IWL ) = BETA_M + AO3 + ANO2        ! gas extinction
-            EXTINCTION( II,IWL )     = BETA_M + real_hdual(BEXT) + AO3 + ANO2 ! gas and aerosol extinction
+            EXTINCTION( II,IWL )     = BETA_M + BEXT + AO3 + ANO2 ! gas and aerosol extinction
             
             IF ( CLOUDS( II ) ) THEN 
      
@@ -768,7 +768,7 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
 
             DTAU( L ) = DTSCAT + DTABS
             OM  ( L ) = DTSCAT / ( DTSCAT + DTABS )
-            G   ( L ) = ( real_hdual(G_BAR) * DTSCAT_A + G_CLOUD * DTSCAT_CLOUD ) / DTSCAT
+            G   ( L ) = ( G_BAR * DTSCAT_A + G_CLOUD * DTSCAT_CLOUD ) / DTSCAT
 
             IF ( G( L ) .GE. 1.0 .OR. G( L ) .LE. -1.0 .OR. G( L ) .NE. G( L ) ) THEN
                WRITE( LOGDEV,'(A,ES12.4,A)',ADVANCE = 'NO' )
@@ -839,7 +839,7 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
 !***set values for the stratosphere
 
          OM     ( 1 ) = TAU_RAY( IWL ) / ( TAU_RAY( IWL ) + TAUO3_TOP( IWL ) )
-         G      ( 1 ) = 0.05
+         G      ( 1 ) = 0.05D0
          DTAU   ( 1 ) = TAUO3_TOP( IWL ) + TAU_RAY( IWL )
          DSDH_TD( 1 ) = DSDH_TOP
 
@@ -860,12 +860,12 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
          
 !***Set fluxes to zero
 
-         FDIR = 0.0
-         FUP  = 0.0
-         FDN  = 0.0
-         EDIR = 0.0
-         EUP  = 0.0
-         EDN  = 0.0
+         FDIR = 0.0D0
+         FUP  = 0.0D0
+         FDN  = 0.0D0
+         EDIR = 0.0D0
+         EUP  = 0.0D0
+         EDN  = 0.0D0
 
 !***calculate fluxes and irradiances
          CALL TWOSTREAM_S ( NLEVEL, COSZEN, ALB( IWL ), DTAU, OM, G, DSDH_TD,
@@ -936,8 +936,15 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
          FORALL( L = 1:NLAYS )
 !***multiply by the solar flux at the domain top for 
 !***actinic flux and irradiance; keeping actinic flux in photons/(cm^2*s)
-            ACTINIC_FLUX( L,IWL ) = SOLAR_FLUX * FSUM( L )
-            IRRADIANCE  ( L,IWL ) = SOLAR_FLUX * CONV_WM2( IWL ) * ESUM( L )
+            ACTINIC_FLUX( L,IWL )%x = SOLAR_FLUX * FSUM( L )%x
+            ACTINIC_FLUX( L,IWL )%dx1 = SOLAR_FLUX * FSUM( L )%dx1
+            ACTINIC_FLUX( L,IWL )%dx2 = SOLAR_FLUX * FSUM( L )%dx2
+            ACTINIC_FLUX( L,IWL )%dx1x2 = SOLAR_FLUX * FSUM( L )%dx1x2
+            
+            IRRADIANCE  ( L,IWL )%x = SOLAR_FLUX * CONV_WM2( IWL ) * ESUM( L )%x
+            IRRADIANCE  ( L,IWL )%dx1 = SOLAR_FLUX * CONV_WM2( IWL ) * ESUM( L )%dx1
+            IRRADIANCE  ( L,IWL )%dx2 = SOLAR_FLUX * CONV_WM2( IWL ) * ESUM( L )%dx2
+            IRRADIANCE  ( L,IWL )%dx1x2 = SOLAR_FLUX * CONV_WM2( IWL ) * ESUM( L )%dx1x2
          END FORALL
       END DO    ! loop over wavelengths
 
@@ -961,7 +968,10 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
       END DO  ! loop on layers, wavelength,  IPHOT
 ! convert actinic flux to watts/m^2    
       FORALL( L = 1:NLAYS, IWL=1:NWL  )
-         ACTINIC_FLUX( L,IWL ) = ACTINIC_FLUX( L,IWL ) * CONV_WM2( IWL )
+         ACTINIC_FLUX( L,IWL )%x = ACTINIC_FLUX( L,IWL )%x * CONV_WM2( IWL )
+         ACTINIC_FLUX( L,IWL )%dx1 = ACTINIC_FLUX( L,IWL )%dx1 * CONV_WM2( IWL )
+         ACTINIC_FLUX( L,IWL )%dx2 = ACTINIC_FLUX( L,IWL )%dx2 * CONV_WM2( IWL )
+         ACTINIC_FLUX( L,IWL )%dx1x2 = ACTINIC_FLUX( L,IWL )%dx1x2 * CONV_WM2( IWL )
       END FORALL
 
 !***compute rate of photolysis (j-values) for each reaction        
@@ -1070,9 +1080,9 @@ C-----------------------------------------------------------------------
 
       INTEGER, INTENT( IN )  :: IWL         ! wavelenth index
 
-      REAL,    INTENT( IN )  :: STOZONE     ! ozone column amount [ DU ]
+      TYPE(hyperdual),    INTENT( IN )  :: STOZONE     ! ozone column amount [ DU ]
       REAL,    INTENT( IN )  :: STRAT_TEMP  ! average temperature for stratosphere [ K ]
-      REAL,    INTENT( OUT ) :: TAU_O3      ! optical depth for statosphere
+      TYPE(hyperdual),    INTENT( OUT ) :: TAU_O3      ! optical depth for statosphere
 
 !***Local
 
@@ -1505,7 +1515,7 @@ C     photolysis rate coefficients, Journal of Geophysical Research,
 C     vol 101, D9, pp 14,525 - 14530, June 20, 1996.
 C
 C-----------------------------------------------------------------------
-
+	  USE HDMod
       IMPLICIT NONE
 
       INTEGER, PARAMETER :: KZ = 100
@@ -1517,40 +1527,43 @@ C-----------------------------------------------------------------------
 
       REAL,    INTENT(IN )  :: MU
       REAL,    INTENT(IN )  :: RSFC
-      REAL,    INTENT(IN )  :: TAUU( : )
-      REAL,    INTENT(IN )  :: OMU ( : )
-      REAL,    INTENT(IN )  :: GU  ( : )
+      TYPE(hyperdual),    INTENT(IN )  :: TAUU( : )
+      TYPE(hyperdual),    INTENT(IN )  :: OMU ( : )
+      TYPE(hyperdual),    INTENT(IN )  :: GU  ( : )
       REAL,    INTENT(IN )  :: DSDH( : )
-      REAL,    INTENT(OUT ) :: FUP ( : )
-      REAL,    INTENT(OUT ) :: FDN ( : )
-      REAL,    INTENT(OUT ) :: FDR ( : )
-      REAL,    INTENT(OUT ) :: EUP ( : )
-      REAL,    INTENT(OUT ) :: EDN ( : )
-      REAL,    INTENT(OUT ) :: EDR ( : )
+      TYPE(hyperdual),    INTENT(OUT ) :: FUP ( : )
+      TYPE(hyperdual),    INTENT(OUT ) :: FDN ( : )
+      TYPE(hyperdual),    INTENT(OUT ) :: FDR ( : )
+      TYPE(hyperdual),    INTENT(OUT ) :: EUP ( : )
+      TYPE(hyperdual),    INTENT(OUT ) :: EDN ( : )
+      TYPE(hyperdual),    INTENT(OUT ) :: EDR ( : )
 
 !***local:
 
-      REAL( 8 ) :: TAUC  ( 0:KZ )        ! optical depth variable
-      REAL( 8 ) :: TAUSLA( 0:KZ )        ! slant path optical depth
-      REAL( 8 ) :: MU2   ( 0:KZ )        ! replaces mu1 for slant path
+      TYPE(hyperdual) :: TAUC  ( 0:KZ )        ! optical depth variable
+      TYPE(hyperdual) :: TAUSLA( 0:KZ )        ! slant path optical depth
+      TYPE(hyperdual) :: MU2   ( 0:KZ )        ! replaces mu1 for slant path
 
 !***internal coefficients and matrix
 
-      REAL( 8 ) :: LAM( KZ ), TAUN( KZ ), BGAM( KZ )
-      REAL( 8 ) :: E1( KZ ), E2( KZ ), E3( KZ ), E4( KZ )
-      REAL( 8 ) :: CUP( KZ ), CDN( KZ ), CUPTN( KZ ), CDNTN( KZ )
-      REAL( 8 ) :: A( NROWS ), B( NROWS ), D( NROWS ), E( NROWS ), Y( NROWS )
+      TYPE(hyperdual) :: LAM( KZ ), BGAM( KZ )
+      TYPE(hyperdual) :: TAUN( KZ )
+      TYPE(hyperdual) :: E1( KZ ), E2( KZ ), E3( KZ ), E4( KZ )
+      TYPE(hyperdual) :: CUP( KZ ), CDN( KZ ), CUPTN( KZ ), CDNTN( KZ )
+      TYPE(hyperdual) :: A( NROWS ), B( NROWS ), D( NROWS ), E( NROWS ), Y( NROWS )
 
 !***other:
 
-      REAL( 8 ) :: GI( KZ ), OMI( KZ ), TEMPG
+      TYPE(hyperdual) :: GI( KZ ), OMI( KZ )
+      TYPE(hyperdual) :: TEMPG
       REAL( 8 ) :: PIFS, FDN0
-      REAL( 8 ) :: F, G, OM
-      REAL( 8 ) :: GAM1, GAM2, GAM3, GAM4
+      TYPE(hyperdual) :: G, OM, F 
+      TYPE(hyperdual) :: GAM1, GAM2, GAM3, GAM4
+      
 
-      REAL( 8 ) :: EXPON0, EXPON1
-      REAL( 8 ) :: EXPON, DIVISR, TEMP, UP, DN
-      REAL( 8 ) :: SSFC
+      TYPE(hyperdual) :: EXPON0, EXPON1
+      TYPE(hyperdual) :: EXPON, DIVISR, TEMP, UP, DN
+      TYPE(hyperdual) :: SSFC
 
       REAL( 8 ) :: MU1  ! reciprocal of constant from delta_Eddington method
 
@@ -1593,12 +1606,12 @@ C-----------------------------------------------------------------------
       DO I = 1, NLAYER
       
 !         print*,'ACM TWSTREAM GU, F = ', F, GU(I)
-         F = REAL( GU(I) * GU(I), 8 )
-         GI  (I) = ( REAL( GU(I), 8 ) - F ) / ( 1.0D0 - F )
-         OMI (I) = ( 1.0D0 - F ) * REAL( OMU(I), 8 ) 
-     &           / ( 1.0D0 - REAL( OMU(I), 8 ) * F )
-         TAUN(I) = ( 1.0D0 - REAL( OMU(I), 8 ) * F ) 
-     *           *  REAL( TAUU(I), 8)
+         F = GU(I) * GU(I)
+         GI  (I) = ( GU(I) - F ) / ( 1.0D0 - F )
+         OMI (I) = ( 1.0D0 - F ) * OMU(I) 
+     &           / ( 1.0D0 - OMU(I) * F )
+         TAUN(I) = ( 1.0D0 - OMU(I) * F ) 
+     *           *  TAUU(I) 
       END DO
 
 !***set  tausla to be slant optical path contribution for each layer.
@@ -1792,19 +1805,22 @@ C-----------------------------------------------------------------------
 
 !***the following equations are from pg 16,291  equations 31 & 32
 
-      FDR(LEV) = 1.0    ! this the downward flux at the top of the model
-      EDR(LEV) = MU * REAL( FDR(LEV) )
-      EDN(LEV) = REAL( FDN0 )
-      EUP(LEV) = REAL( Y(ROW) * E3(J) - Y(ROW + 1) * E4(J) + CUP(J) )
+      FDR(LEV) = 1.0D0    ! this the downward flux at the top of the model
+      EDR(LEV) = MU * FDR(LEV) 
+      EDN(LEV) = REAL( FDN0 , 8 )
+      EUP(LEV) = Y(ROW) * E3(J) - Y(ROW + 1) * E4(J) + CUP(J) 
       FDN(LEV) = EDN(LEV) * REAL( MU1 )
       FUP(LEV) = EUP(LEV) * REAL( MU1 )
 
       DO 60, LEV = 2, NLAYER + 1
-         FDR(LEV) = REAL( EXP( MAX( LOG_DBLE_SMALLEST, -TAUSLA(LEV-1) )  ) )
+
+c        There was a REAL here, what is the purpose? 
+
+        FDR(LEV) = EXP( MAX( LOG_DBLE_SMALLEST, -TAUSLA(LEV-1) )  ) 
 !         FDR(LEV) = REAL( EXPONS(LEV-1) ) ! REAL( EXP( MAX( LOG_DBLE_SMALLEST, -TAUSLA(LEV-1) )  ) )
          EDR(LEV) = MU * FDR(LEV)
-         EDN(LEV) = REAL( Y(ROW) * E3(J) + Y(ROW + 1) * E4(J) + CDNTN(J) )
-         EUP(LEV) = REAL( Y(ROW) * E1(J) + Y(ROW + 1) * E2(J) + CUPTN(J) )
+         EDN(LEV) = Y(ROW) * E3(J) + Y(ROW + 1) * E4(J) + CDNTN(J) 
+         EUP(LEV) = Y(ROW) * E1(J) + Y(ROW + 1) * E2(J) + CUPTN(J) 
          FDN(LEV) = EDN(LEV) * REAL( MU1 )
          FUP(LEV) = EUP(LEV) * REAL( MU1 )
 
@@ -1872,24 +1888,24 @@ C     1     10/19/89  JKV  converted for use on IBM
 C     0      3/89     BDX  Initial version
 C     yoj
 C-----------------------------------------------------------------------
-
+	  USE HDMod
       IMPLICIT NONE
 
 !***Arguments:
 
       INTEGER,   INTENT( IN )  :: N        ! number of rows in matrix
-      REAL( 8 ), INTENT( IN )  :: A( : )   ! subdiagonal
-      REAL( 8 ), INTENT( IN )  :: B( : )   ! diagonal
-      REAL( 8 ), INTENT( IN )  :: D( : )   ! superdiagonal
-      REAL( 8 ), INTENT( IN )  :: E( : )   ! R.H. side
-      REAL( 8 ), INTENT( OUT ) :: Y( : )   ! solution
+      TYPE(hyperdual), INTENT( IN )  :: A( : )   ! subdiagonal
+      TYPE(hyperdual), INTENT( IN )  :: B( : )   ! diagonal
+      TYPE(hyperdual), INTENT( IN )  :: D( : )   ! superdiagonal
+      TYPE(hyperdual), INTENT( IN )  :: E( : )   ! R.H. side
+      TYPE(hyperdual), INTENT( OUT ) :: Y( : )   ! solution
 
 !***Local Variables:
 
       INTEGER J   ! loop index
 
-      REAL( 8 ) :: BET        !
-      REAL( 8 ) :: GAM( N )   !
+      TYPE(hyperdual) :: BET        !
+      TYPE(hyperdual) :: GAM( N )   !
 
 !***Decomposition and forward substitution:
 

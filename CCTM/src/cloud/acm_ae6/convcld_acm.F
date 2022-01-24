@@ -331,8 +331,8 @@ C-------------------------------------------
       REAL             FRAC             ! cloud fractional coverage
       REAL             FTST             ! functional product in Walcek bisection solver
       REAL             HTST             ! temp diff in Walcek bisection solver
-      REAL             JH2O2_BAR        ! mean H2O2 photolysis rate in subgrid cloud, 1/min
-      REAL             JHNO3_BAR        ! mean HNO3 photolysis rate in subgrid cloud, 1/min
+      TYPE(hyperdual)             JH2O2_BAR        ! mean H2O2 photolysis rate in subgrid cloud, 1/min
+      TYPE(hyperdual)             JHNO3_BAR        ! mean HNO3 photolysis rate in subgrid cloud, 1/min
       REAL, SAVE    :: METSTEP          ! timestep on the met file
       REAL             P1               ! intermediate pressure used in calculating WL
       REAL             P2               ! intermediate pressure used in calculating WL
@@ -409,8 +409,8 @@ C-------------------------------------------
       REAL          :: DZZL ( NLAYS )              ! grid cell delta Z
       REAL          :: PRES ( NCOLS,NROWS,NLAYS )  ! file gridded vble
       REAL          :: PRESL( NLAYS )              ! grid cell pressure
-      REAL          :: JH2O2( NLAYS )              ! H2O2 photolysis rate (1/min)   
-      REAL          :: JHNO3( NLAYS )              ! HNO3 photolysis rate (1/min)   
+      TYPE(hyperdual)          :: JH2O2( NLAYS )              ! H2O2 photolysis rate (1/min)   
+      TYPE(hyperdual)          :: JHNO3( NLAYS )              ! HNO3 photolysis rate (1/min)   
       REAL          :: QAD  ( NLAYS )              ! moist adiab. sat. mix ratio
       REAL          :: QV   ( NCOLS,NROWS,NLAYS )  ! input gridded vble
       REAL          :: QVL  ( NLAYS )              ! grid cell sp. hum.
@@ -1349,8 +1349,8 @@ C...Initialize variables needed for entrainment and in-cloud properties solver
           WCBAR = 0.0  ! condensed wat cont (kg/m2) integ. thru cloud depth
           WTBAR = 0.0  ! total wat cont (kg/m2) integrated thru cloud depth
           TBARC = 0.0  ! cloud mean temp (K)
-          JH2O2_BAR = 0.0 ! cloud H2O2 photolysis, 1/min
-          JHNO3_BAR = 0.0 ! cloud HNO3 photolysis, 1/min
+          JH2O2_BAR = 0.0D0 ! cloud H2O2 photolysis, 1/min
+          JHNO3_BAR = 0.0D0 ! cloud HNO3 photolysis, 1/min
 
 
 C...Determine condensed water content and entrainment at each cloud level
@@ -1966,8 +1966,8 @@ C...set mean photolysis rates to zero
             ELSE
               DARK = .FALSE.  ! day
 C...convert mean photolysis rates to 1/sec
-              JH2O2_HYDROMETEORS = REAL( JH2O2_BAR * MINPERSEC, 8 ) 
-              JHNO3_HYDROMETEORS = REAL( JHNO3_BAR * MINPERSEC, 8 )
+              JH2O2_HYDROMETEORS = JH2O2_BAR * MINPERSEC 
+              JHNO3_HYDROMETEORS = JHNO3_BAR * MINPERSEC
             END IF
 
 C...in aqchem, H2SO4 gas is added to ASO4J

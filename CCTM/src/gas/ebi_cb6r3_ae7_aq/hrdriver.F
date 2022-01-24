@@ -163,7 +163,7 @@ C..Scratch Local Variables:
            TYPE(hyperdual), INTENT( IN ) :: CBLK( : )       !  species concentration in cell
            REAL,      INTENT( IN ) :: TCELL           !  cell temperature  [ k ]
            REAL,      INTENT( IN ) :: DCELL           !  cell air density  [ kg/m^3 ]
-           REAL( 8 ), INTENT( IN ) :: PHOTO_CELL( : ) !  Photolysis table for cell [1/s]
+           TYPE(hyperdual), INTENT( IN ) :: PHOTO_CELL( : ) !  Photolysis table for cell [1/s]
            INTEGER,   INTENT( IN ) :: JDATE  ! current model date , coded YYYYDDD
            INTEGER,   INTENT( IN ) :: JTIME  ! current model time , coded HHMMSS
          END SUBROUTINE INIT_DEGRADE
@@ -439,7 +439,12 @@ c..Set physical quantities
 
 c..Get rate constants
                LSUNLIGHT = .FALSE.
-               FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH ) = REAL( RJ( C,R,L,NPH ), 8)
+               FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH )%x = RJ( C,R,L,NPH )%x
+               FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH )%dx1 = RJ( C,R,L,NPH )%dx1
+               FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH )%dx2 = RJ( C,R,L,NPH )%dx2
+               FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH )%dx1x2 = RJ( C,R,L,NPH )%dx1x2
+
+               
                IF( MAXVAL(RJIN) .GT. 0.0D0 ) LSUNLIGHT = .TRUE.
 			   
                FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%x = KHETERO( NPH,C,R,L )%x

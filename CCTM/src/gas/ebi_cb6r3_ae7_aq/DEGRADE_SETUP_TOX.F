@@ -106,7 +106,7 @@ C..looping data
       REAL(8), ALLOCATABLE :: A_PHOTO    ( :,: ) ! multiplier of photolysis rates
       REAL,    ALLOCATABLE :: PHOTO_YIELD( :,: ) ! production yield
 
-      REAL(8), ALLOCATABLE :: RATE_CONST( :,: )
+      TYPE(hyperdual), ALLOCATABLE :: RATE_CONST( :,: )
       REAL(8), ALLOCATABLE :: RATE_YIELD( :,: )
 
       REAL(8)              :: EFFECTIVE_ZERO

@@ -38,6 +38,7 @@ C     species
 C-----------------------------------------------------------------------
       Use aero_data, Only: n_aerolist, n_aerospc, conmin
       Use runtime_vars
+      USE HDMod
 
       Implicit None
 
@@ -315,8 +316,8 @@ C for sulfur tracking model
       Integer, Allocatable, Save :: cgrid2aq_map( : ) ! allocated in AQ_DATA_INIT
       Character( 16 ), Allocatable, Save :: cgrid2aq_name( : ) ! allocated in AQ_DATA_INIT
 
-      Real( 8 )   :: jh2o2_hydrometeors    ! H2O2 photolysis rate in condensed water [sec-1]
-      Real( 8 )   :: jhno3_hydrometeors    ! HNO3 photolysis rate in condensed water [sec-1]
+      TYPE(hyperdual)   :: jh2o2_hydrometeors    ! H2O2 photolysis rate in condensed water [sec-1]
+      TYPE(hyperdual)   :: jhno3_hydrometeors    ! HNO3 photolysis rate in condensed water [sec-1]
 
       Logical, Private, Save :: mapped = .False.
 

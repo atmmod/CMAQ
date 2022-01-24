@@ -228,7 +228,7 @@
         REAL( 8 ),           INTENT( IN  ) :: BLKTEMP( : )      ! temperature, deg K 
         REAL( 8 ),           INTENT( IN  ) :: BLKPRES( : )      ! pressure, Atm
         REAL( 8 ),           INTENT( IN  ) :: BLKH2O ( : )      ! water mixing ratio, ppm 
-        REAL( 8 ),           INTENT( IN  ) :: RJBLK  ( :, : )   ! photolysis rates, 1/min 
+        TYPE(hyperdual),           INTENT( IN  ) :: RJBLK  ( :, : )   ! photolysis rates, 1/min 
         TYPE(hyperdual),           INTENT( IN  ) :: BLKHET ( :, : )   ! heterogeneous rate constants, ???/min
         INTEGER,             INTENT( IN  ) :: NUMCELLS          ! Number of cells in block 
         LOGICAL,             INTENT( IN  ) :: LSUNLIGHT         ! Is there sunlight? 

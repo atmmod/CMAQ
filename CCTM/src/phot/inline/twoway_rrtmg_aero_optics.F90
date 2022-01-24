@@ -82,6 +82,7 @@ contains
 
 ! ------------------------------------------------------------------
        subroutine getqext_BH (xx, crefin, qextalf, qscatalf, gscatalfg,SUCCESS)
+       USE HDMod
        implicit none
 
        TYPE(hyperdual), intent(in)     :: XX 
@@ -120,6 +121,8 @@ contains
 
        end subroutine getqext_bh
 
+
+!      This is also not called. BHMIE_FLEXI is called
 ! ------------------------------------------------------------------
        SUBROUTINE BHMIE (X, REFREL, QQEXT, QQSCA, QBACK, GSCA, SUCCESS)
 
@@ -365,7 +368,7 @@ contains
 !     assymetry factors for each wavelength as a sum over the 
 !     individual lognormal modes. Each mode may have a different 
 !     set of refractive indices.
-
+	  USE HDMod
       IMPLICIT NONE
 ! *** input variables
       real, intent(in)    :: lamda_in               ! wavelengths  [micro-m]
@@ -513,7 +516,7 @@ contains
 !  *** Does Gauss-Hermite quadrature of Qext / alfa & Qscat / alfa
 !      and asymmetry factor <cos> over log normal distribution using 
 !      symmetric  points.
- 
+ 	   USE HDMod
        implicit none
 
        TYPE(hyperdual), intent(in)     :: nr, ni     ! refractive indices
@@ -696,7 +699,8 @@ contains
 
 ! FSB This version does the analytical integral ove a lognormal 
 !     size distribution.
-
+	   USE HDMod
+	   USE HDMod_cplx
        implicit none 
 !     input variables
        TYPE(hyperdual), intent(in)  :: n, k     ! refractive index
@@ -900,7 +904,8 @@ contains
 !     assymetry factors for each wavelength as a sum over the 
 !     individual lognormal modes. Each mode may have a different 
 !     set of refractive indices.
-
+	  USE HDMod
+	  USE HDMod_cplx
       IMPLICIT NONE
 
 ! *** input variables
@@ -998,7 +1003,8 @@ contains
 !     individual lognormal modes. Each mode may have a different 
 !     set of refractive indices.
 	   
-	   
+	   USE HDMod
+	   USE HDMod_cplx
        IMPLICIT NONE
 ! *** input variables
        real,intent(in)    :: lamda_in   ! wavelengths  [micro-m]                      
@@ -1110,6 +1116,8 @@ contains
 !      and asymmetry factor <cos> over log normal distribution using 
 !      symmetric  points.
 !
+	   USE HDMod
+	   USE HDMod_cplx
        implicit none
 
        TYPE(hyperdual_cplx), intent(in) :: crefin     ! complex index of refraction
@@ -1285,6 +1293,8 @@ contains
 !      and asymmetry factor <cos> over log normal distribution using 
 !      symmetric  points.
 !
+	   USE HDMod
+	   USE HDMod_cplx
        implicit none
        TYPE(hyperdual_cplx), intent(in) :: RCORE      ! refractive index of core
        TYPE(hyperdual_cplx), intent(in) :: RSHELL     ! refractive index of shell
@@ -1431,6 +1441,9 @@ contains
       
 ! ------------------------------------------------------------------
        subroutine getqsgBHCS (XX,YY,RRFRL1,RRFRL2,qxtalf,qscalf,qsgalf, success)
+    
+       USE HDMod
+       USE HDMod_cplx
        implicit none
 
        TYPE(hyperdual), intent(in)    :: XX, YY
@@ -1838,6 +1851,8 @@ contains
 !      and asymmetry factor <cos> over log normal distribution using 
 !      symmetric  points.
 !
+	   USE HDMod
+	   USE HDMod_cplx
        implicit none
 
        logical, intent(INOUT)        :: INIT       ! initialize number of qudraure points
@@ -2008,6 +2023,8 @@ contains
 !      and asymmetry factor <cos> over log normal distribution using 
 !      symmetric  points.
 !
+	   USE HDMod
+	   USE HDMod_cplx
        implicit none
 
        logical, intent(inout) :: INIT       ! initialize number of qudraure points
@@ -2163,6 +2180,8 @@ contains
 ! FSB Changed the call vector to return only QEXT, QSCAT QBACK GSCA
 !     and ignore NANG, S1 and S2 and all calculations for them
 
+	   USE HDMod
+	   USE HDMod_cplx
        implicit none 
 
 ! Arguments:
