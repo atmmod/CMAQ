@@ -49,6 +49,7 @@ C-----------------------------------------------------------------------
       USE HGRD_DEFN             ! horizontal domain specifications
       USE CGRID_SPCS            ! CGRID mechanism species
       USE UTILIO_DEFN
+      USE HDMod
 #ifdef parallel
       USE SE_MODULES            ! stenex (using SE_COMM_MODULE, SE_UTIL_MODULE)
 #else
@@ -73,7 +74,7 @@ C Includes:
 
 C Arguments:
 
-      REAL, POINTER :: CGRID( :,:,:,: )
+      TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
       INTEGER, INTENT( IN ) :: FDATE         ! current model date, coded YYYYDDD
       INTEGER, INTENT( IN ) :: FTIME         ! current model time, coded HHMMSS
       INTEGER, INTENT( IN ) :: TSTEP         ! time step (HHMMSS)
@@ -129,8 +130,8 @@ C Local Variables:
 
 #ifdef parallel
       INTEGER NORTH_ROW
-      REAL, ALLOCATABLE, SAVE :: HALO_NORTH( :,:,: )
-      REAL, ALLOCATABLE, SAVE :: HALO_SOUTH( :,:,: )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: HALO_NORTH( :,:,: )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: HALO_SOUTH( :,:,: )
       REAL, ALLOCATABLE, SAVE :: BUF_NS( :,:,: )
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: SA_HALO_NORTH( :,:,: )
@@ -227,8 +228,8 @@ C Get dx2 from HGRD_DEFN module
             XMSG = 'Failure allocating HALO_NORTH, HALO_SOUTH, or BUF_NS'
             CALL M3EXIT ( PNAME, FDATE, FTIME, XMSG, XSTAT1 )
          END IF
-         HALO_NORTH = 0.0   ! array
-         HALO_SOUTH = 0.0   ! array
+         HALO_NORTH = 0.0d0   ! array
+         HALO_SOUTH = 0.0d0   ! array
          BUF_NS     = 0.0   ! array
 #ifdef isam
          SA_HALO_NORTH = 0.0   ! array

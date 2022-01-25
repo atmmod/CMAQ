@@ -77,7 +77,8 @@ C-----------------------------------------------------------------------
       USE GRID_CONF             ! horizontal & vertical domain specifications
       USE CGRID_SPCS            ! CGRID mechanism species
       USE UTILIO_DEFN
-
+	  USE HDMod
+	  
 #ifdef parallel
       USE SE_MODULES            ! stenex (using SE_COMM_MODULE, SE_UTIL_MODULE)
 #else
@@ -101,7 +102,7 @@ C Includes:
 
 C Arguments:
       
-      REAL, POINTER :: CGRID( :,:,:,: )
+      TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
       INTEGER, INTENT( IN ) :: JDATE      ! current model date, coded YYYYDDD
       INTEGER, INTENT( IN ) :: JTIME      ! current model time, coded HHMMSS
       INTEGER, INTENT( IN ) :: TSTEP( 3 ) ! time step vector (HHMMSS)
@@ -120,7 +121,7 @@ C Advected species dimension
  
 C File Variables:
  
-      REAL          CONC  ( 0:NCOLS+1,0:NROWS+1 )   ! conc working array
+      TYPE(hyperdual)         CONC  ( 0:NCOLS+1,0:NROWS+1 )   ! conc working array
       REAL          RHOJ  ( 0:NCOLS+1,0:NROWS+1,NLAYS ) ! density X Jacobian
       CHARACTER( 8 ), SAVE :: COMMSTR                 ! for both CONC and RHOJ
       REAL          RK11  (   NCOLS+1,NROWS+1,NLAYS ) ! initially used as RHOJ
@@ -151,10 +152,10 @@ C Local Variables:
       INTEGER       FDATE                       ! interpolation date
       INTEGER       FTIME                       ! interpolation time
 
-      REAL,    ALLOCATABLE, SAVE :: HALO_SOUTH( :,:,: )
-      REAL,    ALLOCATABLE, SAVE :: HALO_NORTH( :,:,: )
-      REAL,    ALLOCATABLE, SAVE :: HALO_WEST ( :,:,: )
-      REAL,    ALLOCATABLE, SAVE :: HALO_EAST ( :,:,: )
+      TYPE(hyperdual),    ALLOCATABLE, SAVE :: HALO_SOUTH( :,:,: )
+      TYPE(hyperdual),    ALLOCATABLE, SAVE :: HALO_NORTH( :,:,: )
+      TYPE(hyperdual),    ALLOCATABLE, SAVE :: HALO_WEST ( :,:,: )
+      TYPE(hyperdual),    ALLOCATABLE, SAVE :: HALO_EAST ( :,:,: )
       REAL,    ALLOCATABLE, SAVE :: BUF_NS    ( :,:,: )
       REAL,    ALLOCATABLE, SAVE :: BUF_EW    ( :,:,: )
 

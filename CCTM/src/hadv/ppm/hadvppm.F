@@ -51,6 +51,7 @@ C-----------------------------------------------------------------------
       USE GRID_CONF             ! horizontal & vertical domain specifications
       USE CGRID_SPCS            ! CGRID mechanism species
       USE UTILIO_DEFN
+      USE HDMod
 #ifdef parallel
       USE SE_MODULES            ! stenex (using SE_COMM_MODULE, SE_UTIL_MODULE)
 #else
@@ -70,7 +71,7 @@ C Includes:
 
 C Arguments:
       
-      REAL, POINTER :: CGRID( :,:,:,: )
+      TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
       INTEGER     JDATE         ! current model date, coded YYYYDDD
       INTEGER     JTIME         ! current model time, coded HHMMSS
       INTEGER     TSTEP( 3 )    ! time step vector (HHMMSS)
