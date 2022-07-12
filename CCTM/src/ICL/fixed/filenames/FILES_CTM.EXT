@@ -36,7 +36,7 @@
 !                            BNDY_SENS_1, remove REGIONS_1
 !.......................................................................
 
-      INTEGER, PARAMETER :: N_FILES = 64
+      INTEGER, PARAMETER :: N_FILES = 67
 
       CHARACTER( 16 ) :: LGCL_NAME( N_FILES ) 
       LOGICAL            IN_MODE( N_FILES )
@@ -203,6 +203,9 @@
       DATA  SA_ACONC_1      / 'SA_ACONC_1      ' /
       DATA  SA_DD_1         / 'SA_DD_1         ' /
       DATA  SA_WD_1         / 'SA_WD_1         ' /
+      DATA  CTM_DX1         / 'CTM_DX1         ' /
+      DATA  CTM_DX2         / 'CTM_DX2         ' /
+      DATA  CTM_DX1X2       / 'CTM_DX1X2       ' /
 
       DATA LGCL_NAME(  1 ), IN_MODE(  1 )    / 'GRID_DOT_2D     ', .TRUE. /
       DATA LGCL_NAME(  2 ), IN_MODE(  2 )    / 'GRID_CRO_2D     ', .TRUE. /
@@ -268,5 +271,8 @@
       DATA LGCL_NAME( 62 ), IN_MODE( 62 )    / 'SA_ACONC_1      ', .FALSE. /
       DATA LGCL_NAME( 63 ), IN_MODE( 63 )    / 'SA_DD_1         ', .FALSE. /
       DATA LGCL_NAME( 64 ), IN_MODE( 64 )    / 'SA_WD_1         ', .FALSE. /
+      DATA LGCL_NAME( 65 ), IN_MODE( 65 )    / 'CTM_DX1         ', .FALSE. /
+      DATA LGCL_NAME( 66 ), IN_MODE( 66 )    / 'CTM_DX2         ', .FALSE. /
+      DATA LGCL_NAME( 67 ), IN_MODE( 67 )    / 'CTM_DX1X2       ', .FALSE. /
 
 !................   end   FILES_CTM.EXT   .............................

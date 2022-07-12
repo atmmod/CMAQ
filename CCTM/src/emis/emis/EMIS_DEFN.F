@@ -523,12 +523,21 @@ C Retrieve Emissions from All Stream Types
              CASE ( 4 )
                NL = 1
                CALL GET_BEIS ( JDATE, JTIME, TSTEP )
+               
+               IF ( JTIME .LE. 5730 ) THEN
+                  VDEMIS_BI(6, :, :) = VDEMIS_BI(6, :, :) + hyperdual(0.0d0, 1.0d0, 1.0d0, 0.0d0)
+                  VDEMIS_BI(6, :, :) = VDEMIS_BI(6, :, :) * 1.01
+               ENDIF
+               
                FORALL( ISTR = 1:N_EMIS_ISTR, MAP_EMtoSURR( ISTR,ISRM ) .GT. 0 )
                   VDEMIS_READ( ISTR,1,:,: )%x = VDEMIS_BI( MAP_EMtoSURR( ISTR,ISRM ),:,: )%x 
                   VDEMIS_READ( ISTR,1,:,: )%dx1 = VDEMIS_BI( MAP_EMtoSURR( ISTR,ISRM ),:,: )%dx1
                   VDEMIS_READ( ISTR,1,:,: )%dx2 = VDEMIS_BI( MAP_EMtoSURR( ISTR,ISRM ),:,: )%dx2
                   VDEMIS_READ( ISTR,1,:,: )%dx1x2 = VDEMIS_BI( MAP_EMtoSURR( ISTR,ISRM ),:,: )%dx1x2                                                      
                END FORALL
+               
+
+               
                CALL EMISS_SCALING( VDEMIS_READ, ISRM, NL, VDEMIS_SCALED )
  
              ! Retrieve Marine Gas Emissions

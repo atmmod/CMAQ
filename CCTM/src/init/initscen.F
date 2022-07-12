@@ -242,12 +242,65 @@ C Test opening existing conc file for update
          ! Open the file new
          CALL SUBST_BARRIER
          CALL OPCONC ( STDATE, STTIME, TSTEP( 1 ) )
+         
 #ifdef parallel
          CALL OPVEXT ( STDATE, STTIME, TSTEP( 1 ) )
 #endif
       END IF
 
+      IF ( .NOT. OPEN3( CTM_DX1, FSRDWR3, PNAME ) ) THEN
+#ifndef twoway
+         BACKSPACE( LOGDEV )
+#endif
+         MSG = 'Could not open ' // TRIM( CTM_DX1 ) // ' for update - '
+     &        // 'try to open new'
+         CALL M3MESG( MSG )
+         ! Open the file new
+         CALL SUBST_BARRIER
+         CALL OPDX1 ( STDATE, STTIME, TSTEP( 1 ) )
+         
+#ifdef parallel
+         CALL OPVEXT ( STDATE, STTIME, TSTEP( 1 ) )
+#endif
+      END IF
+
+
+      IF ( .NOT. OPEN3( CTM_DX2, FSRDWR3, PNAME ) ) THEN
+#ifndef twoway
+         BACKSPACE( LOGDEV )
+#endif
+         MSG = 'Could not open ' // TRIM( CTM_DX2 ) // ' for update - '
+     &        // 'try to open new'
+         CALL M3MESG( MSG )
+         ! Open the file new
+         CALL SUBST_BARRIER
+         CALL OPDX2 ( STDATE, STTIME, TSTEP( 1 ) )
+         
+#ifdef parallel
+         CALL OPVEXT ( STDATE, STTIME, TSTEP( 1 ) )
+#endif
+      END IF
+      
+
+      IF ( .NOT. OPEN3( CTM_DX1X2, FSRDWR3, PNAME ) ) THEN
+#ifndef twoway
+         BACKSPACE( LOGDEV )
+#endif
+         MSG = 'Could not open ' // TRIM( CTM_DX1X2 ) // ' for update - '
+     &        // 'try to open new'
+         CALL M3MESG( MSG )
+         ! Open the file new
+         CALL SUBST_BARRIER
+         CALL OPDX1X2 ( STDATE, STTIME, TSTEP( 1 ) )
+         
+#ifdef parallel
+         CALL OPVEXT ( STDATE, STTIME, TSTEP( 1 ) )
+#endif
+      END IF
+
+
       CALL WR_INIT ( CGRID, STDATE, STTIME, TSTEP( 1 ) )
+C     CALL WR_INIT_SENS ( CGRID, STDATE, STTIME, TSTEP( 1 ) )
       
       CALL LOG_HEADING( LOGDEV, "Open or Create Average Concentration File" )
       CALL OPACONC ( STDATE, STTIME, TSTEP( 1 ) )

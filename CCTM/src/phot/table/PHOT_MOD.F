@@ -22,13 +22,13 @@ C $Header$
 C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       MODULE PHOT_MOD
 
-
+	  USE HDMod
       IMPLICIT NONE
  
  
-      REAL, ALLOCATABLE  :: RJ    ( :, :, :, : ) ! average grid cell J-values (min-1)
-      REAL, ALLOCATABLE  :: RJ_RES( :, :, :, : ) ! resolved cloud J-values (min-1)
-      REAL, ALLOCATABLE  :: RJ_SUB( :, :, :, : ) ! subgrid cloud J-values (min-1)
+      TYPE(hyperdual), ALLOCATABLE  :: RJ    ( :, :, :, : ) ! average grid cell J-values (min-1)
+      TYPE(hyperdual), ALLOCATABLE  :: RJ_RES( :, :, :, : ) ! resolved cloud J-values (min-1)
+      TYPE(hyperdual), ALLOCATABLE  :: RJ_SUB( :, :, :, : ) ! subgrid cloud J-values (min-1)
 
 !      REAL, ALLOCATABLE  :: ETOT_SFC_WL ( :,:,: )  ! total downward irradiance at sfc [ Watts / m**2  ]
       
@@ -84,7 +84,7 @@ C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 !              CALL M3EXIT ( 'INIT_PHOT_SHARED', 0, 0, XMSG, XSTAT1 )
 !          END IF
 
-          RJ = 0.0; RJ_RES = 0.0; RJ_SUB = 0.0
+          RJ = 0.0d0; RJ_RES = 0.0d0; RJ_SUB = 0.0d0
 !          ETOT_SFC_WL = 0.0
 
           DO JP = 1, NPHOTAB

@@ -6857,13 +6857,20 @@ Module HDMod
             funval      = acos(q%x)
             
             ! 1st and 2nd derivative of acos   -1 <= x <= 1
-            deriv1      = -1.0_PRhyd / sqrt(1.0_PRhyd - q%x**2) 
-            deriv2      = q%x / (1.0_PRhyd - q%x**2)**(1.5_PRhyd) 
+            IF ( (q%x .gt. -1.0) .AND. (q%x .lt. 1.0) ) THEN
+            	deriv1      = -1.0_PRhyd / sqrt(1.0_PRhyd - q%x**2) 
+            	deriv2      = q%x / (1.0_PRhyd - q%x**2)**(1.5_PRhyd) 
   
-            qacos%x     = funval
-            qacos%dx1   = deriv1 * q%dx1
-            qacos%dx2   = deriv1 * q%dx2
-            qacos%dx1x2 = deriv2 * q%dx1 * q%dx2 + deriv1 * q%dx1x2
+            	qacos%x     = funval
+            	qacos%dx1   = deriv1 * q%dx1
+            	qacos%dx2   = deriv1 * q%dx2
+            	qacos%dx1x2 = deriv2 * q%dx1 * q%dx2 + deriv1 * q%dx1x2
+            ELSE
+            	qacos%x = funval
+            	qacos%dx1 = 0.d0
+            	qacos%dx2 = 0.d0
+            	qacos%dx1x2 = 0.d0
+            ENDIF
   
           end function hdacos 
   
@@ -6879,14 +6886,21 @@ Module HDMod
   
             funval      = asin(q%x)
             
+            IF ( (q%x .gt. -1.0) .AND. (q%x .lt. 1.0) ) THEN
             ! 1st and 2nd derivative of asin  -1 <= x <= 1
-            deriv1      = 1.0_PRhyd / sqrt(1.0_PRhyd - q%x**2) 
-            deriv2      = q%x / (1.0_PRhyd - q%x**2)**(1.5_PRhyd) 
+            	deriv1      = 1.0_PRhyd / sqrt(1.0_PRhyd - q%x**2) 
+            	deriv2      = q%x / (1.0_PRhyd - q%x**2)**(1.5_PRhyd) 
   
-            qasin%x     = funval
-            qasin%dx1   = deriv1 * q%dx1
-            qasin%dx2   = deriv1 * q%dx2
-            qasin%dx1x2 = deriv2 * q%dx1 * q%dx2 + deriv1 * q%dx1x2
+            	qasin%x     = funval
+            	qasin%dx1   = deriv1 * q%dx1
+            	qasin%dx2   = deriv1 * q%dx2
+            	qasin%dx1x2 = deriv2 * q%dx1 * q%dx2 + deriv1 * q%dx1x2
+            ELSE
+            	qasin%x = funval
+            	qasin%dx1 = 0.d0
+            	qasin%dx2 = 0.d0
+            	qasin%dx1x2 = 0.d0
+            ENDIF
   
             end function hdasin
   
@@ -7313,7 +7327,6 @@ Module HDMod
             deriv1 = 2.0_PRhyd / SQRT(pi) * exp( -q%x**2.0_PRhyd)
             deriv2 = -4.0_PRhyd / SQRT(pi) * q%x * exp( -q%x**2.0_PRhyd)
             funval =  SIGN(1.0_PRhyd, q%x) * SQRT(1.0-exp(-4.0_PRhyd * q%x * q%x / pi))
- !  SIGN( 1.0, XX ) * SQRT( 1.0 - EXP( -4.0 * XX * XX / PI ) )
             res%x = funval
             res%dx1 = deriv1 * q%dx1
             res%dx2 = deriv1 * q%dx2

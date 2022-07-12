@@ -67,6 +67,7 @@ C----------------------------------------------------------------------
       USE PHOT_MOD            ! Module with photolysis rate arrays and pointers
       Use CENTRALIZED_IO_MODULE, only : interpolate_var, LAT, LON, HT
       Use RUNTIME_VARS , only : PHOTDIAG
+      Use HDMod
 
       IMPLICIT NONE
 
@@ -76,7 +77,7 @@ C include files:
       INCLUDE SUBST_CONST      ! physical constants
 
 C arguments:
-      REAL,    POINTER      :: CGRID( :,:,:,: )  ! Species concentrations
+      TYPE(hyperdual),    POINTER      :: CGRID( :,:,:,: )  ! Species concentrations
       INTEGER, INTENT( IN ) :: JDATE         ! current Julian date (YYYYDDD)
       INTEGER, INTENT( IN ) :: JTIME         ! current time (HHMMSS)
       INTEGER, INTENT( IN ) :: DTSTEP( : )   ! time step vector (HHMMSS)
@@ -455,7 +456,7 @@ C...  (assumes sun below horizon at *all* levels!)
           DO LEV = 1, NLAYS
             DO ROW = 1, NROWS
               DO COL =1, NCOLS
-                RJ( COL, ROW, LEV, JP ) = 0.0
+                RJ( COL, ROW, LEV, JP ) = 0.0d0
               END DO
             END DO
           END DO
@@ -468,7 +469,7 @@ C...  (assumes sun below horizon at *all* levels!)
 
           DO JP = 1, NPHOTAB
             IF ( .NOT. WRITE3( CTM_RJ_2, PHOTAB( JP ), JDATE,
-     &                         JTIME, RJ( :,:,:,JP ) ) ) THEN
+     &                         JTIME, RJ( :,:,:,JP )%x ) ) THEN
               XMSG = 'Could not write ' // CTM_RJ_2 // ' file'
               CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
@@ -569,7 +570,7 @@ C...Interpolate all photolysis rates at each COL, ROW
      &             + JWT( 7 ) * XJVAL( JP, JVTM, JLATN - 1, KHTA - 1 )
      &             + JWT( 8 ) * XJVAL( JP, JVTM - 1, JLATN - 1,
      &                                 KHTA - 1 )
-              RJ( COL, ROW, LEV, JP ) = MAX ( JVAL, 0.0 )
+              RJ( COL, ROW, LEV, JP ) = REAL ( MAX ( JVAL, 0.0 ) , 8 )
             END DO
 
           END DO     ! LEV
@@ -687,7 +688,7 @@ C...  in cloud - linearly interpolate between base and top value
 
         DO JP = 1, NPHOTAB
           IF ( .NOT. WRITE3( CTM_RJ_2, PHOTAB( JP ), JDATE,
-     &                       JTIME, RJ( :,:,:,JP ) ) ) THEN
+     &                       JTIME, RJ( :,:,:,JP )%x ) ) THEN
             XMSG = 'Could not write ' // CTM_RJ_2 // ' file'
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
           END IF

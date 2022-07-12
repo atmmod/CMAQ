@@ -171,7 +171,6 @@ c     USE PMFRC_DEFN            ! MAPFRAC array definition ( adapted )
       LOGICAL, INTENT( IN )  :: LAST_STEP
       INTEGER, INTENT( IN ), OPTIONAL :: COUPLE_TSTEP
       INTEGER, INTENT( IN ), OPTIONAL :: NCOLS_IN, NLAYS_IN
-      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
 #ifdef mpas
       real, parameter :: cmin = 1.0E-30
 
@@ -826,45 +825,34 @@ C write conc fields
          CALL CPU_TIME( REAL_TIME )
          CPU_TIME_START = REAL( REAL_TIME,8 )
 #endif
-
-C        Write dx1, dx2, dx1x2 at 10, 20, 30 min after the hourly write, respectively. 
-C        For a 24-hour run with 1-hour interval, this should leads to a total of 
-C        96 writes
-
-C       DX1_WRITE_TIME = JTIME + 60000
-C       DX2_WRITE_TIME = JTIME + 120000
-C       DX1X2_WRITE_TIME = JTIME + 180000	
-      	DX1_WRITE_TIME = JTIME + 10000
-      	DX2_WRITE_TIME = JTIME + 20000
-      	DX1X2_WRITE_TIME = JTIME + 30000
 		 	 		 
-    	 DO V = 1, N_CSPCS
-         	S = CONC_MAP( V )
-         	SGRID( :,:,:,V ) = REAL ( CGRID( :,:,CONC_BLEV:CONC_ELEV,S )%x , 4 ) 
-      	 END DO
+    	DO V = 1, N_CSPCS
+         S = CONC_MAP( V )
+         SGRID( :,:,:,V ) = REAL ( CGRID( :,:,CONC_BLEV:CONC_ELEV,S )%x , 4 ) 
+      END DO
 
-         CALL WR_CONC ( JDATE, JTIME, TSTEP( 1 ) )
-    	 
-    	 DO V = 1, N_CSPCS
-         	S = CONC_MAP( V )
-         	SGRID( :,:,:,V ) = REAL ( CGRID( :,:,CONC_BLEV:CONC_ELEV,S )%dx1 , 4 )
-      	 END DO         
+      CALL WR_CONC ( JDATE, JTIME, TSTEP( 1 ) ) 
          
-         CALL WR_CONC ( JDATE, DX1_WRITE_TIME, TSTEP( 1 ) )
-    	 
-    	 DO V = 1, N_CSPCS
-         	S = CONC_MAP( V )
-         	SGRID( :,:,:,V ) = REAL ( CGRID( :,:,CONC_BLEV:CONC_ELEV,S )%dx2 , 4 )
-      	 END DO  
-         
-         CALL WR_CONC ( JDATE, DX2_WRITE_TIME, TSTEP( 1 ) )
-    	 
-    	 DO V = 1, N_CSPCS
-         	S = CONC_MAP( V )
-         	SGRID( :,:,:,V ) = REAL ( CGRID( :,:,CONC_BLEV:CONC_ELEV,S )%dx1x2 , 4 )
-      	 END DO       	 
-         
-         CALL WR_CONC ( JDATE, DX1X2_WRITE_TIME, TSTEP( 1 ) )   
+    	DO V = 1, N_CSPCS
+         S = CONC_MAP( V )
+         SGRID( :,:,:,V ) = REAL ( CGRID( :,:,CONC_BLEV:CONC_ELEV,S )%dx1 , 4 )
+      END DO 
+      	 
+      CALL WR_DX1 ( JDATE, JTIME, TSTEP( 1 ) )     
+      	 
+      DO V = 1, N_CSPCS
+         S = CONC_MAP( V )
+         SGRID( :,:,:,V ) = REAL ( CGRID( :,:,CONC_BLEV:CONC_ELEV,S )%dx2 , 4 )
+      END DO 
+      	 
+      CALL WR_DX2 ( JDATE, JTIME, TSTEP( 1 ) )  
+      	 
+    	DO V = 1, N_CSPCS
+         S = CONC_MAP( V )
+         SGRID( :,:,:,V ) = REAL ( CGRID( :,:,CONC_BLEV:CONC_ELEV,S )%dx1x2 , 4 )
+      END DO 
+      	 
+      CALL WR_DX1X2 ( JDATE, JTIME, TSTEP( 1 ) )  
             	         
 #ifdef parallel
          IF ( LVEXT ) CALL WR_VEXT ( CGRID, JDATE, JTIME, TSTEP( 1 ) )

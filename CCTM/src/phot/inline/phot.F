@@ -247,7 +247,7 @@ C...modules
       REAL, ALLOCATABLE, SAVE :: ETOT_SFC ( : )      ! total downward irradiance at sfc [ Watts / m**2  ]
       TYPE(hyperdual), ALLOCATABLE, SAVE :: TAUO3_TOP( : )      ! optical depth of ozone above model domain
       REAL, ALLOCATABLE, SAVE :: TAU_RAY  ( : )      ! Rayleigh optical depth above model domain
-      REAL, ALLOCATABLE, SAVE :: TAUC_AERO( :,: )    ! aerosol optical depth at layer bottom
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: TAUC_AERO( :,: )    ! aerosol optical depth at layer bottom
       TYPE(hyperdual), ALLOCATABLE, SAVE :: TAU_TOT  ( :,: )    ! total optical depth at layer bottom
       REAL, ALLOCATABLE, SAVE :: TAU_CLOUD( :,: )    ! cloud optical depth at layer bottom
 
@@ -293,7 +293,7 @@ C...modules
       TYPE(hyperdual), ALLOCATABLE, SAVE :: TRANSMIS_DIFFUSE( :,: ) ! diffuse transmission coefficient at surface
       TYPE(hyperdual), ALLOCATABLE, SAVE :: TRANSMIS_DIRECT( :,: )  ! direct transmission coefficient at surface
       TYPE(hyperdual), ALLOCATABLE, SAVE :: REFLECT_COEFF( :,: )    ! reflection coefficient at top of atmosphere
-      REAL, ALLOCATABLE, SAVE :: TAU_AERO_WL ( :,:,: )   ! total aerosol optical depth
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: TAU_AERO_WL ( :,:,: )   ! total aerosol optical depth
       REAL, ALLOCATABLE, SAVE :: TAU_CLOUD_WL( :,:,: )   ! total cloud optical depth
       TYPE(hyperdual), ALLOCATABLE, SAVE :: CLR_TRANSMISSION( :,: ) ! diffuse transmission coefficient of clouds
       TYPE(hyperdual), ALLOCATABLE, SAVE :: CLR_REFLECTION  ( :,: ) ! reflection coefficient of cloud
@@ -721,7 +721,7 @@ C...modules
          IF ( JTIME_CHK ) THEN
 
             TAUO3_TOP_WL = 0.0d0
-            TAU_AERO_WL  = 0.0
+            TAU_AERO_WL  = 0.0d0
 ! commented out because TAU_AERO_550 is set to zero after allocation and after written to PHOTDIAG1
 !           TAU_AERO_550 = 0.0
             TAU_CLOUD_WL = 0.0
@@ -787,7 +787,7 @@ C...modules
 
                   IF ( JTIME_CHK ) THEN
                      TAUO3_TOP_WL( COL,ROW, : ) = 0.0d0
-                     TAU_AERO_WL ( COL,ROW, : ) = 0.0
+                     TAU_AERO_WL ( COL,ROW, : ) = 0.0d0
                      TAU_CLOUD_WL( COL,ROW, : ) = 0.0
 #ifdef phot_debug
                      SSA_CLOUD_WL( COL,ROW, : ) = 0.0
@@ -817,10 +817,10 @@ C...modules
                         BLKDZ  ( L ) = ZFULL( COL,ROW,L ) - ZFULL( COL,ROW,L-1 )
                      END DO
                      MSCALE = 1.0E-19 ! 100.0*10E-15*PPM_MCM3, so units are petamolecules/cm2
-                     CALL COLUMN_GAS( IGAS=LGC_CO,   UNIT_FACTOR=MSCALE, COLUMN_DENSITY=CO_COLUMN)
-                     CALL COLUMN_GAS( IGAS=LGC_SO2,  UNIT_FACTOR=MSCALE, COLUMN_DENSITY=SO2_COLUMN)
-                     CALL COLUMN_GAS( IGAS=LGC_NO2,  UNIT_FACTOR=MSCALE, COLUMN_DENSITY=NO2_COLUMN)
-                     CALL COLUMN_GAS( IGAS=LGC_HCHO, UNIT_FACTOR=MSCALE, COLUMN_DENSITY=HCHO_COLUMN)
+                     CALL COLUMN_GAS( IGAS=LGC_CO,   UNIT_FACTOR=MSCALE, COLUMN_DENSITY=CO_COLUMN   )
+                     CALL COLUMN_GAS( IGAS=LGC_SO2,  UNIT_FACTOR=MSCALE, COLUMN_DENSITY=SO2_COLUMN  )
+                     CALL COLUMN_GAS( IGAS=LGC_NO2,  UNIT_FACTOR=MSCALE, COLUMN_DENSITY=NO2_COLUMN  )
+                     CALL COLUMN_GAS( IGAS=LGC_HCHO, UNIT_FACTOR=MSCALE, COLUMN_DENSITY=HCHO_COLUMN )
                      MSCALE = 1.0E-4 * CONC_TO_DU ! so units are Dobsons
                      CALL COLUMN_GAS( IGAS=LGC_O3, UNIT_FACTOR=MSCALE, COLUMN_DENSITY=TROPO_OC )                     
 !...get total ozone column based on OMI observations
@@ -874,8 +874,8 @@ C...modules
 !...fetch ozone and no2 and convert to [ molecules / cm **3 ]
 !...  and adjust the volume for ambient temperature and pressure.
 
-                  BLKO3 ( L ) =  CGRID( COL,ROW,L,LGC_O3  ) * MSCALE
-                  BLKNO2( L ) =  CGRID( COL,ROW,L,LGC_NO2 ) * MSCALE
+                  BLKO3 ( L ) = CGRID( COL,ROW,L,LGC_O3  ) * MSCALE
+                  BLKNO2( L ) = CGRID( COL,ROW,L,LGC_NO2 ) * MSCALE
                   ZLEV = BLKZF( L )
                END DO ! loop on layers ambient conditions and gases
 
@@ -1039,10 +1039,10 @@ C...modules
                      TROPO_OC( COL,ROW ) = TROPO_O3_COLUMN
                   END IF   
                   MSCALE = 1.0E-19 ! 100.0*10E-15*PPM_MCM3, so units are petamolecules/cm2
-                  CALL COLUMN_GAS( IGAS=LGC_CO,   UNIT_FACTOR=MSCALE, COLUMN_DENSITY=CO_COLUMN)
-                  CALL COLUMN_GAS( IGAS=LGC_SO2,  UNIT_FACTOR=MSCALE, COLUMN_DENSITY=SO2_COLUMN)
-                  CALL COLUMN_GAS( IGAS=LGC_NO2,  UNIT_FACTOR=MSCALE, COLUMN_DENSITY=NO2_COLUMN)
-                  CALL COLUMN_GAS( IGAS=LGC_HCHO, UNIT_FACTOR=MSCALE, COLUMN_DENSITY=HCHO_COLUMN)
+                  CALL COLUMN_GAS( IGAS=LGC_CO,   UNIT_FACTOR=MSCALE, COLUMN_DENSITY=CO_COLUMN   )
+                  CALL COLUMN_GAS( IGAS=LGC_SO2,  UNIT_FACTOR=MSCALE, COLUMN_DENSITY=SO2_COLUMN  )
+                  CALL COLUMN_GAS( IGAS=LGC_NO2,  UNIT_FACTOR=MSCALE, COLUMN_DENSITY=NO2_COLUMN  )
+                  CALL COLUMN_GAS( IGAS=LGC_HCHO, UNIT_FACTOR=MSCALE, COLUMN_DENSITY=HCHO_COLUMN )
                END IF
 
 !Set Photolysis rates to resolved sky values

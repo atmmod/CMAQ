@@ -217,6 +217,7 @@ C     Private :: GETASR
       Private :: FUNCJ2
       Private :: FUNCJ1
       Private :: FUNCO7
+      Private :: FUNCO7_no_sens
       Private :: FUNCO6
       Private :: FUNCO5
       Private :: FUNCO4
@@ -10354,7 +10355,7 @@ c #endif
 !=======================================================================
 !
       SUBROUTINE ISOROPIA (WI_IN, RHI_IN, TEMPI_IN,  CNTRL,
-     &                     WT, GAS, AERLIQ, AERSLD, SCASI, OTHER, COL, ROW, LAYER)
+     &                     WT, GAS, AERLIQ, AERSLD, SCASI, OTHER, COL, ROW, LAYER )
       ! Input parameters
 	  use HDMod 
 	  implicit none
@@ -10398,16 +10399,16 @@ c #endif
 ! *** SOLVE FOREWARD PROBLEM ********************************************
 !
 50    IF (IPROB.eq.0) THEN
-         IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE.  3.37d-15) THEN                                                 !Everything=0
+         IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE.  TINY) THEN                                                 !Everything=0
             CALL INIT1 (WI, RHI, TEMPI)
-         ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. 2.2393d-15) THEN !Ca,K,Mg,Na,Cl,NO3=0
+         ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN !Ca,K,Mg,Na,Cl,NO3=0
             CALL ISRP1F (WI, RHI, TEMPI)
-         ELSE IF (WI(1)+WI(5)+WI(6)+WI(7)+WI(8) .LE. 1.16193d-15) THEN       !Ca,K,Mg,Na,Cl=0
+         ELSE IF (WI(1)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN       !Ca,K,Mg,Na,Cl=0
             CALL ISRP2F (WI, RHI, TEMPI)
-         ELSE IF (WI(6)+WI(7)+WI(8) .LE. 1.0349d-15) THEN                   !Ca,K,Mg=0
+         ELSE IF (WI(6)+WI(7)+WI(8) .LE. TINY) THEN                   !Ca,K,Mg=0
             CALL ISRP3F (WI, RHI, TEMPI)
          ELSE
-            CALL ISRP4F (WI, RHI, TEMPI)
+            CALL ISRP4F (WI, RHI, TEMPI, COL, ROW, LAYER)
             ! stop code if Ca, K, Mg are non-zero
             ! this part of the code does not always conserve mass
             ! hotp 11/7/07
@@ -10419,14 +10420,14 @@ C           STOP
 ! *** SOLVE REVERSE PROBLEM *********************************************
 !
       ELSE
-
-         IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. 3.37d-15) THEN                                                 !Everything=0
+! 3.37d-15, 2.2393d-15, 1.16193d-15, 1.0349d-15
+         IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN                                                 !Everything=0
             CALL INIT1 (WI, RHI, TEMPI)
-         ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. 2.2393d-15) THEN !Ca,K,Mg,Na,Cl,NO3=0
+         ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN !Ca,K,Mg,Na,Cl,NO3=0
             CALL ISRP1R (WI, RHI, TEMPI)
-         ELSE IF (WI(1)+WI(5)+WI(6)+WI(7)+WI(8) .LE. 1.16193d-15) THEN       !Ca,K,Mg,Na,Cl=0
+         ELSE IF (WI(1)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN       !Ca,K,Mg,Na,Cl=0
             CALL ISRP2R (WI, RHI, TEMPI)
-         ELSE IF (WI(6)+WI(7)+WI(8) .LE. 1.0349d-15) THEN                  !Ca,K,Mg=0
+         ELSE IF (WI(6)+WI(7)+WI(8) .LE. TINY) THEN                  !Ca,K,Mg=0
             CALL ISRP3R (WI, RHI, TEMPI)
          ELSE
             CALL ISRP4R (WI, RHI, TEMPI, COL, ROW, LAYER)
@@ -10450,7 +10451,7 @@ C           STOP
       GAS(1) = GNH3                ! Gaseous aerosol species
       GAS(2) = GHNO3
       GAS(3) = GHCL
-!
+	
       DO 10 I=1,7              ! Liquid aerosol species
          AERLIQ(I) = MOLAL(I)
   10  CONTINUE
@@ -14444,6 +14445,7 @@ C           STOP
 	  implicit none 
 	  
 	  IF (IPROB.eq.0) THEN 
+      
       IF (W(1)+W(4)+W(5)+W(6)+W(7)+W(8) .LE. (6.d0*TINY)) THEN     !Ca,K,Mg,Na,Cl,NO3=0
             CALL CALCACT1
          ELSE IF (W(1)+W(5)+W(6)+W(7)+W(8) .LE. (5.d0*TINY)) THEN   !Ca,K,Mg,Na,Cl=0
@@ -14662,9 +14664,6 @@ c      & (Z(I+4)+Z(J+3)) - H
          GAMA(I)=MAX(-5.0d0, MIN(GAMA(I),5.0d0) ) ! F77 LIBRARY ROUTINE
          GAMA(I)=10.0D0**GAMA(I)
                  
-C        IF (GAMA(I)%dx1x2 .GT. 1e5) THEN 
-C        	GAMA(I) = hyperdual(GAMA(I)%x, 0.d0, 0.d0, 0.d0)
-C        ENDIF
 !C         GAMA(I)=EX10(SNGL(GAMA(I)), 5.0)    ! CUTOFF SET TO [-5,5]
   200 CONTINUE
 !
@@ -16874,7 +16873,7 @@ C        ENDIF
 !
       FUNCTION EX10(X,K) RESULT( OutVal )
 	use HDMod 
-	implicit none 
+	implicit none  
       type(hyperdual) :: X, Y, K
       INTEGER :: K1, K2
       type(hyperdual) :: OutVal
@@ -17663,9 +17662,9 @@ C        ENDIF
 !
 !=======================================================================
 !
-      SUBROUTINE ISRP4F (WI, RHI, TEMPI)
-	use HDMod 
-	implicit none 
+      SUBROUTINE ISRP4F (WI, RHI, TEMPI, COL, ROW, LAYER)
+	  use HDMod 
+	  implicit none 
       type(hyperdual) :: WI(NCOMP)
       REAL(kind=fp) :: RHI, TEMPI
       type(hyperdual) :: NAFRI, NO3FRI, REST
@@ -17673,6 +17672,7 @@ C        ENDIF
       type(hyperdual) :: CLFRI, REST1, CNA2SO4I, CNACLI, CNANO3I
       type(hyperdual) :: NO3FR, REST2, CMGSO4I, FRMGI, CMGNO32I
       type(hyperdual) :: CMGCL2I, REST3
+      INTEGER         :: COL, ROW, LAYER
 !
 ! *** ADJUST FOR TOO LITTLE AMMONIUM AND CHLORIDE ***********************
 !
@@ -17764,7 +17764,7 @@ C  *** CALCULATE RATIOS *************************************************
  !
        IF(METSTBL.eq.1) THEN
           SCASE = 'O7'
-          CALL CALCO7                 ! Only liquid (metastable)
+          CALL CALCO7(COL, ROW, LAYER)                 ! Only liquid (metastable)
        ELSE
  !
          IF (RH.LT.DRNH4NO3) THEN
@@ -17793,7 +17793,7 @@ C  *** CALCULATE RATIOS *************************************************
  !
          ELSEIF (DRK2SO4.LE.RH) THEN
             SCASE = 'O7'
-            CALL CALCO7              ! CaSO4
+            CALL CALCO7(COL, ROW, LAYER)              ! CaSO4
          ENDIF
        ENDIF
  !
@@ -18147,7 +18147,7 @@ C  *** CALCULATE RATIOS *************************************************
 ! *** CALCULATE ACTIVITIES OR TERMINATE INTERNAL LOOP *****************
 !
          IF (FRST.AND.CALAOU .OR. .NOT.FRST.AND.CALAIN) THEN
-            CALL CALCACT     
+            CALL CALCACT   
          ELSE
             GOTO 20
          ENDIF
@@ -24867,7 +24867,7 @@ C  *** CALCULATE RATIOS *************************************************
 !
 !=======================================================================
 !
-      SUBROUTINE CALCO7
+      SUBROUTINE CALCO7(COL, ROW, LAYER)
 	  use HDMod 
 	  implicit none 
       type(hyperdual) :: FRCA, FRSO4, FRK, FRMG, FRNA, FRCL, FRNO3
@@ -24877,9 +24877,10 @@ C  *** CALCULATE RATIOS *************************************************
       type(hyperdual) :: X1, Y1, X2, Y2, X3, Y3, YLO, YHI, DX
       type(hyperdual) :: CAFR, NAFR, SO4FR, KAPA2, DELTA
       type(hyperdual) :: PSI6LO, PSI6HI
-      type(hyperdual) :: Y3_before
-      type(hyperdual) :: Y3_after
+      type(hyperdual) :: X1_hyd, X2_hyd
+      type(hyperdual) :: Y1_hyd, Y2_hyd
       Integer :: I
+      INTEGER :: COL, ROW, LAYER
       !
       !Real(kind=fp) :: LAMDA
       ! hotp modified 8/2/07
@@ -24932,9 +24933,9 @@ C  *** CALCULATE RATIOS *************************************************
       WATER  = MAX (WATER , TINY)
 !
 ! *** INITIAL VALUES FOR BISECTION ************************************
-!
+! 
       X1 = PSI6LO
-      Y1 = FUNCO7 (X1)
+      Y1 = FUNCO7 (X1, COL, ROW, LAYER)
       IF (CHI6.LE.TINY) GOTO 50
 !cc      IF (ABS(Y1).LE.EPS .OR. CHI6.LE.TINY) GOTO 50
 !cc      IF (WATER .LE. TINY) RETURN                    ! No water
@@ -24944,7 +24945,7 @@ C  *** CALCULATE RATIOS *************************************************
       DX = (PSI6HI-PSI6LO)/real(NDIV, 8)
       DO 10 I=1,NDIV
          X2 = X1+DX
-         Y2 = FUNCO7 (X2)
+         Y2 = FUNCO7 (X2, COL, ROW, LAYER)
          IF (SIGN(ONE,Y1)*SIGN(ONE,Y2).LT.ZERO) GOTO 20  ! (Y1*Y2.LT.ZERO)
          X1 = X2
          Y1 = Y2
@@ -24954,23 +24955,32 @@ C  *** CALCULATE RATIOS *************************************************
 !
       IF (ABS(Y2) .GT. EPS) THEN
          CALL RSTGAMP ! Reinitialize activity coefficients (SLC 2012-01-01)
-         Y2 = FUNCO7 (PSI6LO)
+         Y2 = FUNCO7 (PSI6LO, COL, ROW, LAYER)
       ENDIF
       GOTO 50
 !
 ! *** PERFORM BISECTION ***********************************************
 !
 20    DO 30 I=1,MAXIT
+
+		 ! If in the threshold, start computing sensitivities. 
+         
          X3 = 0.5*(X1+X2)
+C        IF ( ABS(X2 - X1) .GT. EPS*2.D0*X1 ) THEN
          CALL RSTGAMP ! Reinitialize activity coefficients (SLC C2012-01-01)
-         Y3 = FUNCO7 (X3)          
+C        ENDIF
+         Y3 = FUNCO7 (X3, COL, ROW, LAYER)  
+         
          IF (SIGN(ONE,Y1)*SIGN(ONE,Y3) .LE. ZERO) THEN  ! (Y1*Y3 .LE. ZERO)
-            Y2    = Y3
-            X2    = X3
+            Y2   = Y3
+            X2   = X3
          ELSE
-            Y1    = Y3
-            X1    = X3
+            Y1   = Y3
+            X1   = X3              
          ENDIF
+         	
+     	 
+		                      
          IF (ABS(X2-X1) .LE. EPS*X1) GOTO 40
 30    CONTINUE
       CALL PUSHERR (0002, 'CALCO7')    ! WARNING ERROR: NO CONVERGENCE
@@ -24980,7 +24990,7 @@ C  *** CALCULATE RATIOS *************************************************
 40    X3 = 0.5*(X1+X2)
 
       CALL RSTGAMP ! Reinitialize activity coefficients (SLC C2012-01-01)
-      Y3 = FUNCO7 (X3)
+      Y3 = FUNCO7 (X3, COL, ROW, LAYER)
 !
 ! *** CALCULATE HSO4 SPECIATION AND RETURN *******************************
 !
@@ -25016,12 +25026,13 @@ C  *** CALCULATE RATIOS *************************************************
 !
 !=======================================================================
 !
-      type(hyperdual) FUNCTION FUNCO7 (X)
+      type(hyperdual) FUNCTION FUNCO7_no_sens (X)
       type(hyperdual) :: X
       type(hyperdual) :: A4, A5, A6
       type(hyperdual) :: PSI6LO, PSI6HI, DELTA, BB, CC, DD
       type(hyperdual) :: SMIN, OHI, HI
       Integer :: I, ISLV
+      LOGICAL :: h_sens   ! Whether to compute hyperdual sensitivities
 !
       !Real(kind=fp) :: LAMDA
       ! hotp modified 8/2/07
@@ -25043,6 +25054,124 @@ C  *** CALCULATE RATIOS *************************************************
       PSI6   = X
       FRST   = .TRUE.
       CALAIN = .TRUE.
+      
+!
+! *** SOLVE EQUATIONS ; WITH ITERATIONS FOR ACTIVITY COEF. ************
+!
+      DO 10 I=1,NSWEEP
+	 
+      A4  = (XK2/XKW)*R*TEMP*(GAMA(10)%x/GAMA(5)%x)**2.0_PRhyd
+      
+      A5  = XK4 *R*TEMP*(WATER%x/GAMA(10)%x)**2.0_PRhyd
+      
+      A6  = XK3 *R*TEMP*(WATER/GAMA(11)%x)**2.0_PRhyd  
+      	  
+      IF (CHI5.GE.TINY) THEN
+         PSI5%x = PSI6%x*CHI5%x/(A6%x/A5%x*(CHI6%x-PSI6%x) + PSI6%x)
+         PSI5%x = MIN (PSI5%x,CHI5%x)
+      ELSE
+         PSI5%x = TINY
+      ENDIF
+!
+!CC      IF(CHI4.GT.TINY) THEN
+      IF(W(2).GT.TINY) THEN       ! Accounts for NH3 evaporation
+         BB%x   =-(CHI4%x + PSI6%x + PSI5%x + 1.d0/A4%x)
+         CC%x   = CHI4%x*(PSI5%x+PSI6%x) - 2.d0*PSI2%x/A4%x
+         DD%x   = MAX(BB%x*BB%x-4.d0*CC%x,ZERO)           ! Patch proposed by Uma Shankar, 19/11/01
+         PSI4%x =0.5d0*(-BB%x - SQRT(DD%x))
+         PSI4%x = MAX (MIN (PSI4%x,CHI4%x), ZERO)
+      ELSE
+         PSI4%x = TINY
+      ENDIF
+!
+! *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
+!
+      MOLAL (2)%x = 2.0D0*PSI1%x                       ! Na+
+      MOLAL (3)%x = 2.0D0*PSI2%x + PSI4%x                ! NH4I
+      MOLAL (4)%x = PSI6%x                             ! CLI
+      MOLAL (5)%x = PSI1%x+PSI2%x+PSI7%x+PSI8%x              ! SO4I
+      MOLAL (6)%x = ZERO                             ! HSO4
+      MOLAL (7)%x = PSI5%x                             ! NO3I
+      MOLAL (8)%x = ZERO                             ! CaI
+      MOLAL (9)%x = 2.0D0*PSI7%x                       ! KI
+      MOLAL (10)%x = PSI8%x                             ! Mg
+!
+! *** CALCULATE HSO4 SPECIATION AND RETURN *******************************
+!
+!CC      MOLAL (1) = MAX(CHI5 - PSI5, TINY)*A5/PSI5   ! HI
+       SMIN%x     = 2.d0*MOLAL(5)%x+MOLAL(7)%x+MOLAL(4)%x-MOLAL(2)%x-MOLAL(3)%x
+     &             -MOLAL(9)%x-2.0_PRhyd*MOLAL(10)%x
+      CALL CALCPH (SMIN, HI, OHI)
+      MOLAL (1)%x = HI%x
+!
+! *** CALCULATE GAS / SOLID SPECIES (LIQUID IN MOLAL ALREADY) *********
+!
+      GNH3%x      = MAX(CHI4%x - PSI4%x, TINY)
+      GHNO3%x     = MAX(CHI5%x - PSI5%x, TINY)
+      GHCL%x      = MAX(CHI6%x - PSI6%x, TINY)
+!
+      CNA2SO4  = ZERO
+      CNH42S4  = ZERO
+      CNH4NO3  = ZERO
+      CNH4Cl   = ZERO
+      CK2SO4   = ZERO
+      CMGSO4   = ZERO
+      CCASO4%x   = CHI9%x
+!
+! *** CALCULATE MOLALR ARRAY, WATER AND ACTIVITIES **********************
+!
+      CALL CALCMR
+!
+! *** CALCULATE ACTIVITIES OR TERMINATE INTERNAL LOOP *****************
+!
+      IF (FRST.AND.CALAOU .OR. .NOT.FRST.AND.CALAIN) THEN
+         CALL CALCACT
+      ELSE
+         GOTO 20
+      ENDIF
+10    CONTINUE
+!
+! *** CALCULATE FUNCTION VALUE FOR OUTER LOOP ***************************
+!
+20    FUNCO7_no_sens%x = MOLAL(1)%x*MOLAL(4)%x/GHCL%x/A6%x - ONE
+!CC         FUNCG5A = MOLAL(3)*MOLAL(4)/GHCL/GNH3/A6/A4 - ONE
+!	  
+      RETURN
+!
+! *** END OF FUNCTION FUNCO7 *******************************************
+!
+      END FUNCTION FUNCO7_no_sens
+
+      type(hyperdual) FUNCTION FUNCO7 (X, COL, ROW, LAYER)
+      type(hyperdual) :: X
+      type(hyperdual) :: A4, A5, A6
+      type(hyperdual) :: PSI6LO, PSI6HI, DELTA, BB, CC, DD
+      type(hyperdual) :: SMIN, OHI, HI
+      Integer :: I, ISLV
+      INTEGER :: COL, ROW, LAYER
+
+!
+      !Real(kind=fp) :: LAMDA
+      ! hotp modified 8/2/07
+      ! explicitly declared all variables in CASEO
+      ! made CASEO THREADPRIVATE for parallelization
+!=======!      Real(kind=fp) :: CHI1, CHI2, CHI3, CHI4, CHI5, CHI6, CHI7, CHI8
+!=======!      Real(kind=fp) :: CHI9, LAMDA, PSI1, PSI2, PSI3, PSI4, PSI5
+!=======!      Real(kind=fp) :: PSI6, PSI7, PSI8, PSI9,  A1,  A2,  A3,  A4
+!=======!      Real(kind=fp) :: A5, A6, A7, A8, A9
+!=======!      COMMON /CASEO/ CHI1, CHI2, CHI3, CHI4, CHI5, CHI6, CHI7, CHI8,
+!=======!     &               CHI9, LAMDA, PSI1, PSI2, PSI3, PSI4, PSI5,
+!=======!     &               PSI6, PSI7, PSI8, PSI9,  A1,  A2,  A3,  A4,
+!=======!     &               A5, A6, A7, A8, A9
+!=======!!$OMP THREADPRIVATE( /CASEO/ )
+
+!
+! *** SETUP PARAMETERS ************************************************
+!
+      PSI6   = X
+      FRST   = .TRUE.
+      CALAIN = .TRUE.
+      
 !
 ! *** SOLVE EQUATIONS ; WITH ITERATIONS FOR ACTIVITY COEF. ************
 !
@@ -25053,7 +25182,7 @@ C  *** CALCULATE RATIOS *************************************************
       A5  = XK4 *R*TEMP*(WATER/GAMA(10))**2.0_PRhyd
       
       A6  = XK3 *R*TEMP*(WATER/GAMA(11))**2.0_PRhyd  
-	  	  
+      	  
       IF (CHI5.GE.TINY) THEN
          PSI5 = PSI6*CHI5/(A6/A5*(CHI6-PSI6) + PSI6)
          PSI5 = MIN (PSI5,CHI5)
@@ -25074,7 +25203,7 @@ C  *** CALCULATE RATIOS *************************************************
 !
 ! *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 !
-      MOLAL (2) = 2.0D0*PSI1                       ! Na+
+      MOLAL (2) = 2.0D0*PSI1                      ! Na+
       MOLAL (3) = 2.0D0*PSI2 + PSI4                ! NH4I
       MOLAL (4) = PSI6                             ! CLI
       MOLAL (5) = PSI1+PSI2+PSI7+PSI8              ! SO4I
@@ -25082,12 +25211,12 @@ C  *** CALCULATE RATIOS *************************************************
       MOLAL (7) = PSI5                             ! NO3I
       MOLAL (8) = ZERO                             ! CaI
       MOLAL (9) = 2.0D0*PSI7                       ! KI
-      MOLAL (10)= PSI8                             ! Mg
+      MOLAL (10) = PSI8                             ! Mg
 !
 ! *** CALCULATE HSO4 SPECIATION AND RETURN *******************************
 !
 !CC      MOLAL (1) = MAX(CHI5 - PSI5, TINY)*A5/PSI5   ! HI
-       SMIN      = 2.d0*MOLAL(5)+MOLAL(7)+MOLAL(4)-MOLAL(2)-MOLAL(3)
+       SMIN     = 2.d0*MOLAL(5)+MOLAL(7)+MOLAL(4)-MOLAL(2)-MOLAL(3)
      &             -MOLAL(9)-2.0_PRhyd*MOLAL(10)
       CALL CALCPH (SMIN, HI, OHI)
       MOLAL (1) = HI
@@ -27233,35 +27362,10 @@ C  *** CALCULATE RATIOS *************************************************
 ! *** SOLVE EQUATIONS ; WITH ITERATIONS FOR ACTIVITY COEF. ************
 !
       DO 10 I=1,NSWEEP
-!
-!      A1  = XK5 *(WATER/GAMA(2))**3.0_PRhyd
-C     A4  = (XK2/XKW)*R*TEMP*(GAMA(10)/GAMA(5))**2.0_PRhyd
-C     A5  = XK4 *R*TEMP*(WATER/GAMA(10))**2.0_PRhyd
-C     A6  = XK3 *R*TEMP*(WATER/GAMA(11))**2.0_PRhyd
-      
-C     A4%x  = (XK2/XKW)*R*TEMP*(GAMA(10)%x/GAMA(5)%x)**2.0_PRhyd
-C     A4%dx1 = 0.d0
-C     A4%dx2 = 0.d0
-C     A4%dx1x2 = 0.d0
       
       A4  = (XK2/XKW)*R*TEMP*(GAMA(10)/GAMA(5))**2.0_PRhyd
-            
-C     A5%x  = XK4 *R*TEMP*(WATER%x/GAMA(10)%x)**2.0_PRhyd
-C     A5%dx1 = 0.d0
-C     A5%dx2 = 0.d0
-C     A5%dx1x2 = 0.d0 
-      
       A5  = XK4 *R*TEMP*(WATER/GAMA(10))**2.0_PRhyd
-                 
-C     A6%x  = XK3 *R*TEMP*(WATER%x/GAMA(11)%x)**2.0_PRhyd      
-C     A6%dx1 = 0.d0
-C     A6%dx2 = 0.d0
-C     A6%dx1x2 = 0.d0
-      
       A6  = XK3 *R*TEMP*(WATER/GAMA(11))**2.0_PRhyd    
-!      A7  = XK8 *(WATER/GAMA(1))**2.0_PRhyd
-!      A8  = XK9 *(WATER/GAMA(3))**2.0_PRhyd
-!      A11 = XK1*WATER/GAMA(7)*(GAMA(8)/GAMA(7))**2.
 !
 !  CALCULATE DISSOCIATION QUANTITIES
 !
@@ -29779,21 +29883,6 @@ C     A6%dx1x2 = 0.d0
       A4  = (XK2/XKW)*R*TEMP*(GAMA(10)/GAMA(5))**2.0_PRhyd
       A5  = XK4 *R*TEMP*(WATER/GAMA(10))**2.0_PRhyd
       A6  = XK3 *R*TEMP*(WATER/GAMA(11))**2.0_PRhyd
-      
-C     A4%x  = (XK2/XKW)*R*TEMP*(GAMA(10)%x/GAMA(5)%x)**2.0_PRhyd
-C     A4%dx1 = 0.d0
-C     A4%dx2 = 0.d0
-C     A4%dx1x2 = 0.d0
-C           
-C     A5%x  = XK4 *R*TEMP*(WATER%x/GAMA(10)%x)**2.0_PRhyd
-C     A5%dx1 = 0.d0
-C     A5%dx2 = 0.d0
-C     A5%dx1x2 = 0.d0 
-C                
-C     A6%x  = XK3 *R*TEMP*(WATER%x/GAMA(11)%x)**2.0_PRhyd      
-C     A6%dx1 = 0.d0
-C     A6%dx2 = 0.d0
-C     A6%dx1x2 = 0.d0
 !
 !  CALCULATE DISSOCIATION QUANTITIES
 !
@@ -34843,7 +34932,7 @@ C     A6%dx1x2 = 0.d0
       MOLAL(3) = 3.0_PRhyd*PSI2 + 2.0_PRhyd*PSI5 + PSI1                     ! NH4I
       MOLAL(5) = PSI2 + PSI4 + PSI5 + PSI6 + PSI7 + LAMDA         ! SO4I
       MOLAL(6) = PSI2 + PSI3 + PSI1 + PSI8 - LAMDA                ! HSO4I
-      MOLAL(9) = PSI8 + 2.0D0*PSI6                                ! KI
+      MOLAL(9) = PSI8 + 2.0D0*PSI6                               ! KI
       MOLAL(10)= PSI7                                             ! MGI
 !
       CLC      = ZERO
@@ -37277,20 +37366,10 @@ C     A6%dx1x2 = 0.d0
 !
 
 	  A4 = XK1  *WATER/GAMA(7)*(GAMA(8)/GAMA(7))**2.0_PRhyd
-C     A4%x = XK1  *WATER%x/GAMA(7)%x*(GAMA(8)%x/GAMA(7)%x)**2.0_PRhyd
-C     A4%dx1 = 0.d0
-C     A4%dx2 = 0.d0
-C     A4%dx1x2 = 0.d0
-!
-! #if defined( ISORROPIA_V22 )
+	  
       BB   = A4+LAMDA+PSI4                                ! KAPA
       CC   =-A4*(LAMDA + PSI3 + PSI2 + PSI1) + LAMDA*PSI4
       DD   = MAX(BB*BB-4.D0*CC, ZERO)
-! #else
-!       BB   = A4+LAMDA                                     ! KAPA
-!       CC   =-A4*(LAMDA + PSI3 + PSI2 + PSI1)             
-!       DD   = BB*BB-4.D0*CC
-! #endif
       KAPA = 0.5D0*(-BB+SQRT(DD))
 !
 ! *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
@@ -39275,7 +39354,7 @@ C
 C
         IF(METSTBL.EQ.1) THEN
          SCASE = 'W13'
-         CALL CALCW13(COL, ROW, LAYER)                 ! Only liquid (metastable)
+         CALL CALCW13(COL, ROW, LAYER, IGNORE_SENS)                 ! Only liquid (metastable)
 C        CALL CALCL9
         ELSE
 C
@@ -39334,7 +39413,7 @@ C
 C
            ELSEIF (DRK2SO4.LE.RH) THEN
              SCASE = 'W13'
-             CALL CALCW13(COL, ROW, LAYER)            ! CaSO4
+             CALL CALCW13(COL, ROW, LAYER, IGNORE_SENS)            ! CaSO4
            ENDIF
          ENDIF
 C        CALL CALCNH3
@@ -46763,7 +46842,7 @@ C *** UPDATE|ADJOINT BY SHANNON CAPPS
 C
 C=======================================================================
 C
-      SUBROUTINE CALCW13(COL, ROW, LAYER)
+      SUBROUTINE CALCW13(COL, ROW, LAYER, IGNORE_SENS)
 
       USE HDMod
       implicit none
@@ -46773,6 +46852,7 @@ C
       TYPE(hyperdual) :: BB, CC, DD, HI, OHI, DEL, A2, A3, A4
       INTEGER         :: ISLV, I
       INTEGER         :: COL, ROW, LAYER
+      LOGICAL         :: IGNORE_SENS
 C
 !       COMMON /SOLUT/ CHI1, CHI2, CHI3, CHI4, CHI5, CHI6, CHI7, CHI8,
 !      &               CHI9, CHI10, CHI11, CHI12, CHI13, CHI14, CHI15,
@@ -46786,6 +46866,7 @@ C
       FRST    =.TRUE.
       CALAIN  =.TRUE.
       CALAOU  =.TRUE.
+      IGNORE_SENS = .FALSE.
 C
 C *** CALCULATE INITIAL SOLUTION ***************************************
 C
@@ -46831,28 +46912,48 @@ C
       KI     = WAER(7)
       MGI    = WAER(8)
       
-      
-C     IF (I .EQ. 1) THEN
-C     		NH4I   = NH4I + hyperdual(0.d0, 1.d-3, 1.d-3, 0.d0)
-C     ENDIF
-C
-C SOLUTION ACIDIC OR BASIC?
-C
+
       GG   = 2.D0*SO4I + NO3I + CLI - NAI - NH4I
      &       - 2.D0*CAI - KI - 2.D0*MGI
-      IF (GG.GT.TINY) THEN                        ! H+ in excess
-         BB =-GG
-         CC =-AKW
-         DD = BB*BB - 4.D0*CC
-         HI = 0.5D0*(-BB + SQRT(DD))
-         OHI= AKW/HI
-      ELSE                                        ! OH- in excess
+      IF ( GG .GT. TINY ) THEN
+      
+      	 IF ( GG .GE. 1D-10 ) THEN                        ! H+ in excess
+        	BB =-GG
+         	CC =-AKW
+         	DD = BB*BB - 4.D0*CC
+         	HI = 0.5D0*(-BB + SQRT(DD))
+        	OHI= AKW/HI
+         
+      	 ELSE
+        	HI  = SQRT(AKW)
+      		OHI = AKW/HI
+      	 ENDIF
+      
+      ELSE                    ! OH- in excess
          BB = GG
          CC =-AKW
          DD = BB*BB - 4.D0*CC
          OHI= 0.5D0*(-BB + SQRT(DD))
          HI = AKW/OHI
       ENDIF
+
+C     GG   = 2.D0*SO4I + NO3I + CLI - NAI - NH4I
+C    &       - 2.D0*CAI - KI - 2.D0*MGI
+C     IF (GG.GT.TINY) THEN                        ! H+ in excess
+C        BB =-GG
+C        CC =-AKW
+C        DD = BB*BB - 4.D0*CC
+C        HI = 0.5D0*(-BB + SQRT(DD))
+C        OHI= AKW/HI
+C     ELSE                                        ! OH- in excess
+C        BB = GG
+C        CC =-AKW
+C        DD = BB*BB - 4.D0*CC
+C        OHI= 0.5D0*(-BB + SQRT(DD))
+C        HI = AKW/OHI
+C     ENDIF
+
+
 C
 C UNDISSOCIATED SPECIES EQUILIBRIA
 C
@@ -46874,8 +46975,13 @@ C CONCENTRATION ADJUSTMENTS ; HSO4 minor species.
 C
          CALL CALCHS4(HI, SO4I, ZERO_HD, DEL) 
       else
-        del= zero
+        DEL= zero
       ENDIF
+      
+      IF (DEL%x .eq. zero) THEN
+      	DEL = 0.0D0
+      ENDIF
+      
       SO4I  = SO4I  - DEL
       HI    = HI    - DEL
       HSO4I = DEL
@@ -46919,7 +47025,7 @@ C
       A3      = XK4 *R*TEMP*(WATER/GAMA(10))**2.        ! HNO3 <==> NO3-
       A4      = XK3 *R*TEMP*(WATER/GAMA(11))**2.        ! HCL  <==> CL-
 C
-      GNH3    = NH4I/HI/A2
+      GNH3    = (NH4I/HI)/A2
       GHNO3   = HI*NO3I/A3
       GHCL    = HI*CLI/A4
       
@@ -46941,7 +47047,11 @@ C
       CMGNO32 = ZERO
       CMGCL2  = ZERO
       CCACL2  = ZERO
-C
+      
+      IF (GG .LT. TINY2) THEN
+      	IGNORE_SENS = .TRUE. 
+      ENDIF
+C     
       RETURN
 C
 C *** END OF SUBROUTINE CALCW13 ******************************************

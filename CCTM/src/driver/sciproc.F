@@ -87,6 +87,13 @@ C     USE PA_DEFN, Only: LIPR   ! Process Analysis control and data variables
 #endif
 C Arguments:
       TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
+      REAL( 8 ), ALLOCATABLE :: CGRID_AERO_DX1( :,:,:,: )
+      REAL( 8 ), ALLOCATABLE :: CGRID_AERO_DX2( :,:,:,: )
+      REAL( 8 ), ALLOCATABLE :: CGRID_AERO_DX1X2( :,:,:,: )
+      
+      REAL( 8 ), ALLOCATABLE :: CGRID_CHEM_DX1( :,:,:,: )
+      REAL( 8 ), ALLOCATABLE :: CGRID_CHEM_DX2( :,:,:,: )
+      REAL( 8 ), ALLOCATABLE :: CGRID_CHEM_DX1X2( :,:,:,: )      
 
       INTEGER, INTENT(INOUT) :: JDATE        ! current model date, coded YYYYDDD
       INTEGER, INTENT(INOUT) :: JTIME        ! current model time, coded HHMMSS
@@ -117,9 +124,9 @@ C Local Variables:
       
       INTEGER         :: V, S
 c      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
-      TYPE(hyperdual), parameter :: PERT_HYPERDUAL = hyperdual(0.0D0, 1.D-3, 1.D-3, 0.0D0)
-      TYPE(hyperdual), parameter :: PERT_HYPERDUAL_1 = hyperdual(0.0D0, 1.D-3, 0.0d0, 0.0D0)
-      TYPE(hyperdual), parameter :: PERT_HYPERDUAL_2 = hyperdual(0.0d0, 0.0d0, 1.D-3, 0.0d0)
+      TYPE(hyperdual), parameter :: PERT_HYPERDUAL = hyperdual(0.0D0, 1.D0, 1.D0, 0.0D0)
+      TYPE(hyperdual), parameter :: PERT_HYPERDUAL_1 = hyperdual(0.0D0, 1.D0, 0.0d0, 0.0D0)
+      TYPE(hyperdual), parameter :: PERT_HYPERDUAL_2 = hyperdual(0.0d0, 0.0d0, 1.D0, 0.0d0)
 
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: CGRID0( :,:,:,: )
@@ -222,6 +229,12 @@ C-----------------------------------------------------------------------
       IF ( FIRSTIME ) THEN
          FIRSTIME = .FALSE.
          ALLOCATE( CGRID0( NCOLS,NROWS,NLAYS,NSPCSD ) )
+         ALLOCATE( CGRID_AERO_DX1( NCOLS,NROWS,NLAYS,NSPCSD ) )
+         ALLOCATE( CGRID_AERO_DX2( NCOLS,NROWS,NLAYS,NSPCSD ) )
+         ALLOCATE( CGRID_AERO_DX1X2( NCOLS,NROWS,NLAYS,NSPCSD ) )
+         ALLOCATE( CGRID_CHEM_DX1( NCOLS,NROWS,NLAYS,NSPCSD ) )
+         ALLOCATE( CGRID_CHEM_DX2( NCOLS,NROWS,NLAYS,NSPCSD ) )
+         ALLOCATE( CGRID_CHEM_DX1X2( NCOLS,NROWS,NLAYS,NSPCSD ) )         
       END IF
 #endif
 
@@ -257,9 +270,8 @@ C-----------------------------------------------------------------------
 c        Hyperdual perturbation at the very first, ASO4J -> 130 ; ANO3J -> 134
 C        Isoprene is 55, NH3 is 213, ANH4K -> 171
 c        OLE is 53 ; IOLE is 54, still true for aero7
-C	    CGRID(:, :, 1, 171)%x = CGRID(:, :, 1, 171)%x * 0.99 
-  	    CGRID(:, :, 1, 171) = CGRID(:, :, 1, 171) + PERT_HYPERDUAL
-C	    CGRID(:, :, 1, 134) = CGRID(:, :, 1, 134) + PERT_HYPERDUAL_2
+
+C    CGRID(:, :, 1, 66) = CGRID(:, :, 1, 66) + PERT_HYPERDUAL
  	    
 c       Hyperdual <-- CD
  	      DO V = 1, N_CSPCS
@@ -278,6 +290,7 @@ C Synchronization Step Physical Processes Sequence
       IF ( CKSUM ) CALL CKSUMMER ( 'VDIFF', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE ( 'VDIF', CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'VDIFF' )
+      
 
 
       IF ( .NOT. COLUMN_MODEL ) THEN
@@ -316,21 +329,33 @@ C decouple CGRID for cloud and chemistry
          IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'DECOUPLE' )
       END IF
 C     
+C     CGRID_AERO_DX1 = CGRID%dx1
+C     CGRID_AERO_DX2 = CGRID%dx2
+C     CGRID_AERO_DX1X2 = CGRID%dx1x2    
+        
       CALL PHOT ( CGRID, JDATE, JTIME, TSTEP )
       IF ( CKSUM ) CALL CKSUMMER ( 'PHOT', CGRID, JDATE, JTIME )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'PHOT' )
+            
 C
       CALL CLDPROC ( CGRID, JDATE, JTIME, TSTEP )
       IF ( CKSUM ) CALL CKSUMMER ( 'CLDPROC', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE ( 'CLDS', CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CLDPROC' )
-C
+   
+C      CGRID(:, :, :, 133) = CGRID(:, :, :, 133) + PERT_HYPERDUAL
+         
       IF ( STM ) CALL STM_WRAP_GAS ( CGRID, JDATE, JTIME, .TRUE. )
       CALL CHEM ( CGRID, JDATE, JTIME, TSTEP )
       IF ( CKSUM ) CALL CKSUMMER ( 'CHEM', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE ( 'CHEM', CGRID, JDATE, JTIME, TSTEP ) 
       IF ( STM ) CALL STM_WRAP_GAS ( CGRID, JDATE, JTIME, .FALSE. )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CHEM' )
+      
+C     CGRID_CHEM_DX1 = CGRID%dx1
+C     CGRID_CHEM_DX2 = CGRID%dx2
+C     CGRID_CHEM_DX1X2 = CGRID%dx1x2   
+
 C
 C#ifdef potvorto3
 C     CALL PVO3 ( CGRID, JDATE, JTIME )
@@ -342,13 +367,21 @@ C#endif
 #ifdef isam
       CGRID0  = CGRID
 #endif
-
+      
       CALL AERO ( CGRID, JDATE, JTIME, TSTEP )
       IF ( CKSUM ) CALL CKSUMMER ( 'AERO', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE_AERO ( CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'AERO' )
       IF ( STM ) CALL STM_WRAP_AE ( CGRID, JDATE, JTIME )
-
+      
+      CGRID_AERO_DX1 = CGRID%dx1
+C     CGRID_AERO_DX2 = CGRID%dx2
+C     CGRID_AERO_DX1X2 = CGRID%dx1x2   
+C     
+C     CGRID%dx1 = 0.d0
+C     CGRID%dx2 = 0.d0
+C     CGRID%dx1x2 = 0.d0
+      
 #ifdef isam
       CALL SA_WRAP_AE( CGRID0, CGRID, JDATE, JTIME, TSTEP )
 #endif

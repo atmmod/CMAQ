@@ -350,9 +350,10 @@ Module HDMod_cplx
 
 
       end function hdual_cplx_mul_hdual
+      
+      
+      
       ! DIVISION !
-  
-  
       function hdual_cplx_div_hdual_cplx(qleft, qright) result(res)
         
         implicit none
@@ -407,23 +408,22 @@ Module HDMod_cplx
   
           xval = qleft%x 
           tol = 1.0e-15
-          if (abs(real(xval)) < real(tol)) then
-            
-            if (real(xval) >= 0) then 
-              xval = tol
-            endif 
-  
-            if (real(xval) < 0) then
-              xval = -tol
-            endif
-  
-          endif 
+          
+          if ((xval .eq. 0) .AND. (iright .lt. 1.)) then
+            res%x = 0.d0
+            res%dx1 = 0.d0
+            res%dx2 = 0.d0
+            res%dx1x2 = 0.d0
+          else
+          
           deriv = iright * xval**(iright - 1.0d0)
           
           res%x = qleft%x**iright
           res%dx1 = qleft%dx1 * deriv
           res%dx2 = qleft%dx2 * deriv
           res%dx1x2 = qleft%dx1x2 * deriv + iright * (iright - 1.0d0) * qleft%dx1 * qleft%dx2 * xval**(iright - 2.0d0)
+          
+          endif
         
         end function hdual_cplx_pow_dble
   

@@ -1153,6 +1153,11 @@ C Copy grid cell concentrations of aero species to aerospc_conc
                n = aerospc_map( spc,m )
                If ( n .Ne. 0 ) Then
                   aerospc_conc( spc,m ) = Max( conc( n ), aerospc( spc )%min_conc( m ) ) ! [ug/m^3]
+                  IF (aerospc_conc( spc, m ) .eq. aerospc( spc )%min_conc( m )) Then
+                      aerospc_conc( spc, m )%dx1 = 0.d0
+                      aerospc_conc( spc, m )%dx2 = 0.d0
+                      aerospc_conc( spc, m )%dx1x2 = 0.d0
+                  ENDIF
 #ifdef sens
                   If ( schk ) Then
                      Do np = 1, npmax
@@ -1284,6 +1289,11 @@ C Copy aerospc_conc back to grid cell concentrations
                n = aerospc_map( spc,m )
                If ( n .Ne. 0 ) Then
                     conc( n ) = Max( aerospc_conc( spc,m ), aerospc( spc )%min_conc( m ) )
+                    IF ( conc( n ) .eq. aerospc( spc )%min_conc( m )) Then
+                      conc( n )%dx1 = 0.d0
+                      conc( n )%dx2 = 0.d0
+                      conc( n )%dx1x2 = 0.d0
+                     ENDIF
 #ifdef sens
                     Do np = 1, npmax
                        If ( conc( n ) .Eq. aerospc( spc )%min_conc( m ) ) Then

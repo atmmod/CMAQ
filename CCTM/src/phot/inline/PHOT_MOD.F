@@ -111,7 +111,7 @@ C-----------------------------------------------------------------------
       TYPE(hyperdual), ALLOCATABLE  :: RJ_SUB  ( :, :, :, : ) ! subgrid cloud J-values (min-1)
       TYPE(hyperdual), ALLOCATABLE  :: ETOT_SFC_WL ( :,:,: )  ! total downward irradiance at sfc [ Watts / m**2  ]
       
-      REAL, ALLOCATABLE  :: BLKHCHO( : )           ! formaldehyde concentration [ molecules/cm**3 ]
+      REAL, ALLOCATABLE  :: BLKHCHO( : )           ! formaldehyde concentration [ molecules/cm**3 ] Not used anywhere?
       REAL, ALLOCATABLE  :: BLKCO  ( : )           ! CO concentration [ molecules/cm**3 ]
       REAL, ALLOCATABLE  :: BLKSO2 ( : )           ! SO2 concentration [ molecules/cm**3 ]
       REAL, ALLOCATABLE  :: BLKDZ  ( : )           ! layer thicknesses [ m ]
@@ -248,7 +248,7 @@ C-----------------------------------------------------------------------
 
       TYPE(hyperdual),    INTENT(OUT) :: BLKRJ( :,: )  ! photolysis rates [ 1 / sec ]
 
-      REAL,    INTENT(OUT) :: TAUC_AERO( :,: )  ! aerosol optical depth, bottom of layer
+      TYPE(hyperdual),    INTENT(OUT) :: TAUC_AERO( :,: )  ! aerosol optical depth, bottom of layer
       TYPE(hyperdual),    INTENT(OUT) :: TAU_TOT  ( :,: )  ! total optical depth, bottom of layer
       REAL,    INTENT(OUT) :: TAU_CLOUD( :,: )  ! cloud optical depth, bottom of layer
 
@@ -272,7 +272,7 @@ C-----------------------------------------------------------------------
       TYPE(hyperdual) DELTA_O3_COLUMN   ! change in ozone column density [molecules/cm2]
       TYPE(hyperdual) STRAT_O3_COLUMN   ! ozone column density in the stratosphere [molecules/cm2]
       TYPE(hyperdual) STRAT_O3_COLMIN   ! ozone minium column density in the stratosphere [molecules/cm2]
-      REAL TAU_O3            ! optical depth of stratospheric ozone [ m ]
+      TYPE(hyperdual) TAU_O3            ! optical depth of stratospheric ozone [ m ]
       REAL DENSTOM           ! estimated air density at top of model [ molecules / cm**3 ]
       REAL LAMDA             ! wavelength  [ nm ]
       REAL INV_LAMBDA        ! reciprocal of wavelength [ 1/nm ]
@@ -307,7 +307,7 @@ C-----------------------------------------------------------------------
 !***Increment of optical depth
 
       TYPE(hyperdual), ALLOCATABLE, SAVE :: DTAU    ( : )   ! total depth at level
-      REAL, ALLOCATABLE, SAVE :: DT_AERO ( : )   ! aerosol contribution at level
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DT_AERO ( : )   ! aerosol contribution at level
       REAL, ALLOCATABLE, SAVE :: DT_CLOUD( : )   ! cloud contribution at level
 
 !***single scattering albedo for layer
@@ -446,7 +446,7 @@ C-----------------------------------------------------------------------
 !***Initialize sums or set default values for outputs: 
 !   TAUC_AERO, TAU_TOT, TAUO3_TOP, TAU_RAY, SSA_AERO, etc.
 
-      TAUC_AERO = 0.0
+      TAUC_AERO = 0.0D0
       TAU_TOT   = 0.0D0
       TAU_CLOUD = 0.0
       TAU_SCAT  = 0.0D0
@@ -605,7 +605,7 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
 !*** initialize tau, delta tau's, other variables and loop over layers
 
          DTAU         = 0.0D0
-         DT_AERO      = 0.0
+         DT_AERO      = 0.0d0
          DT_CLOUD     = 0.0
          DTSCAT_CLOUD = 0.0
          TAU_SCAT_CLD = 0.0
@@ -760,7 +760,7 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
 
 !***set aerosol optical depth for later use
 
-            DT_AERO ( L ) = real_hdual(BEXT) * BLKDZ( II )
+            DT_AERO ( L ) = BEXT * BLKDZ( II )
 
 !***Now calculate the vertical profiles of optical depth,
 !***  single scattering albedo, asymmetry factor
@@ -1088,7 +1088,7 @@ C-----------------------------------------------------------------------
 
       INTEGER IXT, IXTEMP
 
-      REAL OZONE_CS        ! interpolated ozone absorption cross section
+      REAL OZONE_CS        ! interpolated o zone absorption cross section
       REAL YTT             ! interpolation variable
 
 !***Find temperature range:
@@ -1809,8 +1809,8 @@ C-----------------------------------------------------------------------
       EDR(LEV) = MU * FDR(LEV) 
       EDN(LEV) = REAL( FDN0 , 8 )
       EUP(LEV) = Y(ROW) * E3(J) - Y(ROW + 1) * E4(J) + CUP(J) 
-      FDN(LEV) = EDN(LEV) * REAL( MU1 )
-      FUP(LEV) = EUP(LEV) * REAL( MU1 )
+      FDN(LEV) = EDN(LEV)%x * REAL( MU1 )
+      FUP(LEV) = EUP(LEV)%x * REAL( MU1 )
 
       DO 60, LEV = 2, NLAYER + 1
 

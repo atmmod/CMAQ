@@ -108,8 +108,9 @@ C Local Variables:
       real,    allocatable, save :: rrhodz  ( : )   ! reciprocal rho * deltaZ
       integer, allocatable, save :: sedi_map( : )
       integer, allocatable, save :: conc_map( : )
-      real       adts, dts, rdts
-      real       ldt, fs
+C     real       adts, dts, rdts
+C     real       ldt, fs
+      TYPE(hyperdual) :: fs, rdts, dts, adts, ldt
       integer    off, dtc, iter 
       integer    c, r, l, n, s, v
       integer    astat
@@ -220,7 +221,7 @@ C subset all the layers and species in cgrid for this grid cell
          if ( vdiffdiag ) then
             sumvsed = 0.0d0   ! array assignment
          end if
-         adts = 0.0; dtc = 0; iter = 0
+         adts = 0.0d0; dtc = 0; iter = 0
 
          do while ( adts .lt. dtsec .and. iter .le. 10 )
             iter = iter + 1
@@ -238,10 +239,10 @@ C subset all the layers and species in cgrid for this grid cell
             ! Assess reciprocal of the time step and increase it if
             ! one of the surrogates shows a very fast sedimentation 
             ! velocity
-            rdts = 1.0 / dtsec
+            rdts = REAL ( 1.0 / dtsec , 8 )
             do l = 1, nlays
                do v = 1, n_sedi_map
-                  fs = rdl( l ) * vsed( v,l )%x
+                  fs = rdl( l ) * vsed( v,l )
                   if ( rdts .lt. fs ) rdts = fs
                end do
             end do
@@ -251,7 +252,7 @@ C subset all the layers and species in cgrid for this grid cell
             adts = adts + dts
             if ( adts .gt. dtsec ) then   ! don`t overshoot the timestep
                dts = dtsec - (adts - dts)
-               adts = dtsec
+               adts = REAL ( dtsec , 8 )
             end if
 
             dtc = dtc + 1
