@@ -91,7 +91,7 @@ C-----------------------------------------------------------------------
 #ifdef sens
       USE DDM3D_DEFN, ONLY: SENGRID, NPMAX, NP
 #endif
-
+      USE HDMod
       IMPLICIT NONE
 
 C Includes:
@@ -101,7 +101,7 @@ C Includes:
 
 C Arguments:
       
-      REAL, POINTER :: CGRID( :,:,:,: )
+      TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
       INTEGER, INTENT( IN ) :: JDATE      ! current model date, coded YYYYDDD
       INTEGER, INTENT( IN ) :: JTIME      ! current model time, coded HHMMSS
       INTEGER, INTENT( IN ) :: TSTEP( 3 ) ! time step vector (HHMMSS)
@@ -120,7 +120,7 @@ C Advected species dimension
  
 C File Variables:
  
-      REAL          CONC  ( 0:NCOLS+1,0:NROWS+1 )   ! conc working array
+      TYPE(hyperdual)          CONC  ( 0:NCOLS+1,0:NROWS+1 )   ! conc working array
       REAL          RHOJ  ( 0:NCOLS+1,0:NROWS+1,NLAYS ) ! density X Jacobian
       CHARACTER( 8 ), SAVE :: COMMSTR                 ! for both CONC and RHOJ
       REAL          RK11  (   NCOLS+1,NROWS+1,NLAYS ) ! initially used as RHOJ
@@ -151,12 +151,12 @@ C Local Variables:
       INTEGER       FDATE                       ! interpolation date
       INTEGER       FTIME                       ! interpolation time
 
-      REAL,    ALLOCATABLE, SAVE :: HALO_SOUTH( :,:,: )
-      REAL,    ALLOCATABLE, SAVE :: HALO_NORTH( :,:,: )
-      REAL,    ALLOCATABLE, SAVE :: HALO_WEST ( :,:,: )
-      REAL,    ALLOCATABLE, SAVE :: HALO_EAST ( :,:,: )
-      REAL,    ALLOCATABLE, SAVE :: BUF_NS    ( :,:,: )
-      REAL,    ALLOCATABLE, SAVE :: BUF_EW    ( :,:,: )
+      TYPE(hyperdual),    ALLOCATABLE, SAVE :: HALO_SOUTH( :,:,: )
+      TYPE(hyperdual),    ALLOCATABLE, SAVE :: HALO_NORTH( :,:,: )
+      TYPE(hyperdual),    ALLOCATABLE, SAVE :: HALO_WEST ( :,:,: )
+      TYPE(hyperdual),    ALLOCATABLE, SAVE :: HALO_EAST ( :,:,: )
+      TYPE(hyperdual),    ALLOCATABLE, SAVE :: BUF_NS    ( :,:,: )
+      TYPE(hyperdual),    ALLOCATABLE, SAVE :: BUF_EW    ( :,:,: )
 
       INTEGER, ALLOCATABLE, SAVE :: DIFF_MAP( : )   ! global diff map to CGRID
 
@@ -359,9 +359,16 @@ C get number of steps based on eddy time
             END DO
          END DO
       END DO
-
-      CALL SUBST_COMM (HALO_SOUTH, HALO_NORTH, DSPL_N1_E0_S0_W0, DRCN_N)
-      CALL SUBST_COMM (BUF_NS,     HALO_SOUTH, DSPL_N0_E0_S1_W0, DRCN_S)
+      ! For hyperdual values, do the communication for all four components
+      CALL SUBST_COMM (HALO_SOUTH%x, HALO_NORTH%x, DSPL_N1_E0_S0_W0, DRCN_N)
+      CALL SUBST_COMM (HALO_SOUTH%dx1, HALO_NORTH%dx1, DSPL_N1_E0_S0_W0, DRCN_N)
+      CALL SUBST_COMM (HALO_SOUTH%dx2, HALO_NORTH%dx2, DSPL_N1_E0_S0_W0, DRCN_N)
+      CALL SUBST_COMM (HALO_SOUTH%dx1x2, HALO_NORTH%dx1x2, DSPL_N1_E0_S0_W0, DRCN_N)
+      
+      CALL SUBST_COMM (BUF_NS%x,     HALO_SOUTH%x, DSPL_N0_E0_S1_W0, DRCN_S)
+      CALL SUBST_COMM (BUF_NS%dx1,     HALO_SOUTH%dx1, DSPL_N0_E0_S1_W0, DRCN_S)
+      CALL SUBST_COMM (BUF_NS%dx2,     HALO_SOUTH%dx2, DSPL_N0_E0_S1_W0, DRCN_S)
+      CALL SUBST_COMM (BUF_NS%dx1x2,     HALO_SOUTH%dx1x2, DSPL_N0_E0_S1_W0, DRCN_S)
 
 #ifdef sens
       DO NP = 1, NPMAX
@@ -396,8 +403,15 @@ C get number of steps based on eddy time
          END DO
       END DO
 
-      CALL SUBST_COMM (HALO_WEST, HALO_EAST, DSPL_N0_E1_S0_W0, DRCN_E)
-      CALL SUBST_COMM (BUF_EW,    HALO_WEST, DSPL_N0_E0_S0_W1, DRCN_W)
+      CALL SUBST_COMM (HALO_WEST%x, HALO_EAST%x, DSPL_N0_E1_S0_W0, DRCN_E)
+      CALL SUBST_COMM (HALO_WEST%dx1, HALO_EAST%dx1, DSPL_N0_E1_S0_W0, DRCN_E)
+      CALL SUBST_COMM (HALO_WEST%dx2, HALO_EAST%dx2, DSPL_N0_E1_S0_W0, DRCN_E)
+      CALL SUBST_COMM (HALO_WEST%dx1x2, HALO_EAST%dx1x2, DSPL_N0_E1_S0_W0, DRCN_E)
+      
+      CALL SUBST_COMM (BUF_EW%x,    HALO_WEST%x, DSPL_N0_E0_S0_W1, DRCN_W)
+      CALL SUBST_COMM (BUF_EW%dx1,    HALO_WEST%dx1, DSPL_N0_E0_S0_W1, DRCN_W)
+      CALL SUBST_COMM (BUF_EW%dx2,    HALO_WEST%dx2, DSPL_N0_E0_S0_W1, DRCN_W)
+      CALL SUBST_COMM (BUF_EW%dx1x2,    HALO_WEST%dx1x2, DSPL_N0_E0_S0_W1, DRCN_W)
 
 #ifdef sens
       DO NP = 1, NPMAX

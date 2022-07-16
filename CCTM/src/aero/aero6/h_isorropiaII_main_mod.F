@@ -39354,7 +39354,7 @@ C
 C
         IF(METSTBL.EQ.1) THEN
          SCASE = 'W13'
-         CALL CALCW13(COL, ROW, LAYER, IGNORE_SENS)                 ! Only liquid (metastable)
+         CALL CALCW13(COL, ROW, LAYER)                 ! Only liquid (metastable)
 C        CALL CALCL9
         ELSE
 C
@@ -39413,7 +39413,7 @@ C
 C
            ELSEIF (DRK2SO4.LE.RH) THEN
              SCASE = 'W13'
-             CALL CALCW13(COL, ROW, LAYER, IGNORE_SENS)            ! CaSO4
+             CALL CALCW13(COL, ROW, LAYER)            ! CaSO4
            ENDIF
          ENDIF
 C        CALL CALCNH3
@@ -46842,7 +46842,7 @@ C *** UPDATE|ADJOINT BY SHANNON CAPPS
 C
 C=======================================================================
 C
-      SUBROUTINE CALCW13(COL, ROW, LAYER, IGNORE_SENS)
+      SUBROUTINE CALCW13(COL, ROW, LAYER)
 
       USE HDMod
       implicit none
@@ -46852,7 +46852,6 @@ C
       TYPE(hyperdual) :: BB, CC, DD, HI, OHI, DEL, A2, A3, A4
       INTEGER         :: ISLV, I
       INTEGER         :: COL, ROW, LAYER
-      LOGICAL         :: IGNORE_SENS
 C
 !       COMMON /SOLUT/ CHI1, CHI2, CHI3, CHI4, CHI5, CHI6, CHI7, CHI8,
 !      &               CHI9, CHI10, CHI11, CHI12, CHI13, CHI14, CHI15,
@@ -46866,7 +46865,6 @@ C
       FRST    =.TRUE.
       CALAIN  =.TRUE.
       CALAOU  =.TRUE.
-      IGNORE_SENS = .FALSE.
 C
 C *** CALCULATE INITIAL SOLUTION ***************************************
 C
@@ -47048,9 +47046,9 @@ C
       CMGCL2  = ZERO
       CCACL2  = ZERO
       
-      IF (GG .LT. TINY2) THEN
-      	IGNORE_SENS = .TRUE. 
-      ENDIF
+C     IF (GG .LT. TINY2) THEN
+C     	IGNORE_SENS = .TRUE. 
+C     ENDIF
 C     
       RETURN
 C

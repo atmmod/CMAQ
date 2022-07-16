@@ -63,7 +63,7 @@ C-----------------------------------------------------------------------
 #ifdef sens
       USE DDM3D_DEFN, ONLY:SENGRID, NPMAX, NP, BSEN, BCS, DATENUM, IPT, IDATE, IPARM, IREGION, CKTIME, STARTDATE
 #endif 
-
+	  USE HDMod
       IMPLICIT NONE
 
 C Includes:
@@ -73,7 +73,7 @@ C Includes:
 
 C Arguments:
 
-      REAL,    POINTER      :: CGRID( :,:,:,: )
+      TYPE(hyperdual),    POINTER      :: CGRID( :,:,:,: )
       INTEGER, INTENT( IN ) :: FDATE         ! current model date, coded YYYYDDD
       INTEGER, INTENT( IN ) :: FTIME         ! current model time, coded HHMMSS
       INTEGER, INTENT( IN ) :: TSTEP         ! time step (HHMMSS)
@@ -82,7 +82,7 @@ C Arguments:
 
 C External Functions not declared in IODECL3.EXT:
 
-      REAL,    EXTERNAL :: ZFDBC
+      TYPE(hyperdual),    EXTERNAL :: ZFDBC
 
 C Parameters:
 
@@ -109,8 +109,8 @@ C Local Variables:
       REAL,    SAVE :: DX1                      ! dx1 (meters)
       INTEGER, SAVE :: ASPC                     ! RHOJ index in CGRID
 
-      REAL, ALLOCATABLE, SAVE :: VELX( : ),     ! Velocities along a row
-     &                           CONX( :,: )    ! Conc's along a row
+      REAL, ALLOCATABLE, SAVE :: VELX( : )     ! Velocities along a row
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: CONX( :,: )
 
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: SA_CONX( :,: )
@@ -130,9 +130,9 @@ C Local Variables:
 
 #ifdef parallel
       INTEGER EAST_COL
-      REAL, ALLOCATABLE, SAVE :: HALO_EAST( :,:,: )
-      REAL, ALLOCATABLE, SAVE :: HALO_WEST( :,:,: )
-      REAL, ALLOCATABLE, SAVE :: BUF_EW( :,:,: )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: HALO_EAST( :,:,: )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: HALO_WEST( :,:,: )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: BUF_EW( :,:,: )
 
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: SA_HALO_EAST( :,:,: )
@@ -165,13 +165,14 @@ C Required interface for allocatable array dummy arguments
             REAL,    INTENT( OUT )        :: UHAT( :,: )
          END SUBROUTINE HCONTVEL
          SUBROUTINE HPPM ( NI, NJ, CON, VEL, DT, DS, ORI )
+            USE HDMod
 ! #ifdef parallel
             INTEGER, PARAMETER         :: SWP = 3
 ! #else
 !           INTEGER, PARAMETER         :: SWP = 1
 ! #endif
             INTEGER,   INTENT( IN )    :: NI, NJ
-            REAL,      INTENT( INOUT ) :: CON( 1-SWP:,1: )
+            TYPE(hyperdual),      INTENT( INOUT ) :: CON( 1-SWP:,1: )
             REAL,      INTENT( IN )    :: VEL( : )
             REAL,      INTENT( IN )    :: DT
             REAL,      INTENT( IN )    :: DS
@@ -231,9 +232,9 @@ C Get dx1 from HGRD_DEFN module
             XMSG = 'Failure allocating HALO_EAST, HALO_WEST, or BUF_EW'
             CALL M3EXIT ( PNAME, FDATE, FTIME, XMSG, XSTAT1 )
          END IF
-         HALO_EAST = 0.0   ! array
-         HALO_WEST = 0.0   ! array
-         BUF_EW    = 0.0   ! array
+         HALO_EAST = 0.0D0   ! array
+         HALO_WEST = 0.0D0   ! array
+         BUF_EW    = 0.0D0   ! array
 
 #ifdef isam
          SA_HALO_EAST = 0.0   ! KRT array
@@ -327,8 +328,15 @@ C Get the contravariant x1 velocity component
          END DO
       END DO
 
-      CALL SUBST_COMM (HALO_WEST, HALO_EAST, DSPL_N0_E1_S0_W0, DRCN_E)
-      CALL SUBST_COMM (BUF_EW,    HALO_WEST, DSPL_N0_E0_S0_W1, DRCN_W)
+      CALL SUBST_COMM (HALO_WEST%x, HALO_EAST%x, DSPL_N0_E1_S0_W0, DRCN_E)
+      CALL SUBST_COMM (HALO_WEST%dx1, HALO_EAST%dx1, DSPL_N0_E1_S0_W0, DRCN_E)
+      CALL SUBST_COMM (HALO_WEST%dx2, HALO_EAST%dx2, DSPL_N0_E1_S0_W0, DRCN_E)
+      CALL SUBST_COMM (HALO_WEST%dx1x2, HALO_EAST%dx1x2, DSPL_N0_E1_S0_W0, DRCN_E)
+      
+      CALL SUBST_COMM (BUF_EW%x,    HALO_WEST%x, DSPL_N0_E0_S0_W1, DRCN_W)
+      CALL SUBST_COMM (BUF_EW%dx1,    HALO_WEST%dx1, DSPL_N0_E0_S0_W1, DRCN_W)
+      CALL SUBST_COMM (BUF_EW%dx2,    HALO_WEST%dx2, DSPL_N0_E0_S0_W1, DRCN_W)
+      CALL SUBST_COMM (BUF_EW%dx1x2,    HALO_WEST%dx1x2, DSPL_N0_E0_S0_W1, DRCN_W)
 
 #ifdef sens
       DO NP = 1, NPMAX
@@ -388,7 +396,7 @@ C West boundary
      &               ZFDBC ( CONX( 1,SPC ), CONX( 2,SPC ),
      &                       VELX( 1 ),     VELX( 2 ) )
                ELSE    ! inflow
-                  CONX( 1-SWP:0,SPC ) = BCON( WFX+ROW,SPC )
+                  CONX( 1-SWP:0,SPC ) = REAL ( BCON( WFX+ROW,SPC ) , 8 )
                END IF
             END IF
 
@@ -400,7 +408,7 @@ C East boundary
      &               ZFDBC ( CONX( NCOLS,SPC ), CONX( NCOLS-1,SPC ),
      &                       VELX( NCOLS+1 ),   VELX( NCOLS ) )
                ELSE    ! inflow
-                  CONX( NCOLS+1:NCOLS+SWP,SPC ) = BCON( EFX+ROW,SPC )
+                  CONX( NCOLS+1:NCOLS+SWP,SPC ) = REAL ( BCON( EFX+ROW,SPC ) , 8 )
                END IF
             END IF
 

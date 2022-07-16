@@ -60,7 +60,7 @@ C-----------------------------------------------------------------------
 #ifdef sens
       USE DDM3D_DEFN, ONLY:SENGRID, NPMAX, NP, BSEN
 #endif 
-
+	  USE HDMod
       IMPLICIT NONE
       
 C Includes:
@@ -70,7 +70,7 @@ C Includes:
 
 C Arguments:
       
-      REAL, POINTER :: CGRID( :,:,:,: )
+      TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
       INTEGER     JDATE         ! current model date, coded YYYYDDD
       INTEGER     JTIME         ! current model time, coded HHMMSS
       INTEGER     TSTEP( 3 )    ! time step vector (HHMMSS)
@@ -128,13 +128,15 @@ C Required interface for allocatable array dummy arguments
             LOGICAL, INTENT( INOUT ) :: LSTAT
          END SUBROUTINE RDBCON
          SUBROUTINE X_PPM ( CGRID, FDATE, FTIME, TSTEP, LVL, BCON )
-            REAL, POINTER          :: CGRID( :,:,:,: )
+         	USE HDMod
+            TYPE(hyperdual), POINTER          :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )  :: FDATE, FTIME, TSTEP, LVL
 !           REAL,    INTENT( IN )  :: BCON( NBNDY,* )
             REAL,    INTENT( IN )  :: BCON( :,: )
          END SUBROUTINE X_PPM
          SUBROUTINE Y_PPM ( CGRID, FDATE, FTIME, TSTEP, LVL, BCON )
-            REAL, POINTER          :: CGRID( :,:,:,: )
+         	use HDMod
+            TYPE(hyperdual), POINTER          :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )  :: FDATE, FTIME, TSTEP, LVL
 !           REAL,    INTENT( IN )  :: BCON( NBNDY,: )
             REAL,    INTENT( IN )  :: BCON( :,: )
