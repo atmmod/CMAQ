@@ -685,35 +685,35 @@ C***loop over mode again for mean modal extinction and scattering properties
  
                NR_SHELL = CMPLX( AE_NR_SHELL( MODE,L,V ), AE_NI_SHELL( MODE,L,V ) )
 
-               IF ( AE_NR_SHELL( MODE,L,V ) .LE. 0.0 ) SUCCESS = .FALSE.
-               IF ( AE_NI_SHELL( MODE,L,V ) .LE. 0.0 ) SUCCESS = .FALSE.
+               IF ( AE_NR_SHELL( MODE,L,V ) .LE. 0.0D0 ) SUCCESS = .FALSE.
+               IF ( AE_NI_SHELL( MODE,L,V ) .LE. 0.0D0 ) SUCCESS = .FALSE.
         
                XXLSG = EXP( BLK_AE_LSG( MODE,L ) )
 
 C***calculate the extinction and scattering coefficients in [ 1 / m ] and the asymmetry 
 C*** factor for aerosols.
 
-               IF ( DGN_CORE .GT. 0.0 .AND. DGN_CORE / DGN_SHELL .LT. 0.999 ) THEN
+               IF ( DGN_CORE .GT. 0.0D0 .AND. DGN_CORE / DGN_SHELL .LT. 0.999D0 ) THEN
 
                   VOL_CORE  = PI6 * CORE_MOMENT3( MODE,L )
                   VOL_SHELL = PI6 * SHELL_MOMENT3( MODE,L ) 
 
                   NR_CORE  = CMPLX( AE_NR_CORE( MODE,L,V ), AE_NI_CORE( MODE,L,V ) )
 
-                  IF ( AE_NR_CORE( MODE,L,V ) .LE. 0.0 ) SUCCESS = .FALSE.
-                  IF ( AE_NI_CORE( MODE,L,V ) .LE. 0.0 ) SUCCESS = .FALSE.
+                  IF ( AE_NR_CORE( MODE,L,V ) .LE. 0.0D0 ) SUCCESS = .FALSE.
+                  IF ( AE_NI_CORE( MODE,L,V ) .LE. 0.0D0 ) SUCCESS = .FALSE.
 
-                  IF ( VOL_SHELL .LE. 0.0 ) THEN
+                  IF ( VOL_SHELL .LE. 0.0D0 ) THEN
                      SUCCESS = .FALSE.
 !                    WRITE(6,*)TRIM(PNAME),': VOL_SHELL(',MODE,') = ',VOL_SHELL
                   END IF
 
-                  IF ( VOL_CORE .LE. 0.0 ) THEN
+                  IF ( VOL_CORE .LE. 0.0D0 ) THEN
                      SUCCESS = .FALSE.
 !                    WRITE(6,*)TRIM(PNAME),':  VOL_CORE(',MODE,') = ',VOL_CORE
                   END IF
 
-                  IF ( DGN_SHELL .LE. 0.0 ) SUCCESS = .FALSE.
+                  IF ( DGN_SHELL .LE. 0.0D0 ) SUCCESS = .FALSE.
                    
 C *** Core-Shell case for optics         
                   IF ( SUCCESS ) CALL AERO_OPTICAL_CS( LAMDA_UM, NR_CORE, NR_SHELL,  
@@ -743,7 +743,7 @@ C***  and contribution to the overall asymmetry factor
                   BSCAT = BSCAT + BSCAT_MODE
                   G_BAR = G_BAR + BSCAT_MODE * GBAR_MODE
 
-               ELSE IF ( VOL .GT. 0.0 ) THEN
+               ELSE IF ( VOL .GT. 0.0D0 ) THEN
 
 !*** FSB Internal Volume mixture case for optics 
                   IF ( MIE_CALC ) THEN
@@ -769,7 +769,7 @@ C***  and contribution to the overall asymmetry factor
 !                    VFAC  = VOL * INV_LAMBDA
                   END IF
                    
-                  IF ( BEXT_MODE .LT. 0.0 .OR. BEXT_MODE .LT. BSCAT_MODE .OR. BSCAT_MODE .LT. 0.0 ) THEN
+                  IF ( BEXT_MODE .LT. 0.0D0 .OR. BEXT_MODE .LT. BSCAT_MODE .OR. BSCAT_MODE .LT. 0.0D0 ) THEN
                      TROUBLE = .TRUE.
                   END IF
 
@@ -777,7 +777,7 @@ C***  and contribution to the overall asymmetry factor
                      TROUBLE = .TRUE.
                   END IF
 
-                  IF ( GBAR_MODE .NE. GBAR_MODE .OR. ABS( GBAR_MODE ) .GT. 0.9999999 ) THEN
+                  IF ( GBAR_MODE .NE. GBAR_MODE .OR. ABS( GBAR_MODE ) .GT. 0.9999999D0 ) THEN
                      TROUBLE = .TRUE.
                   END IF
 
@@ -1183,7 +1183,7 @@ C***loop over mode again for mean modal extinction and scattering properties
 C***calculate the extinction and scattering coefficients in [ 1 / m ] and the asymmetry 
 C*** factor for aerosols.
 
-               IF ( VOL .GT. 0.0 ) THEN
+               IF ( VOL .GT. 0.0D0 ) THEN
 
 !*** FSB Internal Volume mixture case for optics 
                   IF ( MIE_CALC ) THEN
@@ -1236,7 +1236,7 @@ C***  and contribution to the overall asymmetry factor
 
             AERO_SCAT_COEF( L,V ) = BSCAT
             AERO_EXTI_COEF( L,V ) = BEXT
-            AERO_ASYM_FAC ( L,V ) = G_BAR / MAX( BSCAT, 1.0E-30 )
+            AERO_ASYM_FAC ( L,V ) = G_BAR / MAX( BSCAT, 1.0D-30 )
 
 #ifdef verbose_phot_extra
             if ( l .eq. 1 .and. v .eq. 1 ) then
@@ -2024,7 +2024,7 @@ C     1.0 / 0.95 = 1.052632.  1.0 / 0.95 * 0.13 = 0.136842
       PENN1   = 0.0d0
       PENN2   = 0.0d0
 
-      IF ( NI .GT. 0.0 ) THEN
+      IF ( NI .GT. 0.0D0 ) THEN
 
          TAU = NI / NR1
 
@@ -2115,7 +2115,7 @@ C***FSB calculate normalized extinction and scattering coefficients
 
 C *** Check for 0.0 < NI
 
-      IF ( NI .GT. 0.0 ) THEN
+      IF ( NI .GT. 0.0D0 ) THEN
 
 !        BBFAC = 1.5 * BBFAC ! reset BBFAC for scattering
          BBFAC = 1.1 * BBFAC ! reset BBFAC for scattering
@@ -2129,7 +2129,7 @@ C *** recalculate the normalized scattering coefficient
 
 C *** Adjust beta_ext for small particle absorption:
 
-         IF ( X_ALPHA .LT. 0.13 ) THEN
+         IF ( X_ALPHA .LT. 0.13D0 ) THEN
 
             FAC1 = ALPHV + 0.6 * ALPHV2
 
@@ -2162,7 +2162,7 @@ C FSB large spnere limit for extinction ( no edge effectss )
 
 C FSB Adjust for large sphere limits
 
-      IF ( ALPHV .GE. 10.0 ) THEN
+      IF ( ALPHV .GE. 10.0D0 ) THEN
 
          BETA_EXT  = MAX( BETA_EXT, LARGEEXT )
 
@@ -2197,7 +2197,7 @@ C***   using a parametric fit to Mie calculations
       SMALL_G = 0.0D0
       LARGE_G = 0.0D0
 
-      IF ( ALPHV .LT. 2.6 ) THEN
+      IF ( ALPHV .LT. 2.6D0 ) THEN
 
 C FSB Calculate SMALL_G for sigma_g = 2.0
 
@@ -2219,7 +2219,7 @@ C     The smallest sigma_g allowed is 1.05
          SMALL_G = SMALL_G * QQCORR
          G = SMALL_G
 
-      ELSE IF ( ALPHV .LT. 100.0 ) THEN
+      ELSE IF ( ALPHV .LT. 100.0D0 ) THEN
 
          QF1 =  YYA0 + YYA1 * X_ALPHA
          QF2 = YYA2 * X_ALPHA2

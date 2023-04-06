@@ -589,7 +589,7 @@ contains
        integer :: NMAX             ! number of weights and abscissa
 
 ! FSB Check for valid range of Penndorf application.     
-       if ( alfv .le. 0.3) then
+       if ( alfv .le. 0.3d0) then
           xlnsg2 = xlnsig*xlnsig
           call pennfsb (nr,ni,alfv,xlnsg2,bext_P,bscat_P,babs_P,g_PCS)
           Qext_GH  = bext_P
@@ -605,13 +605,13 @@ contains
 ! six point
           NMAX = 3
 
-          if (nr .ge. 1.7) then 
+          if (nr .ge. 1.7d0) then 
 ! 10 point     
              IGH = 5 ! more points needed here
              NMAX = 5
           end if
 
-          if ( alfv .gt. 20.0 .or. alfv .lt. 0.5 ) then
+          if ( alfv .gt. 20.0d0 .or. alfv .lt. 0.5d0 ) then
              IGH  = 1 ! in  this range fewer points are needed
              NMAX = 1
           end if
@@ -1200,13 +1200,13 @@ contains
 ! six point
        NMAX = 3
 
-       if (nr .ge. 1.7) then 
+       if (nr .ge. 1.7d0) then 
 ! 10 point     
           IGH = 5 ! more points needed here
           NMAX = 5
        end if
 
-       if( alfv .gt. 20.0 .or. alfv .lt. 0.5 ) then
+       if( alfv .gt. 20.0d0 .or. alfv .lt. 0.5d0 ) then
           IGH  = 1 ! in  this range fewer points are needed
           NMAX = 1
        end if
@@ -1375,13 +1375,13 @@ contains
 ! six point
        NMAX = 3
 
-       if (nr .ge. 1.7) then 
+       if (nr .ge. 1.7d0) then 
 ! 10 point     
           IGH = 5 ! more points needed here
           NMAX = 5
        end if
 
-       if ( XX .gt. 20.0 .or. XX .lt. 0.5 ) then
+       if ( XX .gt. 20.0d0 .or. XX .lt. 0.5d0 ) then
           IGH  = 1 ! in  this range fewer points are needed
           NMAX = 1
        end if
@@ -1649,7 +1649,7 @@ contains
 
 ! FSB Start main loop      
        DO n = 1, nstop
-          rn = n 
+          rn = REAL( n, 8 ) 
           RN1 = ONE / RN
           TWO_N_M_ONE = TWO * RN - ONE
           TWO_N_P_ONE = TWO * RN + ONE
@@ -2332,7 +2332,7 @@ contains
        NN = NMX - 1
        DO N = 1,NN
           ! EN  = REAL( NMX - N + 1, 8 )
-          EN = NMX - N + 1
+          EN = NMX - REAL( N, 8 ) + 1
 ! FSB In the following division by Y has been replaced by 
 !     multiplication by Y1, the reciprocal of Y.          
           D(NMX-N) = ( EN * Y1 ) - (ONE / ( D(NMX-N+1) + EN * Y1)) 
@@ -2361,7 +2361,7 @@ contains
 ! FSB Start main loop       
        DO N = 1,NSTOP
           ! EN        = REAL( N, 8 )
-          EN        = N 
+          EN        = REAL( N, 8 ) 
           EN1       = ONE / EN
           TWO_N_M_ONE = TWO * EN - ONE
 ! for given N, PSI  = psi_n        CHI  = chi_n

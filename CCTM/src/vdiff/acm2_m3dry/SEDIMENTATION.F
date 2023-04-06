@@ -223,7 +223,7 @@ C subset all the layers and species in cgrid for this grid cell
          end if
          adts = 0.0d0; dtc = 0; iter = 0
 
-         do while ( adts .lt. dtsec .and. iter .le. 10 )
+         do while ( REAL( adts%x , 4 ) .lt. dtsec .and. iter .le. 10 )
             iter = iter + 1
 
             call aero_sedv( c, r, cgrd, vsed_ae )
@@ -250,7 +250,7 @@ C subset all the layers and species in cgrid for this grid cell
             
             ! Add the new time step increment
             adts = adts + dts
-            if ( adts .gt. dtsec ) then   ! don`t overshoot the timestep
+            if ( REAL( adts%x , 4 ) .gt. dtsec ) then   ! don`t overshoot the timestep
                dts = dtsec - (adts - dts)
                adts = REAL ( dtsec , 8 )
             end if

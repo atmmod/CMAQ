@@ -398,7 +398,7 @@ C-------------------------------------------
       REAL             QMAX                ! pertbd w.. mix rat of parcel
       REAL          :: RAIN( NCOLS,NROWS ) ! this timestep rainfall (mm/hr)
       TYPE(hyperdual)             BCLDWT              ! below cloud weighting function
-      REAL, ALLOCATABLE, SAVE :: CONCMINL( :,: ) ! minimum concentrations for each species and layer
+      REAL( 8 ), ALLOCATABLE, SAVE :: CONCMINL( :,: ) ! minimum concentrations for each species and layer
       TYPE(hyperdual)             INCLOUD        ! final conc in cloud after mix and chem [mol/mol]
       TYPE(hyperdual)             OUTCLOUD       ! final conc outside    "    "   "   "     "
       TYPE(hyperdual), ALLOCATABLE, SAVE :: PCLD    ( :,: ) ! mol sp/mol air in cloud
@@ -923,7 +923,7 @@ C...load aerosol minimum concentrations into the "CONCMINL" array
 C...  initialize all species to CMIN
 
 !         CONCMINL = CMIN
-          CONCMINL = 1.0E-25
+          CONCMINL = 1.0D-25
 
 #ifdef sens
           DDM3D_CONCMINL = 1.0D-15
@@ -945,6 +945,11 @@ C...  set minimum for aerosol species
             DO SPC = 1, NSPCSD
               CONC( SPC,LAY ) = MAX( CGRID( COL,ROW,LAY,SPC ),
      &                                  CONCMINL( SPC,LAY ) )
+C    		  IF ( CGRID( COL,ROW,LAY,SPC )%x .LT. CONCMINL( SPC, LAY ) ) THEN
+C    		  	CGRID( COL,ROW,LAY,SPC )%dx1 = 0.0d0
+C    		  	CGRID( COL,ROW,LAY,SPC )%dx2 = 0.0d0
+C    		  	CGRID( COL,ROW,LAY,SPC )%dx1x2 = 0.0d0
+C    		  ENDIF
 #ifdef sens
               DO NP = 1, NPMAX
                 IF ( CGRID( COL,ROW,LAY,SPC ) .LT. CONCMINL( SPC, LAY ) ) THEN
@@ -1756,11 +1761,11 @@ C...  to be part of the aqueous reaction chamber
               AIRM = AIRM + RHOM2( LAY )
 
               DO SPC = 1, NSPCSD
-                IF ( CBASE0( SPC ) .GT. 0.0 ) THEN
-                  BCLDWT = CONC( SPC,LAY ) / MAX( CBASE0( SPC ), 1.0E-30 )
+                IF ( CBASE0( SPC ) .GT. 0.0D0 ) THEN
+                  BCLDWT = CONC( SPC,LAY ) / MAX( CBASE0( SPC ), 1.0D-30 )
 #ifdef sens
                   DO NP = 1, NPMAX
-                     IF ( CBASE0( SPC ) .GT. 1.0E-30 ) THEN
+                     IF ( CBASE0( SPC ) .GT. 1.0D-30 ) THEN
 
                         IF ( S_CBASE0( NP, SPC ) .LT. DDM3D_CONCMINL ) THEN
 c                         S_BCLDWT( NP, SPC, LAY ) = 1.0D0
@@ -1788,8 +1793,8 @@ c                       S_BCLDWT( NP, SPC, LAY ) = 1.0D0
 
                 IF ( STM ) THEN
                   IF ( SPC .NE. SURCLDMX( SPC ) ) THEN      ! use its mixing surrogate
-                    IF ( CBASE0( SURCLDMX( SPC ) ) .GT. 0.0 ) THEN
-                      BCLDWT = CONC( SURCLDMX( SPC ),LAY ) / MAX( CBASE0( SURCLDMX( SPC ) ), 1.0E-30 )
+                    IF ( CBASE0( SURCLDMX( SPC ) ) .GT. 0.0D0 ) THEN
+                      BCLDWT = CONC( SURCLDMX( SPC ),LAY ) / MAX( CBASE0( SURCLDMX( SPC ) ), 1.0D-30 )
                     ELSE
                       BCLDWT = 1.0D0
                     END IF
@@ -2047,7 +2052,7 @@ C#endif
           END IF
 
           DO SPC = 1, NSPCSD
-            IF ( CEND( SPC ) .LT. 0.0 ) 
+            IF ( CEND( SPC ) .LT. 0.0D0 ) 
      &                               WRITE( LOGDEV,* ) ' CEND,R,C,SP=',
      &                               CEND( SPC ), ROW, COL, SPC
           END DO
@@ -2219,7 +2224,7 @@ C...   include raining region below cld base
 
                   IF ( STM ) THEN
                     IF ( SPC .NE. SURCLDMX( SPC ) ) THEN       ! use its surrogate
-                      IF ( POLC( SURCLDMX( SPC ) ) .GT. 0.0 ) THEN
+                      IF ( POLC( SURCLDMX( SPC ) ) .GT. 0.0D0 ) THEN
                         INCLOUD = PCLD( SURCLDMX( SPC ),LAY ) * CEND( SPC )
      &                          / MAX( POLC( SURCLDMX( SPC ) ), CONCMINL( SURCLDMX( SPC ),LAY ) )
                       ELSE
@@ -2333,7 +2338,7 @@ C...Now do changes in cloudy layers:
 
                 IF ( STM ) THEN
                   IF ( SPC .NE. SURCLDMX( SPC ) ) THEN       ! use its surrogate
-                    IF ( POLC( SURCLDMX( SPC ) ) .GT. 0.0 ) THEN
+                    IF ( POLC( SURCLDMX( SPC ) ) .GT. 0.0D0 ) THEN
                       INCLOUD = PCLD( SURCLDMX( SPC ),LAY ) * CEND( SPC )
      &                        / MAX( POLC( SURCLDMX( SPC ) ), CONCMINL( SURCLDMX( SPC ),LAY ) )
                     ELSE

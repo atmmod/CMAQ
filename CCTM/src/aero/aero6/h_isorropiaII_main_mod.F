@@ -10355,7 +10355,7 @@ c #endif
 !=======================================================================
 !
       SUBROUTINE ISOROPIA (WI_IN, RHI_IN, TEMPI_IN,  CNTRL,
-     &                     WT, GAS, AERLIQ, AERSLD, SCASI, OTHER, COL, ROW, LAYER )
+     &                     WT, GAS, AERLIQ, AERSLD, SCASI, OTHER, COL, ROW, LAYER, fwdsens )
       ! Input parameters
 	  use HDMod 
 	  implicit none
@@ -10373,6 +10373,7 @@ c #endif
       CHARACTER(Len=15) :: SCASI
       type(hyperdual) :: Other(NOther)
       INTEGER :: COL, ROW, LAYER
+      LOGICAL :: fwdsens
 
       ! Intermediate variables
       Integer         :: I
@@ -10408,7 +10409,7 @@ c #endif
          ELSE IF (WI(6)+WI(7)+WI(8) .LE. TINY) THEN                   !Ca,K,Mg=0
             CALL ISRP3F (WI, RHI, TEMPI)
          ELSE
-            CALL ISRP4F (WI, RHI, TEMPI, COL, ROW, LAYER)
+            CALL ISRP4F (WI, RHI, TEMPI, COL, ROW, LAYER, fwdsens)
             ! stop code if Ca, K, Mg are non-zero
             ! this part of the code does not always conserve mass
             ! hotp 11/7/07
@@ -10421,6 +10422,7 @@ C           STOP
 !
       ELSE
 ! 3.37d-15, 2.2393d-15, 1.16193d-15, 1.0349d-15
+         fwdsens = .TRUE. 
          IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN                                                 !Everything=0
             CALL INIT1 (WI, RHI, TEMPI)
          ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN !Ca,K,Mg,Na,Cl,NO3=0
@@ -17662,7 +17664,7 @@ c      & (Z(I+4)+Z(J+3)) - H
 !
 !=======================================================================
 !
-      SUBROUTINE ISRP4F (WI, RHI, TEMPI, COL, ROW, LAYER)
+      SUBROUTINE ISRP4F (WI, RHI, TEMPI, COL, ROW, LAYER, fwdsens)
 	  use HDMod 
 	  implicit none 
       type(hyperdual) :: WI(NCOMP)
@@ -17673,6 +17675,7 @@ c      & (Z(I+4)+Z(J+3)) - H
       type(hyperdual) :: NO3FR, REST2, CMGSO4I, FRMGI, CMGNO32I
       type(hyperdual) :: CMGCL2I, REST3
       INTEGER         :: COL, ROW, LAYER
+      LOGICAL         :: fwdsens
 !
 ! *** ADJUST FOR TOO LITTLE AMMONIUM AND CHLORIDE ***********************
 !
@@ -17764,7 +17767,7 @@ C  *** CALCULATE RATIOS *************************************************
  !
        IF(METSTBL.eq.1) THEN
           SCASE = 'O7'
-          CALL CALCO7(COL, ROW, LAYER)                 ! Only liquid (metastable)
+          CALL CALCO7(COL, ROW, LAYER, fwdsens)                 ! Only liquid (metastable)
        ELSE
  !
          IF (RH.LT.DRNH4NO3) THEN
@@ -17793,7 +17796,7 @@ C  *** CALCULATE RATIOS *************************************************
  !
          ELSEIF (DRK2SO4.LE.RH) THEN
             SCASE = 'O7'
-            CALL CALCO7(COL, ROW, LAYER)              ! CaSO4
+            CALL CALCO7(COL, ROW, LAYER, fwdsens)              ! CaSO4
          ENDIF
        ENDIF
  !
@@ -24867,7 +24870,7 @@ C  *** CALCULATE RATIOS *************************************************
 !
 !=======================================================================
 !
-      SUBROUTINE CALCO7(COL, ROW, LAYER)
+      SUBROUTINE CALCO7(COL, ROW, LAYER, fwdsens)
 	  use HDMod 
 	  implicit none 
       type(hyperdual) :: FRCA, FRSO4, FRK, FRMG, FRNA, FRCL, FRNO3
@@ -24879,6 +24882,9 @@ C  *** CALCULATE RATIOS *************************************************
       type(hyperdual) :: PSI6LO, PSI6HI
       type(hyperdual) :: X1_hyd, X2_hyd
       type(hyperdual) :: Y1_hyd, Y2_hyd
+      REAL( 8 ) :: GNH3_MAX, GNH3_MIN
+      REAL( 8 ) :: GHNO3_MAX, GHNO3_MIN
+      LOGICAL   :: fwdsens
       Integer :: I
       INTEGER :: COL, ROW, LAYER
       !
@@ -24928,14 +24934,25 @@ C  *** CALCULATE RATIOS *************************************************
       PSI8   = CHI8
       PSI6LO = TINY
       PSI6HI = CHI6-TINY    ! MIN(CHI6-TINY, CHI4)
+      GNH3_MAX = ZERO       ! J.E.L. Avoid Huge changes in NH3 real values
+      GNH3_MIN = ZERO       ! J.E.L. Avoid Huge changes in NH3 real values
+      GHNO3_MAX = ZERO
+      GHNO3_MIN = ZERO
 !
       WATER  = CHI2/M0(4) + CHI1/M0(2) + CHI7/M0(17) + CHI8/M0(21)
       WATER  = MAX (WATER , TINY)
+      fwdsens = .true. 
 !
 ! *** INITIAL VALUES FOR BISECTION ************************************
 ! 
       X1 = PSI6LO
       Y1 = FUNCO7 (X1, COL, ROW, LAYER)
+      ! Initialize the GNH3 values
+      GNH3_MAX = GNH3%x
+      GNH3_MIN = GNH3%x
+      GHNO3_MAX = GHNO3%x
+      GHNO3_MIN = GHNO3%x
+      
       IF (CHI6.LE.TINY) GOTO 50
 !cc      IF (ABS(Y1).LE.EPS .OR. CHI6.LE.TINY) GOTO 50
 !cc      IF (WATER .LE. TINY) RETURN                    ! No water
@@ -24946,6 +24963,23 @@ C  *** CALCULATE RATIOS *************************************************
       DO 10 I=1,NDIV
          X2 = X1+DX
          Y2 = FUNCO7 (X2, COL, ROW, LAYER)
+         
+         IF ( GNH3%x .GT. GNH3_MAX ) THEN
+         	GNH3_MAX = GNH3%x
+         ENDIF
+         
+         IF (GHNO3%x .GT. GHNO3_MAX) THEN
+         	GHNO3_MAX = GHNO3%x
+         ENDIF
+         
+         IF ( GNH3%x .LT. GNH3_MIN ) THEN
+         	GNH3_MIN = GNH3%x
+         ENDIF
+         
+         IF ( GHNO3%x .LT. GHNO3_MIN ) THEN
+         	GHNO3_MIN = GHNO3%x
+         ENDIF      
+            
          IF (SIGN(ONE,Y1)*SIGN(ONE,Y2).LT.ZERO) GOTO 20  ! (Y1*Y2.LT.ZERO)
          X1 = X2
          Y1 = Y2
@@ -24969,7 +25003,23 @@ C  *** CALCULATE RATIOS *************************************************
 C        IF ( ABS(X2 - X1) .GT. EPS*2.D0*X1 ) THEN
          CALL RSTGAMP ! Reinitialize activity coefficients (SLC C2012-01-01)
 C        ENDIF
-         Y3 = FUNCO7 (X3, COL, ROW, LAYER)  
+         Y3 = FUNCO7 (X3, COL, ROW, LAYER) 
+         
+         IF ( GNH3%x .GT. GNH3_MAX ) THEN
+         	GNH3_MAX = GNH3%x
+         ENDIF
+         
+         IF (GHNO3%x .GT. GHNO3_MAX) THEN
+         	GHNO3_MAX = GHNO3%x
+         ENDIF
+         
+         IF ( GNH3%x .LT. GNH3_MIN ) THEN
+         	GNH3_MIN = GNH3%x
+         ENDIF 
+         
+         IF ( GHNO3%x .LT. GHNO3_MIN ) THEN
+         	GHNO3_MIN = GHNO3%x
+         ENDIF  
          
          IF (SIGN(ONE,Y1)*SIGN(ONE,Y3) .LE. ZERO) THEN  ! (Y1*Y3 .LE. ZERO)
             Y2   = Y3
@@ -25001,7 +25051,16 @@ C        ENDIF
          MOLAL(5) = MOLAL(5) - DELTA                    ! SO4  EFFECT
          MOLAL(6) = DELTA                               ! HSO4 EFFECT
       ENDIF
-!
+!     
+!     IF the concentration fluctuates too much during calco7: 
+	  IF ( ( GNH3_MAX / GNH3_MIN ) .GT. 1.D7) THEN 
+		  fwdsens = .false. 
+	  ENDIF
+	  
+	  IF ( ( GHNO3_MAX / GHNO3_MIN ) .GT. 1.D7) THEN 
+		  fwdsens = .false. 
+	  ENDIF
+
       RETURN
 !
 ! *** END OF SUBROUTINE CALCO7 *******************************************
@@ -34980,8 +35039,8 @@ C        ENDIF
 !=======================================================================
 !
       SUBROUTINE CALCL8
-	use HDMod 
-	implicit none 
+	  use HDMod 
+	  implicit none 
       type(hyperdual) :: X1, Y1, X2, Y2, X3, Y3, PSI6LO, PSI6HI
       type(hyperdual) :: YLO, YHI, DX
       Integer :: I
@@ -46911,45 +46970,45 @@ C
       MGI    = WAER(8)
       
 
-      GG   = 2.D0*SO4I + NO3I + CLI - NAI - NH4I
-     &       - 2.D0*CAI - KI - 2.D0*MGI
-      IF ( GG .GT. TINY ) THEN
-      
-      	 IF ( GG .GE. 1D-10 ) THEN                        ! H+ in excess
-        	BB =-GG
-         	CC =-AKW
-         	DD = BB*BB - 4.D0*CC
-         	HI = 0.5D0*(-BB + SQRT(DD))
-        	OHI= AKW/HI
-         
-      	 ELSE
-        	HI  = SQRT(AKW)
-      		OHI = AKW/HI
-      	 ENDIF
-      
-      ELSE                    ! OH- in excess
-         BB = GG
-         CC =-AKW
-         DD = BB*BB - 4.D0*CC
-         OHI= 0.5D0*(-BB + SQRT(DD))
-         HI = AKW/OHI
-      ENDIF
-
 C     GG   = 2.D0*SO4I + NO3I + CLI - NAI - NH4I
 C    &       - 2.D0*CAI - KI - 2.D0*MGI
-C     IF (GG.GT.TINY) THEN                        ! H+ in excess
-C        BB =-GG
-C        CC =-AKW
-C        DD = BB*BB - 4.D0*CC
-C        HI = 0.5D0*(-BB + SQRT(DD))
-C        OHI= AKW/HI
-C     ELSE                                        ! OH- in excess
+C     IF ( GG .GT. TINY ) THEN
+C     
+C     	 IF ( GG .GE. 1D-10 ) THEN                        ! H+ in excess
+C       	BB =-GG
+C        	CC =-AKW
+C        	DD = BB*BB - 4.D0*CC
+C        	HI = 0.5D0*(-BB + SQRT(DD))
+C       	OHI= AKW/HI
+C        
+C     	 ELSE
+C       	HI  = SQRT(AKW)
+C     		OHI = AKW/HI
+C     	 ENDIF
+C     
+C     ELSE                    ! OH- in excess
 C        BB = GG
 C        CC =-AKW
 C        DD = BB*BB - 4.D0*CC
 C        OHI= 0.5D0*(-BB + SQRT(DD))
 C        HI = AKW/OHI
 C     ENDIF
+
+      GG   = 2.D0*SO4I + NO3I + CLI - NAI - NH4I
+     &       - 2.D0*CAI - KI - 2.D0*MGI
+      IF (GG.GT.TINY) THEN                        ! H+ in excess
+         BB =-GG
+         CC =-AKW
+         DD = BB*BB - 4.D0*CC
+         HI = 0.5D0*(-BB + SQRT(DD))
+         OHI= AKW/HI
+      ELSE                                        ! OH- in excess
+         BB = GG
+         CC =-AKW
+         DD = BB*BB - 4.D0*CC
+         OHI= 0.5D0*(-BB + SQRT(DD))
+         HI = AKW/OHI
+      ENDIF
 
 
 C

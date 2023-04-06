@@ -220,6 +220,7 @@ C-----------------------------------------------------------------------
       USE UTILIO_DEFN
       USE RXNS_DATA            ! chemical mechanism data
       USE CLOUD_OPTICS         ! data and routines for optics of cloud hydrometeors
+      USE HDMod
 
       USE AERO_PHOTDATA
       
@@ -294,7 +295,7 @@ C-----------------------------------------------------------------------
 
 !***scattering and absorption for the layer
 
-      TYPE(hyperdual) DTABS_A, DTABS_M, DTSCAT_A, DTSCAT, DTABS
+      TYPE(hyperdual) ::  DTABS_A, DTABS_M, DTSCAT_A, DTSCAT, DTABS
       REAL :: DTSCAT_M
 
 !***variables describing the layer heights and slants
@@ -640,14 +641,14 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
             DTSCAT_A = BSCAT  * BLKDZ( II ) ! particle scattering
 
             DTSCAT_M = MAX( DTSCAT_M, SMALL )
-            DTSCAT_A = MAX( DTSCAT_A, SMALL )
+            DTSCAT_A = MAX( DTSCAT_A, 1.0D-36)
 
 
             DTABS_M  = ( AO3 + ANO2  )  * BLKDZ( II ) ! molecular absorption
             DTABS_A  = ( BEXT - BSCAT ) * BLKDZ( II ) ! particle absorption
 
-            DTABS_M  = MAX( DTABS_M, SMALL )
-            DTABS_A  = MAX( DTABS_A, SMALL )
+            DTABS_M  = MAX( DTABS_M, 1.0D-36)
+            DTABS_A  = MAX( DTABS_A, 1.0D-36 )
 
             GAS_EXTINCTION( II,IWL ) = BETA_M + AO3 + ANO2        ! gas extinction
             EXTINCTION( II,IWL )     = BETA_M + BEXT + AO3 + ANO2 ! gas and aerosol extinction
@@ -770,20 +771,20 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
             OM  ( L ) = DTSCAT / ( DTSCAT + DTABS )
             G   ( L ) = ( G_BAR * DTSCAT_A + G_CLOUD * DTSCAT_CLOUD ) / DTSCAT
 
-            IF ( G( L ) .GE. 1.0 .OR. G( L ) .LE. -1.0 .OR. G( L ) .NE. G( L ) ) THEN
+            IF ( G( L ) .GE. 1.0D0 .OR. G( L ) .LE. -1.0D0 .OR. G( L ) .NE. G( L ) ) THEN
                WRITE( LOGDEV,'(A,ES12.4,A)',ADVANCE = 'NO' )
      &         'G( L ) = ', G( L ),' resetting to '
-               G( L ) = MIN( 0.9999, MAX( G( L ), -0.9999) )
+               G( L ) = MIN( 0.9999D0, MAX( G( L ), -0.9999D0) )
                WRITE( LOGDEV,'(ES12.4)')G( L )
                WRITE( LOGDEV,'(A,10(1X,ES12.4))' )
      &         'DTSCAT_M, DTSCAT_A, DTSCAT_CLOUD, G_BAR, G_CLOUD = ',
      &          DTSCAT_M, DTSCAT_A, DTSCAT_CLOUD, G_BAR, G_CLOUD
             END IF
 
-            IF ( OM( L ) .GT. 1.0 .OR. OM( L ) .LE. 0.0 .OR. OM( L ) .NE. OM( L ) ) THEN
+            IF ( OM( L ) .GT. 1.0D0 .OR. OM( L ) .LE. 0.0D0 .OR. OM( L ) .NE. OM( L ) ) THEN
                WRITE( LOGDEV,'(A,ES12.4,A)',ADVANCE = 'NO' )
      &         'OM( L ) = ', OM( L ),' resetting to '
-               OM( L ) = MIN( 0.9999, MAX( OM( L ), 0.0001) )
+               OM( L ) = MIN( 0.9999D0, MAX( OM( L ), 0.0001D0) )
 #ifdef phot_debug
                WRITE( LOGDEV,'(ES12.4)' ) OM( L )
                WRITE( LOGDEV,'(A,4(1X,ES12.4))' )
@@ -794,14 +795,14 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
      &         DTSCAT_M, DTSCAT_A, DTSCAT_CLOUD
                WRITE( LOGDEV,'(A,4(1X,ES12.4))' )
      &         'DDTABS_M, DTABS_A, MAX(( 1.0-OM_CLOUD ), 0.0) * DT_CLOUD( L ) = ',
-     &         DTABS_M, DTABS_A, MAX(( 1.0 - OM_CLOUD ), 0.0) * DT_CLOUD( L )
+     &         DTABS_M, DTABS_A, MAX(( 1.0 - OM_CLOUD ), 0.0D0) * DT_CLOUD( L )
                WRITE( LOGDEV,'(A,4(1X,ES12.4))' )
      &         ' AO3, ANO2,AERO_BEXT, AERO_BSCAT = ',
      &         AO3, ANO2,BEXT, BSCAT
 #endif
             ELSE
 #ifdef phot_debug
-               IF ( OM( L ) .EQ. 1.0 ) THEN
+               IF ( OM( L ) .EQ. 1.0D0 ) THEN
                   WRITE( LOGDEV,'(A,4(1X,ES12.4))' )
      &            'DTSCAT, DTABS, ( DTSCAT + DTABS ) = ',
      &             DTSCAT, DTABS, (DTSCAT + DTABS)
@@ -810,13 +811,13 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
      &             DTSCAT_M, DTSCAT_A, DTSCAT_CLOUD
                   WRITE( LOGDEV,'(A,4(1X,ES12.4))' )
      &            'DDTABS_M, DTABS_A, MAX(( 1.0-OM_CLOUD ), 0.0) * DT_CLOUD( L ) = ',
-     &            DTABS_M, DTABS_A, MAX(( 1.0 - OM_CLOUD ), 0.0 ) * DT_CLOUD( L)
+     &            DTABS_M, DTABS_A, MAX(( 1.0 - OM_CLOUD ), 0.0D0 ) * DT_CLOUD( L)
                   WRITE( LOGDEV,'(A,4(1X,ES12.4))' )
      &            'AO3, ANO2,AERO_BEXT, AERO_BSCAT = ',
      &            AO3, ANO2,BEXT, BSCAT
                END IF
 #endif
-               OM( L ) = MIN( 0.9999,  OM( L ) )
+               OM( L ) = MIN( 0.9999D0,  OM( L ) )
             END IF
 
             DSDH_TD( L ) = DSDH( L - 1 )
@@ -887,14 +888,14 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
 
 !***FSB Calculate column averaged scattering albedo and asymmetry factor
 
-         IF ( TAUC_AERO( 1,IWL ) .GT. 1.0E-30 ) THEN
+         IF ( TAUC_AERO( 1,IWL ) .GT. 1.0D-30 ) THEN
             SSA_AERO( IWL ) = TAU_SCAT( IWL ) / TAUC_AERO( 1,IWL )
          END IF
 
          TOTAL_TAU_CLD( IWL ) = TAU_CLOUD( 1,IWL )
 
 #ifdef phot_debug
-         IF ( TAU_CLOUD( 1,IWL ) .GT. 1.0E-20 ) THEN
+         IF ( TAU_CLOUD( 1,IWL ) .GT. 1.0D-20 ) THEN
             IF ( AVE_ASYMM_CLD( IWL ) .GT. TAU_SCAT_CLD ) THEN
                WRITE( LOGDEV,'(A,I3,2(A,ES12.4))' )
      &         'Sum for AVE_ASYMM_CLD at L(', 1,') = ', AVE_ASYMM_CLD( IWL ),
@@ -905,7 +906,7 @@ C*** find ozone column density for atmosphere, stratosphere, and troposphere
      &         'TAU_SCAT_CLD Increment = ',
      &         DTSCAT_CLOUD
             END IF
-            IF ( TAU_SCAT_CLD .GT. 1.0E-20 ) THEN
+            IF ( TAU_SCAT_CLD .GT. 1.0D-20 ) THEN
                AVE_ASYMM_CLD( IWL ) = AVE_ASYMM_CLD( IWL ) / TAU_SCAT_CLD
                AVE_SSA_CLD  ( IWL ) = TAU_SCAT_CLD / TAU_CLOUD( 1,IWL )
             ELSE

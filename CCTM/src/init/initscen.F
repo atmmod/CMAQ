@@ -138,6 +138,28 @@ C Local Variables
             REAL( 8 ),    INTENT( IN )    :: CMIN
             TYPE(hyperdual), POINTER      :: CGRID( :,:,:,: )
          END SUBROUTINE LOAD_CGRID
+         
+         SUBROUTINE LOAD_DX1GRID ( FNAME, SPC_CAT, CGRID )
+         	USE HDMod
+            CHARACTER( 16 ), INTENT( IN ) :: FNAME
+            CHARACTER(  2 ), INTENT( IN ) :: SPC_CAT
+            TYPE(hyperdual), POINTER      :: CGRID( :,:,:,: )  
+         END SUBROUTINE LOAD_DX1GRID
+
+         SUBROUTINE LOAD_DX2GRID ( FNAME, SPC_CAT, CGRID )
+         	USE HDMod
+            CHARACTER( 16 ), INTENT( IN ) :: FNAME
+            CHARACTER(  2 ), INTENT( IN ) :: SPC_CAT
+            TYPE(hyperdual), POINTER      :: CGRID( :,:,:,: )  
+         END SUBROUTINE LOAD_DX2GRID
+         
+         SUBROUTINE LOAD_DX1X2GRID ( FNAME, SPC_CAT, CGRID )
+         	USE HDMod
+            CHARACTER( 16 ), INTENT( IN ) :: FNAME
+            CHARACTER(  2 ), INTENT( IN ) :: SPC_CAT
+            TYPE(hyperdual), POINTER      :: CGRID( :,:,:,: )  
+         END SUBROUTINE LOAD_DX1X2GRID
+                                  
          SUBROUTINE WR_INIT ( CGRID, JDATE, JTIME, TSTEP )
          	USE HDMod
             TYPE(hyperdual), POINTER      :: CGRID(:,:,:,:)
@@ -145,6 +167,14 @@ C Local Variables
             INTEGER, INTENT( IN )         :: JTIME
             INTEGER, INTENT( IN )         :: TSTEP
          END SUBROUTINE WR_INIT
+         
+         SUBROUTINE WR_INIT_HYD ( CGRID, JDATE, JTIME, TSTEP )
+         	USE HDMod
+            TYPE(hyperdual), POINTER      :: CGRID(:,:,:,:)
+            INTEGER, INTENT( IN )         :: JDATE
+            INTEGER, INTENT( IN )         :: JTIME
+            INTEGER, INTENT( IN )         :: TSTEP
+         END SUBROUTINE WR_INIT_HYD
 #ifdef isam
          SUBROUTINE SA_ARRAY_INIT ( CGRID )
             IMPLICIT NONE
@@ -191,6 +221,14 @@ C Load CGRID
       IF ( N_GC_SPC .GT. 0 ) THEN
          FNAME = INIT_CONC_1
          CALL LOAD_CGRID ( FNAME, 'GC', CMIN, CGRID )
+         IF ( .NOT. NEW_START ) THEN
+         	FNAME = INIT_DX1_1
+         	CALL LOAD_DX1GRID( FNAME, 'GC', CGRID)
+         	FNAME = INIT_DX2_1
+       	 	CALL LOAD_DX2GRID( FNAME, 'GC', CGRID)
+         	FNAME = INIT_DX1X2_1
+    	 	CALL LOAD_DX1X2GRID( FNAME, 'GC', CGRID)
+    	 ENDIF
 #ifdef Verbose3
          write( logdev,'(/"@@@c ", i8, i7.6)') stdate, sttime
          l = 1
@@ -215,18 +253,42 @@ C Get aerosols IC's
       IF ( N_AE_SPC .GT. 0 ) THEN
          FNAME = INIT_CONC_1
          CALL LOAD_CGRID ( FNAME, 'AE', CMIN, CGRID )
+         IF ( .NOT. NEW_START ) THEN
+         	FNAME = INIT_DX1_1
+         	CALL LOAD_DX1GRID( FNAME, 'AE', CGRID)
+         	FNAME = INIT_DX2_1
+       	 	CALL LOAD_DX2GRID( FNAME, 'AE', CGRID)
+         	FNAME = INIT_DX1X2_1
+    	 	CALL LOAD_DX1X2GRID( FNAME, 'AE', CGRID)
+    	 ENDIF
       END IF  ! N_AE_SPC > 0
 
 C Get non-reactives IC's
       IF ( N_NR_SPC .GT. 0 ) THEN
          FNAME = INIT_CONC_1
          CALL LOAD_CGRID ( FNAME, 'NR', CMIN, CGRID )
+         IF ( .NOT. NEW_START ) THEN
+         	FNAME = INIT_DX1_1
+         	CALL LOAD_DX1GRID( FNAME, 'NR', CGRID)
+         	FNAME = INIT_DX2_1
+       	 	CALL LOAD_DX2GRID( FNAME, 'NR', CGRID)
+         	FNAME = INIT_DX1X2_1
+    	 	CALL LOAD_DX1X2GRID( FNAME, 'NR', CGRID)
+    	 ENDIF
       END IF  ! N_NR_SPC > 0
 
 C Get tracer IC's
       IF ( N_TR_SPC .GT. 0 ) THEN
          FNAME = INIT_CONC_1
          CALL LOAD_CGRID ( FNAME, 'TR', CMIN, CGRID )
+         IF ( .NOT. NEW_START ) THEN
+         	FNAME = INIT_DX1_1
+         	CALL LOAD_DX1GRID( FNAME, 'TR', CGRID)
+         	FNAME = INIT_DX2_1
+       	 	CALL LOAD_DX2GRID( FNAME, 'TR', CGRID)
+         	FNAME = INIT_DX1X2_1
+    	 	CALL LOAD_DX1X2GRID( FNAME, 'TR', CGRID)
+    	 ENDIF
       END IF  ! N_TR_SPC > 0
 
 C Test opening existing conc file for update
@@ -300,8 +362,11 @@ C Test opening existing conc file for update
 
 
       CALL WR_INIT ( CGRID, STDATE, STTIME, TSTEP( 1 ) )
-C     CALL WR_INIT_SENS ( CGRID, STDATE, STTIME, TSTEP( 1 ) )
       
+      ! Write the initial sensitivities. It should write 0 for a new fresh start. 
+      ! to the dx1, dx2, and dx1x2 files. 
+C     IF (.NOT. NEW_START) THEN
+      CALL WR_INIT_HYD ( CGRID, STDATE, STTIME, TSTEP( 1 ) )
       CALL LOG_HEADING( LOGDEV, "Open or Create Average Concentration File" )
       CALL OPACONC ( STDATE, STTIME, TSTEP( 1 ) )
       
@@ -377,8 +442,9 @@ C Open SA_CONC_1 and SA_CGRID_1
          END DO
 
       END IF
-#endif
-
+#endif 	  
+	  
+	  
       CALL SUBST_BARRIER
 
       CALL LOG_HEADING( LOGDEV, "Check Initial Concentrations" )

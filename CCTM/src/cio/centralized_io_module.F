@@ -2031,7 +2031,7 @@ C Read the various categories of normalized emissions
      &              'found date ', SDATE3D, ' expecting ', cio_model_sdate
                 CALL M3EXIT( PNAME, 0, 0, MESG, XSTAT2 )
              END IF
-
+			 
              IF ( STIME3D .NE. cio_model_stime ) THEN
                 WRITE( MESG, 94010 ) 'Cannot use SOILINP file; ' //
      &              'found time ', STIME3D, ' expecting ', cio_model_stime

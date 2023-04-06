@@ -277,6 +277,21 @@ C Local variables:
             TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP
          END SUBROUTINE WR_CGRID
+         SUBROUTINE WR_CGRID_DX1 ( CGRID, JDATE, JTIME, TSTEP )
+         	use HDMod
+            TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
+            INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP
+         END SUBROUTINE WR_CGRID_DX1
+         SUBROUTINE WR_CGRID_DX2 ( CGRID, JDATE, JTIME, TSTEP )
+         	use HDMod
+            TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
+            INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP
+         END SUBROUTINE WR_CGRID_DX2
+         SUBROUTINE WR_CGRID_DX1X2 ( CGRID, JDATE, JTIME, TSTEP )
+         	use HDMod
+            TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
+            INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP
+         END SUBROUTINE WR_CGRID_DX1X2
          SUBROUTINE PA_OUTPUT ( CGRID, JDATE, JTIME )
             REAL, POINTER            :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )    :: JDATE, JTIME
@@ -886,6 +901,9 @@ C write conc fields
 #else
 C write CGRID state file for subsequent runs
          CALL WR_CGRID ( CGRID, JDATE, JTIME, TSTEP( 1 ) )
+         CALL WR_CGRID_DX1( CGRID, JDATE, JTIME, TSTEP( 1 ) )
+         CALL WR_CGRID_DX2( CGRID, JDATE, JTIME, TSTEP( 1 ) )
+         CALL WR_CGRID_DX1X2( CGRID, JDATE, JTIME, TSTEP( 1 ) )
 #ifdef isam
          CALL WR_SA_CGRID ( JDATE, JTIME, TSTEP( 1 ) )
 #endif

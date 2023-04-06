@@ -22,7 +22,7 @@ C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 C-----------------------------------------------------------------------
 C Function:
-C   Create the IO/API netCDF header and open the output CONC file
+C   Create the IO/API netCDF header and open the output DX1 file
 
 C Revision history:
 C   Jeff - Dec 00 - split out from initscen.F
@@ -261,7 +261,7 @@ C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 C-----------------------------------------------------------------------
 C Function:
-C   Create the IO/API netCDF header and open the output CONC file
+C   Create the IO/API netCDF header and open the output DX2 file
 
 C Revision history:
 C   Jeff - Dec 00 - split out from initscen.F
@@ -500,7 +500,7 @@ C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 C-----------------------------------------------------------------------
 C Function:
-C   Create the IO/API netCDF header and open the output CONC file
+C   Create the IO/API netCDF header and open the output DX1X2 file
 
 C Revision history:
 C   Jeff - Dec 00 - split out from initscen.F

@@ -317,6 +317,7 @@ C Local Variables:
          INTEGER, SAVE   :: WSTEP, MDATE, MTIME
          LOGICAL         :: WRTIME
          LOGICAL, SAVE   :: FIRST_TIME = .TRUE.
+         LOGICAL, SAVE   :: T_EQ_ZERO = .FALSE.
 
 #ifdef isam
          INTEGER                    :: IDX, SPC, LAYER, RGN
@@ -326,6 +327,7 @@ C Local Variables:
 C-----------------------------------------------------------------------
 
          IF ( FIRST_TIME ) THEN
+            T_EQ_ZERO  = .TRUE. 
             FIRST_TIME = .FALSE.
 
             ALLOCATE( VDEMIS_READ  ( N_EMIS_ISTR,EMLAYS,NCOLS,NROWS ),
@@ -489,6 +491,12 @@ C Initialize Emissions Array
            WSTEP = 0
            CALL NEXTIME( MDATE, MTIME,  TSTEP( 1 ) )
          END IF
+         
+         IF ( T_EQ_ZERO ) THEN
+         	WRTIME = .TRUE.
+         	T_EQ_ZERO = .FALSE. 
+         	CALL NEXTIME( MDATE, MTIME,  TSTEP( 1 ) )
+         ENDIF
 
 #ifdef isam
          SA_VDEMIS_DIFF = 0.0
@@ -510,6 +518,13 @@ C Retrieve Emissions from All Stream Types
                NL = EM_GRID_LAYS( ISRM )
                CALL GRIDEMIS( JDATE, JTIME, TSTEP, EM_FILE_NAME( ISRM ), 
      &                        NL, ISRM, VDEMIS_READ )
+          	   
+          	   ! Try the multiplicative perturbation with the hyperdual components 
+C         	   IF (ISRM .EQ. 1) THEN  
+C         	    VDEMIS_READ(11, 1, :, :) = VDEMIS_READ(11, 1, : ,:) * 0.75
+C         	   	VDEMIS_READ(11, 1, :, :) = VDEMIS_READ(11, 1, :, :) * hyperdual(1.0d0, 1.0d0, 1.0d0, 0.0d0)
+C         	   ENDIF
+     		   
                CALL EMISS_SCALING( VDEMIS_READ, ISRM, NL, VDEMIS_SCALED )
                CALL EMISS_SIZE_DIST( ISRM, VDEMIS_SCALED, NL )
  
@@ -517,17 +532,29 @@ C Retrieve Emissions from All Stream Types
              CASE ( 2 )
                NL = 1
                CALL GET_PT3D_EMIS ( JDATE, JTIME, TSTEP, EM_SURR( :,ISRM ), ISRM, VDEMIS_READ, NL )
+C              if  (ISRM .EQ. 3) THEN
+C                 WHERE ( VDEMIS_READ(18, 1, :, :)%x /= 0.0d0)
+C                 VDEMIS_READ(18, 1, :, :)%dx1 = VDEMIS_READ(18, 1, :, :)%dx1 + 1.D0
+C                 VDEMIS_READ(18, 1, :, :)%dx2 = VDEMIS_READ(18, 1, :, :)%dx2 + 1.D0
+C                 END WHERE
+C              endif
                CALL EMISS_SCALING( VDEMIS_READ, ISRM, NL, VDEMIS_SCALED )
                CALL EMISS_SIZE_DIST( ISRM, VDEMIS_SCALED, NL )
              
              CASE ( 4 )
                NL = 1
                CALL GET_BEIS ( JDATE, JTIME, TSTEP )
+               VDEMIS_BI(6, :, :) = VDEMIS_BI(6, :, :) * 0.75
+               VDEMIS_BI(6, :, :) = VDEMIS_BI(6, :, :) * hyperdual(1.0d0, 0.0d0, 1.0d0, 0.0d0)
                
-               IF ( JTIME .LE. 5730 ) THEN
-                  VDEMIS_BI(6, :, :) = VDEMIS_BI(6, :, :) + hyperdual(0.0d0, 1.0d0, 1.0d0, 0.0d0)
-                  VDEMIS_BI(6, :, :) = VDEMIS_BI(6, :, :) * 1.01
-               ENDIF
+C              IF ( JTIME .LE. 5730 ) THEN
+               	  ! Only use hyperdual perturbation for non-zero emissions
+C              WHERE ( VDEMIS_BI(21, :, :)%x /= 0.0d0 )
+C                 VDEMIS_BI(21, :, :)%dx1 = VDEMIS_BI(21, :, :)%dx1 + 1.0d0
+C                 VDEMIS_BI(21, :, :)%dx2 = VDEMIS_BI(21, :, :)%dx2 + 1.0d0
+C              END WHERE
+C              ENDIF
+C		   VDEMIS_BI(6,:,:) = VDEMIS_BI(6,:,:) * hyperdual(1.0d0, 1.0d0, 1.0d0, 0.0d0)
                
                FORALL( ISTR = 1:N_EMIS_ISTR, MAP_EMtoSURR( ISTR,ISRM ) .GT. 0 )
                   VDEMIS_READ( ISTR,1,:,: )%x = VDEMIS_BI( MAP_EMtoSURR( ISTR,ISRM ),:,: )%x 
@@ -535,8 +562,6 @@ C Retrieve Emissions from All Stream Types
                   VDEMIS_READ( ISTR,1,:,: )%dx2 = VDEMIS_BI( MAP_EMtoSURR( ISTR,ISRM ),:,: )%dx2
                   VDEMIS_READ( ISTR,1,:,: )%dx1x2 = VDEMIS_BI( MAP_EMtoSURR( ISTR,ISRM ),:,: )%dx1x2                                                      
                END FORALL
-               
-
                
                CALL EMISS_SCALING( VDEMIS_READ, ISRM, NL, VDEMIS_SCALED )
  
@@ -600,172 +625,9 @@ C Retrieve Emissions from All Stream Types
 C
            IF ( EM_FILE_LAPPLY( ISRM ) ) 
      &          VDEMIS_DIFF( :,1:NL,:,: ) = VDEMIS_DIFF( :,1:NL,:,: ) + VDEMIS_CONV( :,1:NL,:,: )
-				
-C#ifdef isam
-C          IF ( EM_FILE_LAPPLY( ISRM ) ) THEN
-C            ! Populate SA_VDEMIS_CONV, array for carrying tagged
-C            ! emissions contributions
-C
-C            ! Initialize 
-C            DO ITAG = 1,NTAG_SA
-C              DO R = 1,NROWS
-C                DO C = 1,NCOLS
-C                  DO LAYER = 1,NL
-C                    DO SPC = 1,N_SPC_DIFF
-C                      SA_VDEMIS_CONV( SPC,LAYER,C,R,ITAG ) = 0.0
-C                    END DO
-C                  END DO
-C                END DO
-C              END DO
-C            END DO
-C
-C            ! Determine whether this emission stream corresponds to 
-C            ! any ISAM tags
-C            IF ( TAGS_PER_STREAM( ISRM ) .EQ. 0 ) THEN 
-C              ! Dump all into 'OTHRTAG'
-C              SA_VDEMIS_CONV( :,1:NL,:,:,OTHRTAG ) = 
-C    &                             VDEMIS_CONV( :,1:NL,:,: )
-C            ELSE
-C              ! Initialize Array for Tracking Residual of Tagged
-C              ! Emissions  
-C              SA_VDEMIS_CONV_OTHER( :,1:NL,:,: ) = VDEMIS_CONV( :,1:NL,:,: )
-C
-C              ! Loop through all of the ISAM tags associated with this
-C              ! emissions stream. Generally each stream is only
-C              ! associated with one tag. The exception is when
-C              ! there are multiple tags corresponding to separate regions.
-C              DO IDX = 1, TAGS_PER_STREAM( ISRM )
-C
-C                ! Retrieve A Tag Associated with this Stream
-C                ITAG = STREAM_TO_TAG(ISRM,IDX)
-C
-C                IF ( ISAMRGN_NUM( ITAG ) .LT. 1 ) THEN  
-C                  ! This tag is capturing 100% of every grid cell in
-C                  ! the full domain for this stream. We need to assign
-C                  ! all of the emissions from this stream to this tag
-C                  ! and the residual is then set to 0.
-C                  SA_VDEMIS_CONV( :,1:NL,:,:,ITAG ) = 
-C    &                  SA_VDEMIS_CONV( :,1:NL,:,:,ITAG )
-C    &                        + VDEMIS_CONV(:,1:NL,:,: )
-C                  SA_VDEMIS_CONV_OTHER = 0.0
-C
-C                ELSE
-C                  ! This tag is capturing some fraction of the stream
-C                  ! in grid cells across the domain. These fractional
-C                  ! contributions are applied using the EM_REG_FAC
-C                  ! array with corresponding map indices.
-C                  ! Loop Over Altitude, Species and Regions to Add
-C                  ! emissions to corresponding tag, ITAG.
-C                  DO RGN = 1, ISAMRGN_NUM( ITAG )
-C                    DO LAYER = 1, NL
-C                      DO SPC = 1, N_SPC_DIFF
-C                         SA_VDEMIS_CONV( SPC,LAYER,:,:,ITAG ) = 
-C    &                              SA_VDEMIS_CONV( SPC,LAYER,:,:,ITAG )
-C    &                             + VDEMIS_CONV( SPC,LAYER,:,: )
-C    &                               * EM_REG_FAC(:,:,ISAMRGN_MAP(ITAG,RGN))
-C
-C                         SA_VDEMIS_CONV_OTHER( SPC,LAYER,:,: ) = 
-C    &                              SA_VDEMIS_CONV_OTHER( SPC,LAYER,:,: )
-C    &                            - VDEMIS_CONV( SPC,LAYER,:,: )
-C    &                              * EM_REG_FAC(:,:,ISAMRGN_MAP(ITAG,RGN))
-C
-C                      END DO
-C                    END DO
-C                  END DO
-C                END IF
-C              END DO
-C              
-C              ! Now that emissions from this stream have been assigned
-C              ! to all available tags, assess the remainder and assign
-C              ! it to the "OTHR" tag if any exists.
-C              MINCHECK = MINVAL( SA_VDEMIS_CONV_OTHER( :,1:NL,:,: ) )
-C              IF ( MINCHECK .GE. 0.0 ) THEN
-C                 ! Remainder is Valid. Move it all to the "OTHR" Tag
-C                 SA_VDEMIS_CONV( :,1:NL,:,:,OTHRTAG ) = 
-C    &                                SA_VDEMIS_CONV_OTHER( :,1:NL,:,: )
-C              ELSE
-C                 ! Some Part of the Remainder ("OTHER") is Invalid
-C                 XMSG = " ISAM mass balance error for emissions - " //
-C    &                     TRIM( EM_REGIONS(ISRM)%LABEL ) //
-C    &                    " - check isam control file. "
-C                 CALL M3WARN( 'ISAM_EMISSIONS', 1, 1, XMSG )
-C
-C                 ! Repair OTHER By Distributing Negative Among Populated Tags 
-C                 ! and assigning positive part to the "OTHR" Tag as
-C                 ! planned
-C                 DO R = 1,NROWS
-C                 DO C = 1,NCOLS
-C                 DO LAYER = 1,NL
-C                 DO SPC = 1,N_SPC_DIFF
-C                    IF ( SA_VDEMIS_CONV_OTHER( SPC,LAYER,C,R ) .LT. 0.0 ) THEN
-C                       ! Find the total alloted to this (SPC,LAYER,C,R)
-C                       ! and use it to distribute the error fractionally
-C                       TOTAL = SUM( SA_VDEMIS_CONV( SPC,LAYER,C,R,: ) )
-C                       DO ITAG = 1,NTAG_SA 
-C                         SA_VDEMIS_CONV( SPC,LAYER,C,R,ITAG ) =
-C    &                      SA_VDEMIS_CONV( SPC,LAYER,C,R,ITAG ) *
-C    &                      ( 1.0 + SA_VDEMIS_CONV_OTHER( SPC,LAYER,C,R ) / TOTAL )
-C                       END DO
-C                    ELSE
-C                       ! Assign the positive values to the "OTHR" Tag
-C                       SA_VDEMIS_CONV( SPC,LAYER,C,R,OTHRTAG ) = 
-C    &                                SA_VDEMIS_CONV_OTHER( SPC,LAYER,C,R )
-C                    END IF
-C                 END DO
-C                 END DO
-C                 END DO
-C                 END DO
-C              END IF
-C
-C            END IF
-C
-C            ! Subset the emissions array for ISAM traced species  
-C            DO SPC = 1, NSPC_SA
-C              IF ( MAP_DIFFtoSA( SPC ) .NE. 0 ) THEN
-C                DO ITAG = 1,NTAG_SA
-C                  DO R = 1,NROWS
-C                    DO C = 1,NCOLS
-C                      DO LAYER = 1,NL
-C                        SA_VDEMIS_DIFF( SPC,LAYER,C,R,ITAG ) =  
-C    &                                SA_VDEMIS_DIFF( SPC,LAYER,C,R,ITAG )
-C    &                             +  SA_VDEMIS_CONV( MAP_DIFFtoSA( SPC ),LAYER,C,R,ITAG )
-C                      END DO
-C                    END DO
-C                  END DO
-C                END DO
-C              END IF
-C            END DO
-C
-C          END IF
-C#endif
 
-
-C#ifdef sens
-C          IF ( SENS_PER_STREAM( ISRM ) .GT. 0 ) THEN ! This stream is used by DDM3D
-C
-C            DO SENNUM = 1, SENS_PER_STREAM( ISRM )
-C              NP = STREAM_TO_SENS( ISRM,SENNUM )
-C              SVDEMIS_DIFF( :,1:NL,:,:,NP ) = SVDEMIS_DIFF( :,1:NL,:,:,NP ) 
-C    &                                       + VDEMIS_CONV(:,1:NL,:,: )
-C            END DO
-C          END IF
-C#endif
-C
         END DO  ! Master Loop for Emissions Streams
-C
-C#ifdef sens
-CC Subset the emissions array for DDM-3D (by species and region)
-C        DO NP = 1, NPMAX
-C          DO S = 1, N_SPC_DIFF
-C            DO L = 1, EMLAYS
-C              SVDEMIS_DIFF( S,L,:,:,NP ) = 
-C    &                        SVDEMIS_DIFF( S,L,:,:,NP )
-C    &                      * IREGION( :,:,L,NP )
-C    &                      * IPARM( NP, DIFF_MAP( S ) )
-C            END DO
-C          END DO
-C        END DO
-C#endif
+
 
          ERROR_NEG     = EMISS_NEG_CHECK( VDEMIS_DIFF, 1, EMLAYS )
          
@@ -1207,9 +1069,9 @@ C    &                VDEMIS0( ISTR,1:NL,:,: )%dx1x2
       STAT = 0
       ! If All Values Are Positive then Return Right Away
       EMIS_MIN = MINVAL( VDEMIS( :,1:NL,:,: ) )
-      IF ( EMIS_MIN .GE. 0.0 ) RETURN
+      IF ( EMIS_MIN .GE. 0.0D0 ) RETURN
 
-      IF ( EMIS_MIN .LT. -1.0e-7 ) THEN
+      IF ( EMIS_MIN .LT. -1.0D-7 ) THEN
 
           STAT = 1
 
@@ -3156,7 +3018,7 @@ C stkemis_init.
      &                   / Met_Data%RJACM( :,:,L ) * CELLVOL( L )         ! m2/mol/s -> m2/s
       END DO                                                                
       CONVN( 1:NL,:,: ) = CONVM( 1:NL,:,: )                               ! Aer. Num:  N/mol/s -> N/s
-
+	
       !MAKE SURE TO APPLY RELEVANT UNIT CONVERSION TO EACH
       !TYPE OF VARIABLE (GAS, AEROSOL MASS, AEROSOL NUMBER,
       !AND AEROSOL SURFACE AREA)
@@ -3243,7 +3105,7 @@ C stkemis_init.
 
             ! Write out the emissions data
             IF ( .NOT. WRITE3( EM_FDIAG, DIFF_SPC( IVAR ),
-     &                 MDATE, MTIME, VDEMIS_OUT( :,:,1:LAYS ) ) ) THEN
+     &                 MDATE, MTIME, REAL ( VDEMIS_OUT( :,:,1:LAYS )%x , 4 ) ) ) THEN
                 XMSG = 'Could not write ' // TRIM( EM_FDIAG ) // ' file'
                 CALL M3EXIT( 'WRITE_EMISS_DIAG', MDATE, MTIME, XMSG, XSTAT1 )
             END IF

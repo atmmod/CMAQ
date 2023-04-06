@@ -32,7 +32,7 @@ C Problem if V1 is outflow, but V2 is inflow
  
       IF ( ABS( V1 ) .GE. SMALL ) THEN
          IF ( V1 * V2 .GT. 0.0 ) THEN
-            ZFDBC = MAX (0.0, C1 - V2 / V1 * (C2 - C1)) 
+            ZFDBC = MAX (0.0D0, C1 - V2 / V1 * (C2 - C1)) 
          ELSE
             ZFDBC = C1         ! nothing changes for wind divergence at edge
          END IF

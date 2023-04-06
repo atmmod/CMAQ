@@ -98,9 +98,9 @@ C...........Local Variables (scalars):
 
 c *** ranges for acceptable values of LOG( sigma_g).
 
-      REAL, SAVE   :: MINL2SG  ! minimum value of L2SG
-      REAL, SAVE   :: MAXL2SG  ! maximum value of L2SG
-      REAL, SAVE   :: DEFL2SG  ! default value of L2SG if no surface area
+      REAL( 8 ), SAVE   :: MINL2SG  ! minimum value of L2SG
+      REAL( 8 ), SAVE   :: MAXL2SG  ! maximum value of L2SG
+      REAL( 8 ), SAVE   :: DEFL2SG  ! default value of L2SG if no surface area
 
       REAL          NC         ! total cloud droplet number concentration  [ #/m**3 ]
       REAL          DGC        ! geometric mean diameter for cloud droplet [ m ]
@@ -171,9 +171,9 @@ C...compute constant for obtaining dgc
 
         CLCONST = 6.0 / ( RHO_WATER * PI * EXP( 4.5 * LOG( SIGC ) ** 2 ) )
 
-        MINL2SG = LOG( MIN_SIGMA_G ) ** 2.0        ! minimum sigma_g = 1.05 (2.380480e-3)
-        MAXL2SG = LOG( MAX_SIGMA_G ) ** 2.0        ! maximum sigma_g = 2.5  (8.395887e-1)
-        DEFL2SG = LOG( DEF_SIGMA_G( 1 ) ) ** 2.0   ! default sigma_g = 1.7  (2.815663e-1)
+        MINL2SG = LOG( MIN_SIGMA_G ) ** 2.0d0        ! minimum sigma_g = 1.05 (2.380480e-3)
+        MAXL2SG = LOG( MAX_SIGMA_G ) ** 2.0d0        ! maximum sigma_g = 2.5  (8.395887e-1)
+        DEFL2SG = LOG( DEF_SIGMA_G( 1 ) ) ** 2.0d0   ! default sigma_g = 1.7  (2.815663e-1)
 
       END IF ! check on firstime
 
@@ -187,8 +187,8 @@ C FSB mass check changed to be 1.0e-6 [ug/m**3] - 08/23/2005
 C     to avoid AM3 becomming too small.  With this change
 C     AM3 is no smaller than 1.0e-18
 
-      IF ( ( NUMI .LE. 0.0 ) .OR. ( MASSI .LE. 1.0e-6 ) .OR.
-     &     ( LWC  .LE. 0.0 ) ) THEN
+      IF ( ( NUMI .LE. 0.0D0 ) .OR. ( MASSI .LE. 1.0D-6 ) .OR.
+     &     ( LWC  .LE. 0.0D0 ) ) THEN
 !cc     &     ( SURFI .LE. 0.0 ) .OR. ( LWC  .LE. 0.0 ) ) THEN
         ALFA0 = 0.0d0
         ALFA2 = 0.0d0
@@ -231,7 +231,7 @@ C...set values for the 0th and 3rd moments
 
 C...Check to see if surface area exists and process accordingly
 
-      IF ( SURFI .GT. 0.0 ) THEN
+      IF ( SURFI .GT. 0.0d0 ) THEN
 
 C...set the 2nd moment value
 
@@ -251,7 +251,7 @@ C...  The following method is much more robust, even if it uses three log calls.
 
 C...set the standard deviation to a fixed value (e.g. 1.7)
 
-        L2SGI = REAL ( DEFL2SG , 8 )
+        L2SGI = DEFL2SG
 
 C...calculate the 2nd moment based on the fixed standard deviation
 

@@ -396,7 +396,10 @@ C West boundary
      &               ZFDBC ( CONX( 1,SPC ), CONX( 2,SPC ),
      &                       VELX( 1 ),     VELX( 2 ) )
                ELSE    ! inflow
-                  CONX( 1-SWP:0,SPC ) = REAL ( BCON( WFX+ROW,SPC ) , 8 )
+                  CONX( 1-SWP:0,SPC )%x = REAL ( BCON( WFX+ROW,SPC ) , 8 )
+                  CONX( 1-SWP:0,SPC )%dx1 = 0.d0
+                  CONX( 1-SWP:0,SPC )%dx2 = 0.d0
+                  CONX( 1-SWP:0,SPC )%dx1x2 = 0.d0
                END IF
             END IF
 
@@ -408,7 +411,10 @@ C East boundary
      &               ZFDBC ( CONX( NCOLS,SPC ), CONX( NCOLS-1,SPC ),
      &                       VELX( NCOLS+1 ),   VELX( NCOLS ) )
                ELSE    ! inflow
-                  CONX( NCOLS+1:NCOLS+SWP,SPC ) = REAL ( BCON( EFX+ROW,SPC ) , 8 )
+                  CONX( NCOLS+1:NCOLS+SWP,SPC )%x = REAL ( BCON( EFX+ROW,SPC ) , 8 )
+                  CONX( NCOLS+1:NCOLS+SWP,SPC )%dx1 = 0.d0
+                  CONX( NCOLS+1:NCOLS+SWP,SPC )%dx2 = 0.d0
+                  CONX( NCOLS+1:NCOLS+SWP,SPC )%dx1x2 = 0.d0
                END IF
             END IF
 

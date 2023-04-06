@@ -36,7 +36,7 @@
 !                            BNDY_SENS_1, remove REGIONS_1
 !.......................................................................
 
-      INTEGER, PARAMETER :: N_FILES = 67
+      INTEGER, PARAMETER :: N_FILES = 73
 
       CHARACTER( 16 ) :: LGCL_NAME( N_FILES ) 
       LOGICAL            IN_MODE( N_FILES )
@@ -118,7 +118,13 @@
 
       CHARACTER( 16 ) :: CTM_DX1         ! On-Hour Sensitivities, %dx1
       CHARACTER( 16 ) :: CTM_DX2         ! On-Hour Sensitivities, %dx2
-      CHARACTER( 16 ) :: CTM_DX1X2       ! On-Hour Second Order Sensitivities, %dx1x2      
+      CHARACTER( 16 ) :: CTM_DX1X2       ! On-Hour Second Order Sensitivities, %dx1x2    
+      CHARACTER( 16 ) :: S_DX1           ! Inst. DX1 values
+      CHARACTER( 16 ) :: S_DX2           ! Inst. DX2 values
+      CHARACTER( 16 ) :: S_DX1X2         ! Inst. DX1X2 values
+      CHARACTER( 16 ) :: INIT_DX1_1      ! Restart DX1 values
+      CHARACTER( 16 ) :: INIT_DX2_1      ! Restart DX2 values
+      CHARACTER( 16 ) :: INIT_DX1X2_1    ! Restart DX1X2 values
 
 ! DDM Files:
 
@@ -206,6 +212,12 @@
       DATA  CTM_DX1         / 'CTM_DX1         ' /
       DATA  CTM_DX2         / 'CTM_DX2         ' /
       DATA  CTM_DX1X2       / 'CTM_DX1X2       ' /
+      DATA  S_DX1           / 'S_DX1           ' /
+      DATA  S_DX2           / 'S_DX2           ' /
+      DATA  S_DX1X2         / 'S_DX1X2         ' /
+      DATA  INIT_DX1_1      / 'INIT_DX1_1      ' /
+      DATA  INIT_DX2_1      / 'INIT_DX2_1      ' /
+      DATA  INIT_DX1X2_1    / 'INIT_DX1X2_1    ' /
 
       DATA LGCL_NAME(  1 ), IN_MODE(  1 )    / 'GRID_DOT_2D     ', .TRUE. /
       DATA LGCL_NAME(  2 ), IN_MODE(  2 )    / 'GRID_CRO_2D     ', .TRUE. /
@@ -274,5 +286,11 @@
       DATA LGCL_NAME( 65 ), IN_MODE( 65 )    / 'CTM_DX1         ', .FALSE. /
       DATA LGCL_NAME( 66 ), IN_MODE( 66 )    / 'CTM_DX2         ', .FALSE. /
       DATA LGCL_NAME( 67 ), IN_MODE( 67 )    / 'CTM_DX1X2       ', .FALSE. /
+      DATA LGCL_NAME( 68 ), IN_MODE( 68 )    / 'S_DX1           ', .FALSE. / 
+      DATA LGCL_NAME( 69 ), IN_MODE( 69 )    / 'S_DX2           ', .FALSE. / 
+      DATA LGCL_NAME( 70 ), IN_MODE( 70 )    / 'S_DX1X2         ', .FALSE. / 
+      DATA LGCL_NAME( 71 ), IN_MODE( 71 )    / 'INIT_DX1_1      ', .FALSE. / 
+      DATA LGCL_NAME( 72 ), IN_MODE( 72 )    / 'INIT_DX2_1      ', .FALSE. / 
+      DATA LGCL_NAME( 73 ), IN_MODE( 73 )    / 'INIT_DX1X2_1    ', .FALSE. /
 
 !................   end   FILES_CTM.EXT   .............................

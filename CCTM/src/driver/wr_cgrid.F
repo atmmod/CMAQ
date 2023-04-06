@@ -52,7 +52,6 @@ C Include Files:
       INCLUDE SUBST_FILES_ID    ! file name parameters
 
       TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
-      REAL, POINTER            :: CGRID_DUMMY ( :,:,:,: )
       INTEGER      JDATE        ! current model date, coded YYYYDDD
       INTEGER      JTIME        ! current model time, coded HHMMSS
       INTEGER      TSTEP        ! output timestep (HHMMSS)
@@ -298,7 +297,7 @@ C proc 0 has CTM_CONC_1 open
 #else
 
 #ifdef parallel
-      IF ( .NOT. PTRWRITE3( S_CGRID, ALLVAR3, JDATE, JTIME, CGRID ) ) THEN
+      IF ( .NOT. PTRWRITE3_X( S_CGRID, ALLVAR3, JDATE, JTIME, CGRID ) ) THEN
          XMSG = 'Could not write S_CGRID'
          CALL M3EXIT( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
       END IF

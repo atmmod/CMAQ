@@ -392,7 +392,10 @@ C South boundary
      &               ZFDBC ( CONY( 1,SPC ), CONY( 2,SPC ),
      &                       VELY( 1 ),     VELY( 2 ) )
                ELSE    ! inflow
-                  CONY( 1-SWP:0,SPC ) = REAL ( BCON( SFX+COL,SPC ) , 8 )
+                  CONY( 1-SWP:0,SPC )%x = REAL ( BCON( SFX+COL,SPC ) , 8 )
+                  CONY( 1-SWP:0,SPC )%dx1 = 0.d0
+                  CONY( 1-SWP:0,SPC )%dx2 = 0.d0
+                  CONY( 1-SWP:0,SPC )%dx1x2 = 0.d0
                END IF
             END IF
 
@@ -404,7 +407,10 @@ C North boundary
      &               ZFDBC ( CONY( NROWS,SPC ), CONY( NROWS-1,SPC ),
      &                       VELY( NROWS+1 ),   VELY( NROWS ) )
                ELSE    ! inflow
-                  CONY( NROWS+1:NROWS+SWP,SPC ) = REAL ( BCON( NFX+COL,SPC ) , 8 )
+                  CONY( NROWS+1:NROWS+SWP,SPC )%x = REAL ( BCON( NFX+COL,SPC ) , 8 )
+                  CONY( NROWS+1:NROWS+SWP,SPC )%dx1 = 0.d0
+                  CONY( NROWS+1:NROWS+SWP,SPC )%dx2 = 0.d0
+                  CONY( NROWS+1:NROWS+SWP,SPC )%dx1x2 = 0.d0
                END IF
             END IF
 

@@ -113,6 +113,7 @@ C..SCRATCH LOCAL VARIABLES:
       REAL( 8 ) DTG         ! Time step in degrade routines, sec
       TYPE(hyperdual) FXDLOSS          ! Total loss due to negative stoichiometry
       TYPE(hyperdual) VARLOSS          ! Loss excluding negative stoichiometry
+      INTEGER N_EBI_MID_HYD
 
 
 
@@ -175,7 +176,8 @@ C**********************************************************************
           END IF
 
        END IF
-
+	  
+	  N_EBI_MID_HYD = CEILING( N_EBI_STEPS / 2.0 )
 #ifdef sens
       DO S = 1, N_SPEC
          DDM_CHECK( S ) = .FALSE.
@@ -386,7 +388,16 @@ C                IF( CALL_IRR ) CALL PA_IRR ( .FALSE., RKI, YC, DTC )
                  CALL SA_IRR_UNBLOCKED ( .FALSE., RKI, YC, DTC )
                  UPDATE_PROBABILITIES = .FALSE.
 #endif
-
+				  IF ( N_EBI_MID_HYD .EQ. NEBI ) THEN
+				  	DO S = 1, NUMB_MECH_SPC
+				  	IF ( YC( S )%x .LT. 1.d-25 ) THEN
+				  		YC( S )%dx1 = 0.d0
+				  		YC( S )%dx2 = 0.d0
+				  		YC( S )%dx1x2 = 0.d0
+				  	ENDIF
+				  	ENDDO
+				  ENDIF
+				  	
 #ifdef sens
 C YCDDM is the value at the middle time step
                   IF ( N_EBI_MID .EQ. NEBI ) THEN
@@ -397,6 +408,7 @@ C YCDDM is the value at the middle time step
                    END DO
                   END IF
 #endif
+
 
                  CYCLE SUBSTEP_EBI ! solve for next sub time-step
 

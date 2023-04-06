@@ -277,7 +277,7 @@ C Equation (1.7)
 C Guarantee that CM lies between CON(I) and CON(I+1) - monotonicity constraint
 
 C Equation (1.8)
-            IF ( C0 * C1 .GT. 0.0 ) THEN
+            IF ( C0 * C1 .GT. 0.0D0 ) THEN
                DC( I,S ) = SIGN( 1.0, DC( I,S ) )
      &                   * MIN(      ABS( DC( I,S ) ),
      &                         2.0 * ABS( C0 ),
@@ -309,7 +309,7 @@ C Equation (1.15)
 C Monotonicity
  
             IF ( ( CR( I ) - CON( I,S ) )
-     &        * ( CON( I,S ) - CL( I ) ) .GT. 0.0 ) THEN
+     &        * ( CON( I,S ) - CL( I ) ) .GT. 0.0D0 ) THEN
 
 C Temporary computation of DC and C6
                DC( I,S ) = CR( I ) - CL( I )

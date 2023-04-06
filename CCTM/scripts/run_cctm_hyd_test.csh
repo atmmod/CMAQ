@@ -74,7 +74,7 @@ echo 'Start Model Run At ' `date`
 
 #> Set Working, Input, and Output Directories
  setenv WORKDIR ${CMAQ_HOME}/CCTM/scripts          #> Working Directory. Where the runscript is.
- setenv OUTDIR  ${CMAQ_DATA}/output_CCTM_${RUNID}_ANH4K_6hr  #> Output Directory
+ setenv OUTDIR  /glade/scratch/edliu/CMAQ_outputs/CCTM_grid_emis_ddt  #> Output Directory
  setenv INPDIR  /glade/work/edliu/models/inputs/SEv5.3.2.BENCH/CMAQv5.3.2_Benchmark_2Day_Input/2016_12SE1            #> Input Directory
  setenv LOGDIR  ${OUTDIR}/LOGS     #> Log Directory Location
  setenv NMLpath ${BLD}             #> Location of Namelists. Common places are: 

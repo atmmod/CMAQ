@@ -113,7 +113,7 @@ C-----------------------------------------------------------------------
 
 C Arguments:
 
-      TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )              !  concentrations
+      TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )   !  concentrations
       INTEGER      JDATE        ! current model date, coded YYYYDDD
       INTEGER      JTIME        ! current model time, coded HHMMSS
       INTEGER      TSTEP( 3 )   ! time step vector (HHMMSS)

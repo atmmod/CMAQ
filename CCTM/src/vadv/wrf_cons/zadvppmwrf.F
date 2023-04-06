@@ -381,7 +381,7 @@ Ckrt...import isam array into sa_con
             END DO
 
             DO LVL = 2, NLAYS
-               IF ( FLX( LVL ) .GE. 0.0 ) THEN
+               IF ( FLX( LVL ) .GE. 0.0D0 ) THEN
                   VEL( LVL ) = FLX( LVL ) / RJT( LVL-1 )
                ELSE
                   VEL( LVL ) = FLX( LVL ) / RJT( LVL )
@@ -396,7 +396,7 @@ C Find Maximum Courant Number
             DTNEW = DELT
 
             DO LVL = 2, NLAYS
-               IF ( VEL( LVL ) .GT. 0.0 ) THEN
+               IF ( VEL( LVL ) .GT. 0.0D0 ) THEN
                   CC = MAX ( CC, ( VEL( LVL )%x * DELT / DS( LVL-1 ) ) )
                   DTNEW = MIN( DTNEW, 0.9 * DELT / CC )
                ELSE
@@ -407,7 +407,7 @@ C Find Maximum Courant Number
             END DO
 
             LVL = NLAYS+1
-            IF ( VEL( LVL ) .GT. 0.0 ) THEN
+            IF ( VEL( LVL ) .GT. 0.0D0 ) THEN
                CC = MAX ( CC, ( VEL( LVL )%x * DELT / DS( LVL-1 ) ) )
                DTNEW = MIN( DTNEW, 0.9 * DELT / CC )
             ELSE

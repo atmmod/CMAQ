@@ -944,7 +944,29 @@ C     mass partitioning between the modes
       INTEGER ISP                         ! loop index, species loop
       LOGICAL TrustIso                    ! For negative vap. press., TrustIso = F
       LOGICAL FwdIso                      ! J.E.L. for not using ISORROPIA  
-
+      LOGICAL HybridSens                  ! J.E.L. for not using rev ISORROPIA hyd parts
+      LOGICAL FwdSens                     ! 
+      
+      ! Additional variables for resetting sensitivities for asymptotic steps
+      TYPE(hyperdual)       :: HPLUS_PREV
+      TYPE(hyperdual)       :: moment0_conc3_orig
+      TYPE(hyperdual)       :: moment2_conc3_orig
+      TYPE(hyperdual)       :: moment3_conc3_orig
+      TYPE(hyperdual)       :: aeromode_dens3_orig
+      TYPE(hyperdual)       :: aeromode_lnsg3_orig
+      TYPE(hyperdual)       :: aeromode_diam3_orig
+      TYPE(hyperdual)       :: aeromode_mass3_orig
+      TYPE(hyperdual)       :: anh4k_orig
+      TYPE(hyperdual)       :: ano3k_orig
+      TYPE(hyperdual)       :: aclk_orig
+      TYPE(hyperdual)       :: aso4k_orig
+      TYPE(hyperdual)       :: ah2ok_orig
+      TYPE(hyperdual)       :: nh3_orig
+      TYPE(hyperdual)       :: hno3_orig
+      TYPE(hyperdual)       :: hcl_orig
+      
+      
+      
 C *** Local Saved Variables 
       LOGICAL, SAVE :: FIRSTIME = .TRUE.
       LOGICAL, SAVE :: FIRSTWRITE = .TRUE.
@@ -980,7 +1002,8 @@ C *** Local Saved Variables
 	  
       INTEGER         :: C_GAS      ! loop counter (E.L.)
       LOGICAL         :: SAME_ALL_AFTER = .false.
-
+	  
+	  
       logical, save :: write1 = .true.
 
 C-----------------------------------------------------------------------
@@ -1039,9 +1062,10 @@ C *** Determine if Hybrid
 #ifdef noiso
 	hybrid = .false.
 #else
-	  TEMP_CUTOFF = 250.d0
+	  TEMP_CUTOFF = 260.d0
       PRES_CUTOFF = 2.D4
       FWDISO = ( AIRTEMP .GE. TEMP_CUTOFF ) .AND. ( AIRPRES .GE. PRES_CUTOFF ) .AND. (AIRRH .GE. 0.18)
+C     FWDISO = .TRUE.
       
       DO I = 1, N_AEROSPC
          IF(  AEROSPC( I )%tracer )CYCLE
@@ -1204,6 +1228,7 @@ C *** Growth values for mode merge condition
 
 C *** For Hybrid approach, calculate dynamic mass trasfer for
 C     semi-volatile components of coarse mode (NO3, CL, NH4)  
+	  HybridSens = .TRUE. 
 	  
       IF ( HYBRID ) THEN 
 
@@ -1216,13 +1241,18 @@ C     semi-volatile components of coarse mode (NO3, CL, NH4)
          ISTEP    = 1
          IMODE    = 3
          TrustIso = .TRUE.
+         
  		 
          DO WHILE ( INT_TIME .LT. DELT ) 
 
             IF ( INT_TIME + TSTEP .GT. DELT ) TSTEP = DELT - INT_TIME 
             INT_TIME = INT_TIME + TSTEP 
             ISTEP = ISTEP + 1   
-
+			
+			IF ( INT_TIME .GT. 90.0D0 ) THEN
+				HPLUS_PREV = AERLIQ( 1 )
+			ENDIF
+			
 C *** Calculate first moments using Equation 4 of Binkowski & Shankar
 C     (1995) or Equation 3 of Binkowski and Roselle (2003).
 C     N.B: these are for a "wet" size distribution
@@ -1277,12 +1307,31 @@ C *** Initial vapor-phase concentrations [ug/m3]
             GNO3R8 = PRECURSOR_CONC( HNO3_IDX )
             GNH3R8 = PRECURSOR_CONC( NH3_IDX )
             GCLR8  = PRECURSOR_CONC( HCL_IDX )
+            
+            IF ( INT_TIME .EQ. 90.0D0 ) THEN
+            	moment0_conc3_orig  = MOMENT0_CONC( IMODE )
+            	moment2_conc3_orig  = MOMENT2_CONC( IMODE )
+            	moment3_conc3_orig  = MOMENT3_CONC( IMODE )
+            	aeromode_dens3_orig = aeromode_dens( IMODE )
+            	aeromode_lnsg3_orig = aeromode_lnsg( IMODE )
+            	aeromode_diam3_orig = aeromode_diam( IMODE )
+            	aeromode_mass3_orig = aeromode_mass( IMODE )
+            	anh4k_orig          = AEROSPC_CONC( ANH4_IDX,IMODE )
+            	ano3k_orig          = AEROSPC_CONC( ANO3_IDX,IMODE )
+            	aclk_orig           = AEROSPC_CONC( ACL_IDX,IMODE )
+            	aso4k_orig          = AEROSPC_CONC( ASO4_IDX,IMODE )
+            	ah2ok_orig          = AEROSPC_CONC( AH2O_IDX,IMODE )
+            	nh3_orig            = PRECURSOR_CONC( NH3_IDX )
+            	hno3_orig           = PRECURSOR_CONC( HNO3_IDX )
+            	hcl_orig            = PRECURSOR_CONC( HCL_IDX )
+            ENDIF
+            
 
 C *** Compute sulfate production rate [ug/m3 s] for coarse mode
 
             RATE = CONDSO4( IMODE )
             SO4  = CINORG( KSO4,IMODE ) + RATE * TSTEP * H2SO4RATM1
-
+			
             IF ( TrustIso ) THEN
 
 C *** Double Precision vars for ISORROPIA [mole/m3]
@@ -1309,9 +1358,9 @@ C              Also obtain the aqueous H+ concentration, AERLIQ(1) [mol/m3]
 #endif
 
                CALL ISOROPIA( WI, RHI, TEMPI, CNTRL, WT, GAS, AERLIQ,  
-     &                        AERSLD, SCASI, OTHER, COL, ROW, LAYER )
+     &                        AERSLD, SCASI, OTHER, COL, ROW, LAYER, FwdSens )
 
-			   	   
+			   	 
                IF ( GAS( 1 ) .LT. 0.0D0 .OR. GAS( 2 ) .LT. 0.0D0 .OR.
      &              GAS( 3 ) .LT. 0.0D0 ) THEN
                   IF ( FIRSTWRITE ) THEN
@@ -1323,7 +1372,29 @@ C              Also obtain the aqueous H+ concentration, AERLIQ(1) [mol/m3]
                END IF
 
             END IF   ! TrustIso
-
+		 
+		 ! If there is a change in H+ concentration through rev iso, ignore the sensitivities		 		 
+ 	 IF ( INT_TIME .GT. 90.0D0 ) THEN
+ 	 	
+ 	 	! Criteria 1: Significant Change of pH during the 4 steps of reverse ISORROPIA
+ 	 	! Used to be 1.25
+ 	 	IF  ( ( ( AERLIQ(1) / HPLUS_PREV ) .GE. 1.25d0 ) .OR. ( HPLUS_PREV / AERLIQ(1) ) .GE. 1.25d0 ) THEN
+ 	 		HybridSens = .false.
+ 	 	ENDIF
+ 	 	
+ 	 	! Criteria 2: Close to Neutral but not corrected by the SQRT(AKW)
+ 	 	IF ( AERLIQ( 1 ) /= 0.0D0 .AND. AERLIQ( 12 ) /= 0.0D0 ) THEN
+ 	 		IF (AERLIQ( 1 ) /= AERLIQ( 12 ) .AND. ( (AERLIQ( 1 ) / AERLIQ( 12 ) .LE. 1.D3 ) .OR. (AERLIQ( 12 ) / AERLIQ( 1 )) .LE. 1.D3 )) THEN
+ 	 			HybridSens = .false. 
+ 	 		ENDIF
+ 	 	ENDIF
+ 	 
+ 	 ELSE    ! INT_TIME .EQ. 90.0D0 for this case, only record down HPLUS here for first rev iso
+ 	 	HPLUS_PREV = AERLIQ( 1 )
+ 	 ENDIF
+		 
+		 
+		 
 C *** Change in volatile inorganic PM concentration to achieve
 C     equilibrium, calculated as initial-gas-phase concentration minus 
 C     equilibrium gas-phase concentration.  DVOLINORG is positive for
@@ -1463,11 +1534,33 @@ C     accumulation modes but the coarse mode does need to be updated
 C     each sub-time step. This should be for the wet distribution
                
             CALL GETPAR( .TRUE. )
-
          END DO   ! end mass transfer time step loop
          
       END IF   ! for 'Hybrid' method
-
+	  
+	  ! If there are drastic changes in pH during rev iso, the sensitivities have asymptotic behaviors
+	  ! See Henningan et. al. 2015 ACP paper for details
+	  
+C HybridSens = .false.
+      
+	  IF ( HYBRID .AND. ( HybridSens .eq. .false.) ) then
+	  	! Reset all moment related stuff
+	  	call reset_hyd_sens( moment0_conc( 3 ), moment0_conc3_orig)
+	  	call reset_hyd_sens( moment2_conc( 3 ), moment2_conc3_orig)
+	  	call reset_hyd_sens( moment3_conc( 3 ), moment3_conc3_orig)
+	  	call reset_hyd_sens( aeromode_dens( 3 ), aeromode_dens3_orig)
+	  	call reset_hyd_sens( aeromode_lnsg( 3 ), aeromode_lnsg3_orig)
+	  	call reset_hyd_sens( aeromode_diam( 3 ), aeromode_diam3_orig)
+	  	call reset_hyd_sens( aeromode_mass( 3 ), aeromode_mass3_orig)
+	  	call reset_hyd_sens( AEROSPC_CONC( ANH4_IDX, 3 ), anh4k_orig)
+	  	call reset_hyd_sens( AEROSPC_CONC( ANO3_IDX, 3 ), ano3k_orig)
+	  	call reset_hyd_sens( AEROSPC_CONC( ACL_IDX, 3 ), aclk_orig)
+	  	call reset_hyd_sens( AEROSPC_CONC( ASO4_IDX, 3 ), aso4k_orig)
+	  	call reset_hyd_sens( AEROSPC_CONC( AH2O_IDX, 3), ah2ok_orig)
+	  	call reset_hyd_sens( PRECURSOR_CONC( NH3_IDX ), nh3_orig)	
+	  	call reset_hyd_sens( PRECURSOR_CONC( HNO3_IDX ), hno3_orig)
+	  	call reset_hyd_sens( PRECURSOR_CONC( HCL_IDX ), hcl_orig)  	
+	  endif
       write1 = .false.
 C *** End of Coarse Mode dynamic mass transfer calculations
 
@@ -1506,14 +1599,9 @@ C *** Set flags to account for mass conservation violations in ISRP3F
 #ifndef noiso
       
       IF ( FWDISO ) THEN 
-      
-C     gas( 1 ) = precursor_conc( nh3_idx ) * CFAC_GNH3
-C     gas( 2 ) = precursor_conc( hno3_idx) * CFAC_GHNO3
-C     gas( 3 ) = precursor_conc( hcl_idx ) * CFAC_GHCL
-C
-C     EQLBHIJ =  HPLUS( 1 ) + HPLUS( 2 )  ! use charge balance if lacking isoropia info       
+           
       CALL ISOROPIA( WI, RHI, TEMPI, CNTRL, WT, GAS, AERLIQ,
-     &               AERSLD, SCASI, OTHER, COL, ROW, LAYER )
+     &               AERSLD, SCASI, OTHER, COL, ROW, LAYER, FwdSens)
      
 
 C *** Save H+ concentration information in microgram/m3 for consistency
@@ -1542,33 +1630,13 @@ C *** Change in volatile inorganic PM concentration to achieve
 C     equilibrium, calculated as initial-gas-phase concentration minus 
 C     equilibrium gas-phase concentration.  DVOLINORG is positive for
 C     condensation and negative for evaporation.
-	  
-	  IF ( ( LAYER .GE. 25 ) .AND. GAS( 1 ) .GT. 1.D-25 ) THEN
-	  	IF ( ABS ( GAS( 1 )%dx1 ) .GT. 1.d5 * ABS ( GNH3R8%dx1 * CFAC_GNH3 ) ) THEN
-	  		gas( 1 )%dx1 = precursor_conc( nh3_idx )%dx1 * CFAC_GNH3
-     	    gas( 2 )%dx1 = precursor_conc( hno3_idx)%dx1 * CFAC_GHNO3
-      		gas( 3 )%dx1 = precursor_conc( hcl_idx )%dx1 * CFAC_GHCL
-      	    gas( 1 )%dx2 = precursor_conc( nh3_idx )%dx2 * CFAC_GNH3
-     	    gas( 2 )%dx2 = precursor_conc( hno3_idx)%dx2 * CFAC_GHNO3
-      		gas( 3 )%dx2 = precursor_conc( hcl_idx )%dx2 * CFAC_GHCL
-      	    gas( 1 )%dx1x2 = precursor_conc( nh3_idx )%dx1x2 * CFAC_GNH3
-     	    gas( 2 )%dx1x2 = precursor_conc( hno3_idx)%dx1x2 * CFAC_GHNO3
-      		gas( 3 )%dx1x2 = precursor_conc( hcl_idx )%dx1x2 * CFAC_GHCL
-      	ENDIF
-      	
-        IF ( ABS ( GAS( 2 )%dx1 ) .GT. 1.d5 * ABS ( GNO3R8%dx1 * CFAC_GHNO3 ) ) THEN
-	  		gas( 1 )%dx1 = precursor_conc( nh3_idx )%dx1 * CFAC_GNH3
-     	    gas( 2 )%dx1 = precursor_conc( hno3_idx)%dx1 * CFAC_GHNO3
-      		gas( 3 )%dx1 = precursor_conc( hcl_idx )%dx1 * CFAC_GHCL
-      	    gas( 1 )%dx2 = precursor_conc( nh3_idx )%dx2 * CFAC_GNH3
-     	    gas( 2 )%dx2 = precursor_conc( hno3_idx)%dx2 * CFAC_GHNO3
-      		gas( 3 )%dx2 = precursor_conc( hcl_idx )%dx2 * CFAC_GHCL
-      	    gas( 1 )%dx1x2 = precursor_conc( nh3_idx )%dx1x2 * CFAC_GNH3
-     	    gas( 2 )%dx1x2 = precursor_conc( hno3_idx)%dx1x2 * CFAC_GHNO3
-      		gas( 3 )%dx1x2 = precursor_conc( hcl_idx )%dx1x2 * CFAC_GHCL
-      	ENDIF
-      ENDIF
-	  	
+
+	  ! If the real concentration of NH3 fluctuates too much in forward ISORROPIA 
+	  IF ( FwdIso .AND. (FwdSens .eq. .FALSE.) ) THEN
+	  	call reset_hyd_sens( gas( 1 ), precursor_conc( nh3_idx ) * CFAC_GNH3)
+	  	call reset_hyd_sens( gas( 2 ), precursor_conc( hno3_idx ) * CFAC_GHNO3)
+	  	call reset_hyd_sens( gas( 3 ), precursor_conc( hcl_idx ) * CFAC_GHCL)
+	  ENDIF	  	
 	  
 	  
       DVOLINORG( KNH4 ) = GNH3R8 * CFAC_GNH3  - GAS( 1 )   ! mol m-3
@@ -3263,7 +3331,7 @@ C   Technology, 20:253-265, 1994.
  
 C-----------------------------------------------------------------------
 
-	  use HDMod 
+	use HDMod 
       IMPLICIT NONE
 
       INCLUDE SUBST_CONST    ! for PI
