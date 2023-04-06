@@ -170,15 +170,42 @@ C Note: more than one optional argument requires that the caller calls by name
             LOGICAL FUNCTION PSHUT3 ()
             END FUNCTION PSHUT3
 
-            LOGICAL FUNCTION PTRWRITE3( FNAME, VNAME, JDATE, JTIME, BUFFER )
-               use HDMod
+            LOGICAL FUNCTION PTRWRITE3_X( FNAME, VNAME, JDATE, JTIME, BUFFER )
+               USE HDMod
                CHARACTER(*)  :: FNAME
                CHARACTER(*)  :: VNAME
                INTEGER       :: JDATE
                INTEGER       :: JTIME
                TYPE(hyperdual), POINTER :: BUFFER( :,:,:,: )
-            END FUNCTION PTRWRITE3
+            END FUNCTION PTRWRITE3_X
+            
+            LOGICAL FUNCTION PTRWRITE3_DX1( FNAME, VNAME, JDATE, JTIME, BUFFER )
+               USE HDMod
+               CHARACTER(*)  :: FNAME
+               CHARACTER(*)  :: VNAME
+               INTEGER       :: JDATE
+               INTEGER       :: JTIME
+               TYPE(hyperdual), POINTER :: BUFFER( :,:,:,: )
+            END FUNCTION PTRWRITE3_DX1
+            
+            LOGICAL FUNCTION PTRWRITE3_DX2( FNAME, VNAME, JDATE, JTIME, BUFFER )
+               USE HDMod
+               CHARACTER(*)  :: FNAME
+               CHARACTER(*)  :: VNAME
+               INTEGER       :: JDATE
+               INTEGER       :: JTIME
+               TYPE(hyperdual), POINTER :: BUFFER( :,:,:,: )
+            END FUNCTION PTRWRITE3_DX2  
 
+            LOGICAL FUNCTION PTRWRITE3_DX1X2( FNAME, VNAME, JDATE, JTIME, BUFFER )
+               USE HDMod
+               CHARACTER(*)  :: FNAME
+               CHARACTER(*)  :: VNAME
+               INTEGER       :: JDATE
+               INTEGER       :: JTIME
+               TYPE(hyperdual), POINTER :: BUFFER( :,:,:,: )
+            END FUNCTION PTRWRITE3_DX1X2  
+                      
             LOGICAL FUNCTION PWRGRDD( FILNAME, VARNAME, DATE, TIME, BUFFER,
      &                                NCOLS3D, NROWS3D, NLAYS3D, NCOLS, NROWS,
      &                                NP )

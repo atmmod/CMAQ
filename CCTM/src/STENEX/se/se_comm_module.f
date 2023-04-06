@@ -52,7 +52,12 @@
      &                     se_pe_comm2, se_pe_comm2e, 
      &                     se_pe_comm3, se_pe_comm3e, se_pe_comm3s,
      &                     se_pe_comm4,
-     &                     se_pe_comm5
+     &                     se_pe_comm5, 
+     &					   se_pe_comm1_r8, 
+     &                     se_pe_comm2_r8, se_pe_comm2e_r8, 
+     &                     se_pe_comm3_r8, se_pe_comm3e_r8, se_pe_comm3s_r8,
+     &                     se_pe_comm4_r8,
+     &                     se_pe_comm5_r8   					   
         end interface
 
         contains
@@ -338,6 +343,77 @@
         return
         end subroutine se_pe_comm1
 
+        subroutine se_pe_comm1_r8 (data, dispstr, dirstr, str)
+
+        use se_data_send_module
+        use se_data_recv_module
+        use se_internal_util_module
+        use se_pe_info_ext
+
+        implicit none
+
+        include "mpif.h"
+
+        real( 8 ), intent(inout) :: data(:)
+        character (len = 16), intent(in) :: dirstr
+        character (len = 12), intent(in) :: dispstr
+        character (len = *), optional, intent(in) :: str
+
+        integer, target :: sind(2,8), rind(2,8)
+        integer, pointer :: sind_ptr(:,:), rind_ptr(:,:)
+        integer, target :: send_to(8), recv_from(8)
+        integer, pointer :: send_to_ptr(:), recv_from_ptr(:)
+        integer :: sdir, rdir
+        integer :: shift(2), num_shift
+        character (len = 80) :: loc_str
+        integer :: request, status(MPI_STATUS_SIZE), error
+
+        if (present(str)) then
+           loc_str = str
+           call se_string_to_integer (loc_str, shift, num_shift)
+        else
+           num_shift = 0
+        end if
+
+        call se_comm_pat (dirstr, send_to, recv_from)
+
+        call se_up_low1 (dispstr, sind, rind, shift, num_shift)
+
+        send_to_ptr => send_to
+        recv_from_ptr => recv_from
+        sind_ptr => sind
+        rind_ptr => rind
+
+        do sdir = 1, 8, 2
+
+           rdir = mod((sdir + 3), 8) + 1
+
+           if (send_to(sdir) .eq. se_my_pe) then
+
+              data(rind(1,rdir):rind(2,rdir)) = data(sind(1,sdir):sind(2,sdir))
+
+           else 
+
+              if (send_to(sdir) .ge. 0) then
+                 call se_data_send (data, sind_ptr, send_to_ptr, sdir, sdir, 
+     $                              request)
+              end if
+
+              if ((recv_from(rdir) .ge. 0) .and. 
+     $            (recv_from(rdir) .ne. se_my_pe)) then
+                 call se_data_recv (data, rind_ptr, recv_from_ptr, rdir, sdir)
+              end if
+
+!             if (send_to(sdir) .ge. 0) then
+!                call mpi_wait (request, status, error)
+!             end if
+
+           end if
+        end do
+
+        return
+        end subroutine se_pe_comm1_r8
+        
 ! --------------------------------------------------------------------------
 ! Purpose:
 !
@@ -473,6 +549,83 @@
         return
         end subroutine se_pe_comm2
 
+
+        subroutine se_pe_comm2_r8 (data, dispstr, dirstr, str)
+
+        use se_data_send_module
+        use se_data_recv_module
+        use se_internal_util_module
+        use se_pe_info_ext
+
+        implicit none
+
+        include "mpif.h"
+
+        real( 8 ), intent(inout) :: data(:,:)
+        character (len = 16), intent(in) :: dirstr
+        character (len = 12), intent(in) :: dispstr
+        character (len = *), optional, intent(in) :: str
+
+        integer, target :: send_to(8), recv_from(8)
+        integer, pointer :: send_to_ptr(:), recv_from_ptr(:)
+        integer, target :: sind(2,2,8), rind(2,2,8)
+        integer, pointer :: sind_ptr(:,:,:), rind_ptr(:,:,:)
+        integer :: sdir, rdir
+        integer :: shift(4), num_shift
+        character (len = 80) :: loc_str
+        integer :: request, status(MPI_STATUS_SIZE), error
+
+        if (present(str)) then
+           loc_str = str
+           shift(2:4:2) = 1
+           call se_string_to_integer (loc_str, shift, num_shift)
+        else
+           num_shift = 0
+        end if
+
+        call se_comm_pat (dirstr, send_to, recv_from)
+
+        send_to_ptr => send_to
+        recv_from_ptr => recv_from
+
+        call se_up_low2 (dispstr, sind, rind, shift, num_shift)
+
+        sind_ptr => sind
+        rind_ptr => rind
+
+        do sdir = 1, 8
+
+           rdir = mod((sdir + 3), 8) + 1
+
+           if (send_to(sdir) .eq. se_my_pe) then
+
+              data(rind(1,1,rdir):rind(2,1,rdir),rind(1,2,rdir):rind(2,2,rdir))
+     $        =
+     $        data(sind(1,1,sdir):sind(2,1,sdir),sind(1,2,sdir):sind(2,2,sdir))
+
+           else
+
+              if (send_to(sdir) .ge. 0) then
+                 call se_data_send (data, sind_ptr, send_to_ptr, sdir, sdir, 
+     $                              request)
+              end if
+
+              if ((recv_from(rdir) .ge. 0) .and.
+     $            (recv_from(rdir) .ne. se_my_pe)) then
+                 call se_data_recv (data, rind_ptr, recv_from_ptr, rdir, sdir)
+              end if
+
+!             if (send_to(sdir) .ge. 0) then
+!                call mpi_wait (request, status, error)
+!             end if
+
+           end if
+
+        end do
+
+        return
+        end subroutine se_pe_comm2_r8
+
 ! -----------------------------------------------------------------------------
         subroutine se_pe_comm2e (data, dispstr, dirstr, flag, str)
 
@@ -549,6 +702,83 @@
 
         return
         end subroutine se_pe_comm2e
+
+
+        subroutine se_pe_comm2e_r8 (data, dispstr, dirstr, flag, str)
+
+        use se_data_send_module
+        use se_data_recv_module
+        use se_internal_util_module
+        use se_pe_info_ext
+
+        implicit none
+
+        include "mpif.h"
+
+        real( 8 ), intent(inout) :: data(:,:)
+        character (len = 16), intent(in) :: dirstr
+        character (len = 12), intent(in) :: dispstr
+        integer, intent(in) :: flag
+        character (len = *), optional, intent(in) :: str
+
+        integer, target :: send_to(8), recv_from(8)
+        integer, pointer :: send_to_ptr(:), recv_from_ptr(:)
+        integer, target :: sind(2,8), rind(2,8)
+        integer, pointer :: sind_ptr(:,:), rind_ptr(:,:)
+        integer :: sdir, rdir
+        integer :: shift(4), num_shift
+        character (len = 80) :: loc_str
+        integer :: request, status(MPI_STATUS_SIZE), error
+
+        if (present(str)) then
+           loc_str = str
+           shift(2:4:2) = 1
+           call se_string_to_integer (loc_str, shift, num_shift)
+        else
+           num_shift = 0
+        end if
+
+        call se_comm_pat (dirstr, send_to, recv_from)
+
+        send_to_ptr => send_to
+        recv_from_ptr => recv_from
+
+        call se_up_low1 (dispstr, sind, rind, shift, num_shift)
+
+        sind_ptr => sind
+        rind_ptr => rind
+
+        do sdir = 1, 8, 2
+
+           rdir = mod((sdir + 3), 8) + 1
+
+           if (send_to(sdir) .eq. se_my_pe) then
+
+              data(rind(1,rdir):rind(2,rdir),:) 
+     $        =
+     $        data(sind(1,sdir):sind(2,sdir),:)
+
+           else
+
+              if (send_to(sdir) .ge. 0) then
+                 call se_data_send (data, sind_ptr, send_to_ptr, sdir, sdir,
+     $                              request)
+              end if
+
+              if ((recv_from(rdir) .ge. 0) .and.
+     $            (recv_from(rdir) .ne. se_my_pe)) then
+                 call se_data_recv (data, rind_ptr, recv_from_ptr, rdir, sdir)
+              end if
+
+!             if (send_to(sdir) .ge. 0) then
+!                call mpi_wait (request, status, error)
+!             end if
+
+           end if
+        end do
+
+        return
+        end subroutine se_pe_comm2e_r8
 
 ! --------------------------------------------------------------------------
 ! Purpose:
@@ -691,6 +921,86 @@
         return
         end subroutine se_pe_comm3
 
+
+        subroutine se_pe_comm3_r8 (data, dispstr, dirstr, str)
+
+        use se_data_send_module
+        use se_data_recv_module
+        use se_internal_util_module
+        use se_pe_info_ext
+
+        implicit none
+
+        include "mpif.h"
+
+        real( 8 ), intent(inout) ::  data(:,:,:)
+        character (len = 16), intent(in) :: dirstr
+        character (len = 12), intent(in) :: dispstr
+        character (len = *), optional, intent(in) :: str
+
+        integer, target :: send_to(8), recv_from(8)
+        integer, pointer :: send_to_ptr(:), recv_from_ptr(:)
+        integer, target :: sind(2,3,8), rind(2,3,8)
+        integer, pointer :: sind_ptr(:,:,:), rind_ptr(:,:,:)
+        integer :: sdir, rdir
+        integer :: shift(6), num_shift
+        character (len = 80) :: loc_str
+        integer :: request, status(MPI_STATUS_SIZE), error
+
+        if (present(str)) then
+           loc_str = str
+           shift(2:6:2) = 1
+           call se_string_to_integer (loc_str, shift, num_shift)
+        else
+           num_shift = 0
+        end if
+
+        call se_comm_pat (dirstr, send_to, recv_from)
+
+        send_to_ptr => send_to
+        recv_from_ptr => recv_from
+
+        call se_up_low3 (dispstr, sind, rind, shift, num_shift, size(data,3))
+
+        sind_ptr => sind
+        rind_ptr => rind
+
+        do sdir = 1, 8
+
+           rdir = mod((sdir + 3), 8) + 1
+
+           if (send_to(sdir) .eq. se_my_pe) then
+
+              data(rind(1,1,rdir):rind(2,1,rdir),
+     $             rind(1,2,rdir):rind(2,2,rdir),
+     $             rind(1,3,rdir):rind(2,3,rdir))
+     $        =
+     $        data(sind(1,1,sdir):sind(2,1,sdir),
+     $             sind(1,2,sdir):sind(2,2,sdir),
+     $             sind(1,3,sdir):sind(2,3,sdir))
+
+           else
+
+              if (send_to(sdir) .ge. 0) then
+                 call se_data_send (data, sind_ptr, send_to_ptr, sdir, sdir,
+     $                              request)
+              end if
+
+              if ((recv_from(rdir) .ge. 0) .and.
+     $            (recv_from(rdir) .ne. se_my_pe)) then
+                 call se_data_recv (data, rind_ptr, recv_from_ptr, rdir, sdir)
+              end if
+
+!             if (send_to(sdir) .ge. 0) then
+!                call mpi_wait (request, status, error)
+!             end if
+
+           end if
+        end do
+ 
+        return
+        end subroutine se_pe_comm3_r8
+
 ! --------------------------------------------------------------------------
         subroutine se_pe_comm3e (data, dispstr, dirstr, flag, str)
 
@@ -767,6 +1077,81 @@
         return
         end subroutine se_pe_comm3e
 
+
+        subroutine se_pe_comm3e_r8 (data, dispstr, dirstr, flag, str)
+
+        use se_data_send_module
+        use se_data_recv_module
+        use se_internal_util_module
+        use se_pe_info_ext
+
+        implicit none
+
+        include "mpif.h"
+
+        real( 8 ), intent(inout) ::  data(:,:,:)
+        character (len = 16), intent(in) :: dirstr
+        character (len = 12), intent(in) :: dispstr
+        integer, intent(in) :: flag
+        character (len = *), optional, intent(in) :: str
+
+        integer, target :: send_to(8), recv_from(8)
+        integer, pointer :: send_to_ptr(:), recv_from_ptr(:)
+        integer, target :: sind(2,8), rind(2,8)
+        integer, pointer :: sind_ptr(:,:), rind_ptr(:,:)
+        integer :: sdir, rdir
+        integer :: shift(6), num_shift
+        character (len = 80) :: loc_str
+        integer :: request, status(MPI_STATUS_SIZE), error
+
+        if (present(str)) then
+           loc_str = str
+           shift(2:6:2) = 1
+           call se_string_to_integer (loc_str, shift, num_shift)
+        else
+           num_shift = 0
+        end if
+
+        call se_comm_pat (dirstr, send_to, recv_from)
+
+        send_to_ptr => send_to
+        recv_from_ptr => recv_from
+
+        call se_up_low1 (dispstr, sind, rind, shift, num_shift)
+
+        sind_ptr => sind
+        rind_ptr => rind
+
+        do sdir = 1, 8, 2
+
+           rdir = mod((sdir + 3), 8) + 1
+
+           if (send_to(sdir) .eq. se_my_pe) then
+
+              data(rind(1,rdir):rind(2,rdir),:,:)
+     $        =
+     $        data(sind(1,sdir):sind(2,sdir),:,:)
+
+           else
+              if (send_to(sdir) .ge. 0) then
+                 call se_data_send (data, sind_ptr, send_to_ptr, sdir, sdir,
+     $                              request)
+              end if
+
+              if ((recv_from(rdir) .ge. 0) .and.
+     $            (recv_from(rdir) .ne. se_my_pe)) then
+                 call se_data_recv (data, rind_ptr, recv_from_ptr, rdir, sdir)
+              end if
+
+!             if (send_to(sdir) .ge. 0) then
+!                call mpi_wait (request, status, error)
+!             end if
+
+           end if
+        end do
+ 
+        return
+        end subroutine se_pe_comm3e_r8
 ! --------------------------------------------------------------------------
 ! Purpose:
 !
@@ -890,6 +1275,82 @@
         end do
  
         end subroutine se_pe_comm3s
+
+
+        subroutine se_pe_comm3s_r8 (sdata, ddata, dispstr, dirstr, str)
+
+        use se_data_send_module
+        use se_data_recv_module
+        use se_internal_util_module
+        use se_pe_info_ext
+
+        implicit none
+
+        include "mpif.h"
+
+        real( 8 ), intent(in)  ::  sdata(:,:,:)
+        real( 8 ), intent(out) ::  ddata(:,:,:)
+        character (len = 16), intent(in) :: dirstr
+        character (len = 12), intent(in) :: dispstr
+        character (len = *), optional, intent(in) :: str
+
+        integer, target :: send_to(8), recv_from(8)
+        integer, pointer :: send_to_ptr(:), recv_from_ptr(:)
+        integer, target :: sind(2,8), rind(2,8)
+        integer, pointer :: sind_ptr(:,:), rind_ptr(:,:)
+        integer :: sdir, rdir
+        integer :: shift(6), num_shift
+        character (len = 80) :: loc_str
+        integer :: request, status(MPI_STATUS_SIZE), error, dsize
+
+        if (present(str)) then
+           loc_str = str
+           shift(2:6:2) = 1
+           call se_string_to_integer (loc_str, shift, num_shift)
+        else
+           num_shift = 0
+        end if
+
+        call se_comm_pat (dirstr, send_to, recv_from)
+
+        send_to_ptr => send_to
+        recv_from_ptr => recv_from
+
+        call se_up_low1 (dispstr, sind, rind, shift, num_shift)
+
+        sind_ptr => sind
+        rind_ptr => rind
+
+        dsize = size(sdata)
+
+        do sdir = 1, 8, 2
+
+           rdir = mod((sdir + 3), 8) + 1
+
+           if (send_to(sdir) .eq. se_my_pe) then
+
+              ddata = sdata
+
+           else
+              if (send_to(sdir) .ge. 0) then
+                 call mpi_send (sdata, dsize, mpi_real8, send_to_ptr(sdir), 
+     $                          sdir, se_worker_comm, error)
+              end if
+
+              if ((recv_from(rdir) .ge. 0) .and.
+     $            (recv_from(rdir) .ne. se_my_pe)) then
+                 call mpi_recv (ddata, dsize, mpi_real8, recv_from_ptr(rdir), sdir,
+     &                          se_worker_comm, status, error)
+              end if
+
+!             if (send_to(sdir) .ge. 0) then
+!                call mpi_wait (request, status, error)
+!             end if
+
+           end if
+        end do
+ 
+        end subroutine se_pe_comm3s_r8
 
 ! --------------------------------------------------------------------------
 ! Purpose:
@@ -1029,6 +1490,87 @@
         return
         end subroutine se_pe_comm4
 
+
+        subroutine se_pe_comm4_r8 (data, dispstr, dirstr, str)
+
+        use se_data_send_module
+        use se_data_recv_module
+        use se_internal_util_module
+        use se_pe_info_ext
+
+        implicit none
+
+        include "mpif.h"
+
+        real( 8 ), intent(inout) :: data(:,:,:,:)
+        character (len = 16), intent(in) :: dirstr
+        character (len = 12), intent(in) :: dispstr
+        character (len = *), optional, intent(in) :: str
+
+        integer, target :: send_to(8), recv_from(8)
+        integer, pointer :: send_to_ptr(:), recv_from_ptr(:)
+        integer, target :: sind(2,4,8), rind(2,4,8)
+        integer, pointer :: sind_ptr(:,:,:), rind_ptr(:,:,:)
+        integer :: sdir, rdir
+        integer :: shift(8), num_shift
+        character (len = 80) :: loc_str
+        integer :: request, status(MPI_STATUS_SIZE), error
+
+        if (present(str)) then
+           loc_str = str
+           shift(2:8:2) = 1
+           call se_string_to_integer (loc_str, shift, num_shift)
+        else
+           num_shift = 0
+        end if
+
+        call se_comm_pat (dirstr, send_to, recv_from)
+
+        call se_up_low4 (dispstr, sind, rind, shift, num_shift, size(data,3), size(data,4))
+
+        send_to_ptr => send_to
+        recv_from_ptr => recv_from
+        sind_ptr => sind
+        rind_ptr => rind
+
+        do sdir = 1, 8
+
+           rdir = mod((sdir + 3), 8) + 1
+
+           if (send_to(sdir) .eq. se_my_pe) then
+
+              data(rind(1,1,rdir):rind(2,1,rdir),
+     $             rind(1,2,rdir):rind(2,2,rdir),
+     $             rind(1,3,rdir):rind(2,3,rdir),
+     $             rind(1,4,rdir):rind(2,4,rdir))
+     $        =
+     $        data(sind(1,1,sdir):sind(2,1,sdir),
+     $             sind(1,2,sdir):sind(2,2,sdir),
+     $             sind(1,3,sdir):sind(2,3,sdir),
+     $             sind(1,4,sdir):sind(2,4,sdir))
+
+           else
+
+              if (send_to(sdir) .ge. 0) then
+                 call se_data_send (data, sind_ptr, send_to_ptr, sdir, sdir,
+     $                              request)
+              end if
+
+              if ((recv_from(rdir) .ge. 0) .and.
+     $            (recv_from(rdir) .ne. se_my_pe)) then
+                 call se_data_recv (data, rind_ptr, recv_from_ptr, rdir, sdir)
+              end if
+
+!             if (send_to(sdir) .ge. 0) then
+!                call mpi_wait (request, status, error)
+!             end if
+
+           end if
+        end do
+
+        return
+        end subroutine se_pe_comm4_r8
+        
 ! --------------------------------------------------------------------------
         subroutine se_pe_comm4e (data, dispstr, dirstr, flag, str)
 
@@ -1105,6 +1647,82 @@
         return
         end subroutine se_pe_comm4e
 
+
+        subroutine se_pe_comm4e_r8 (data, dispstr, dirstr, flag, str)
+
+        use se_data_send_module
+        use se_data_recv_module
+        use se_internal_util_module
+        use se_pe_info_ext
+
+        implicit none
+
+        include "mpif.h"
+
+        real( 8 ), intent(inout) ::  data(:,:,:,:)
+        character (len = 16), intent(in) :: dirstr
+        character (len = 12), intent(in) :: dispstr
+        integer, intent(in) :: flag
+        character (len = *), optional, intent(in) :: str
+
+        integer, target :: send_to(8), recv_from(8)
+        integer, pointer :: send_to_ptr(:), recv_from_ptr(:)
+        integer, target :: sind(2,8), rind(2,8)
+        integer, pointer :: sind_ptr(:,:), rind_ptr(:,:)
+        integer :: sdir, rdir
+        integer :: shift(8), num_shift
+        character (len = 80) :: loc_str
+        integer :: request, status(MPI_STATUS_SIZE), error
+
+        if (present(str)) then
+           loc_str = str
+           shift(2:8:2) = 1
+           call se_string_to_integer (loc_str, shift, num_shift)
+        else
+           num_shift = 0
+        end if
+
+        call se_comm_pat (dirstr, send_to, recv_from)
+
+        send_to_ptr => send_to
+        recv_from_ptr => recv_from
+
+        call se_up_low1 (dispstr, sind, rind, shift, num_shift)
+
+        sind_ptr => sind
+        rind_ptr => rind
+
+        do sdir = 1, 8, 2
+
+           rdir = mod((sdir + 3), 8) + 1
+
+           if (send_to(sdir) .eq. se_my_pe) then
+
+              data(rind(1,rdir):rind(2,rdir),:,:,:)
+     $        =
+     $        data(sind(1,sdir):sind(2,sdir),:,:,:)
+
+           else
+              if (send_to(sdir) .ge. 0) then
+                 call se_data_send (data, sind_ptr, send_to_ptr, sdir, sdir,
+     $                              request)
+              end if
+
+              if ((recv_from(rdir) .ge. 0) .and.
+     $            (recv_from(rdir) .ne. se_my_pe)) then
+                 call se_data_recv (data, rind_ptr, recv_from_ptr, rdir, sdir)
+              end if
+
+!             if (send_to(sdir) .ge. 0) then
+!                call mpi_wait (request, status, error)
+!             end if
+
+           end if
+        end do
+ 
+        return
+        end subroutine se_pe_comm4e_r8
+        
 ! --------------------------------------------------------------------------
 
         subroutine se_pe_comm5 (data, dispstr, dirstr, str)
@@ -1188,6 +1806,87 @@
 
         end subroutine se_pe_comm5
 
+
+        subroutine se_pe_comm5_r8 (data, dispstr, dirstr, str)
+
+        use se_data_send_module
+        use se_data_recv_module
+        use se_internal_util_module
+        use se_pe_info_ext
+
+        implicit none
+
+        include "mpif.h"
+
+        real( 8 ), intent(inout) :: data(:,:,:,:,:)
+        character (len = 16), intent(in) :: dirstr
+        character (len = 12), intent(in) :: dispstr
+        character (len = *), optional, intent(in) :: str
+
+        integer, target :: send_to(8), recv_from(8)
+        integer, pointer :: send_to_ptr(:), recv_from_ptr(:)
+        integer, target :: sind(2,5,8), rind(2,5,8)
+        integer, pointer :: sind_ptr(:,:,:), rind_ptr(:,:,:)
+        integer :: sdir, rdir
+        integer :: shift(10), num_shift
+        character (len = 80) :: loc_str
+        integer :: request, status(MPI_STATUS_SIZE), error
+
+        if (present(str)) then
+           loc_str = str
+           shift(2:10:2) = 1
+           call se_string_to_integer (loc_str, shift, num_shift)
+        else
+           num_shift = 0
+        end if
+
+        call se_comm_pat (dirstr, send_to, recv_from)
+
+        call se_up_low5 (dispstr, sind, rind, shift, num_shift, size(data,3), size(data,4), size(data,5))
+
+        send_to_ptr => send_to
+        recv_from_ptr => recv_from
+        sind_ptr => sind
+        rind_ptr => rind
+
+        do sdir = 1, 8
+
+           rdir = mod((sdir + 3), 8) + 1
+
+           if (send_to(sdir) .eq. se_my_pe) then
+
+              data(rind(1,1,rdir):rind(2,1,rdir),
+     $             rind(1,2,rdir):rind(2,2,rdir),
+     $             rind(1,3,rdir):rind(2,3,rdir),
+     $             rind(1,4,rdir):rind(2,4,rdir),
+     $             rind(1,5,rdir):rind(2,5,rdir))
+     $        =
+     $        data(sind(1,1,sdir):sind(2,1,sdir),
+     $             sind(1,2,sdir):sind(2,2,sdir),
+     $             sind(1,3,sdir):sind(2,3,sdir),
+     $             sind(1,4,sdir):sind(2,4,sdir),
+     $             sind(1,5,sdir):sind(2,5,sdir))
+
+           else
+
+              if (send_to(sdir) .ge. 0) then
+                 call se_data_send (data, sind_ptr, send_to_ptr, sdir, sdir,
+     $                              request)
+              end if
+
+              if ((recv_from(rdir) .ge. 0) .and.
+     $            (recv_from(rdir) .ne. se_my_pe)) then
+                 call se_data_recv (data, rind_ptr, recv_from_ptr, rdir, sdir)
+              end if
+
+!             if (send_to(sdir) .ge. 0) then
+!                call mpi_wait (request, status, error)
+!             end if
+
+           end if
+        end do
+
+        end subroutine se_pe_comm5_r8
 ! --------------------------------------------------------------------------
 ! Purpose:
 !

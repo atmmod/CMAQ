@@ -199,7 +199,7 @@ c   segment integral ave. conc. = cr(i) + 1/2[c6(i)-dc(i)]dx -1/3[c6(i)]dx**2
       FP( 0:NI ) = 0.0d0    
 
       DO I = 1, NI
-         IF ( VEL( I ) .LT. 0.0 ) THEN
+         IF ( VEL( I ) .LT. 0.0D0 ) THEN
             FDN = -FLX( I ) * DT
             ICNT = 0
 66          CONTINUE
@@ -222,7 +222,7 @@ c   segment integral ave. conc. = cr(i) + 1/2[c6(i)-dc(i)]dx -1/3[c6(i)]dx**2
                GO TO 66
             END IF
          END IF
-         IF ( VEL( I+1 ) .GT. 0.0 ) THEN
+         IF ( VEL( I+1 ) .GT. 0.0D0 ) THEN
             FUP = FLX( I+1 ) * DT
             ICNT = 0
 77          CONTINUE
@@ -259,14 +259,14 @@ c   segment integral ave. conc. = cr(i) + 1/2[c6(i)-dc(i)]dx -1/3[c6(i)]dx**2
 
          DO I = 1, NI
 
-            IF ( VEL( I ) .LT. 0.0 ) THEN
+            IF ( VEL( I ) .LT. 0.0D0 ) THEN
                Y = -VEL( I ) * DT
                X = Y / DS( I )
                FM( I ) = Y * ( CL( I ) + 0.5 * X
      &                 * ( DC( I ) + C6( I ) * ( 1.0 - TWO3RDS * X ) ) )
             END IF
 
-            IF ( VEL( I+1 ) .GT. 0.0 ) THEN
+            IF ( VEL( I+1 ) .GT. 0.0D0 ) THEN
                Y = VEL( I+1 ) * DT
                X = Y / DS( I )
                FP( I ) = Y * ( CR( I ) - 0.5 * X
@@ -278,7 +278,7 @@ c   segment integral ave. conc. = cr(i) + 1/2[c6(i)-dc(i)]dx -1/3[c6(i)]dx**2
 c compute fluxes for top face
 
          I = NI+1
-         IF ( VEL( I ) .LT. 0.0 ) THEN
+         IF ( VEL( I ) .LT. 0.0D0 ) THEN
             Y = -VEL( I ) * DT
             FM( I ) = Y * CON( I-1,S )
          END IF
@@ -305,14 +305,14 @@ Ckrt Back up the SA_CON.....
 
          DO I = 1, NI
 
-            IF ( VEL( I ) .LT. 0.0 ) THEN
+            IF ( VEL( I ) .LT. 0.0D0 ) THEN
                Y = -VEL( I ) * DT
                X = Y / DS( I )
                FM( I ) = Y * ( CL( I ) + 0.5 * X
      &                 * ( DC( I ) + C6( I ) * ( 1.0 - TWO3RDS * X ) ) )
             END IF ! vel < 0 ?
 
-            IF ( VEL( I+1 ) .GT. 0.0 ) THEN
+            IF ( VEL( I+1 ) .GT. 0.0D0 ) THEN
                Y = VEL( I+1 ) * DT
                X = Y / DS( I )
                FP( I ) = Y * ( CR( I ) - 0.5 * X
@@ -324,7 +324,7 @@ Ckrt Back up the SA_CON.....
 c compute fluxes for top face
 
          I = NI+1
-         IF ( VEL( I ) .LT. 0.0 ) THEN
+         IF ( VEL( I ) .LT. 0.0D0 ) THEN
             Y = -VEL( I ) * DT
             FM( I ) = Y * SA_CON( I-1,S )
          END IF
@@ -354,14 +354,14 @@ Ckrt... Advect the apportioning tags ......
 
             DO I = 1, NI
 
-               IF ( VEL( I ) .LT. 0.0 ) THEN
+               IF ( VEL( I ) .LT. 0.0D0 ) THEN
                   Y = -VEL( I ) * DT
                   X = Y / DS( I )
                   FM( I ) = Y * ( CL( I ) + 0.5 * X
      &                    * ( DC( I ) + C6( I ) * ( 1.0 - TWO3RDS * X ) ) )
                END IF
 
-               IF ( VEL( I+1 ) .GT. 0.0 ) THEN
+               IF ( VEL( I+1 ) .GT. 0.0D0 ) THEN
                   Y = VEL( I+1 ) * DT
                   X = Y / DS( I )
                   FP( I ) = Y * ( CR( I ) - 0.5 * X
@@ -373,7 +373,7 @@ Ckrt... Advect the apportioning tags ......
 c compute fluxes for top face
 
             I = NI+1
-            IF ( VEL( I ) .LT. 0.0 ) THEN
+            IF ( VEL( I ) .LT. 0.0D0 ) THEN
                Y = -VEL( I ) * DT
                FM( I ) = Y * SEN ( I-1,S,NP )
             END IF
@@ -492,7 +492,7 @@ C compute average slope in zone i
 
 C guarantee that cm lies between con(i) and con(i+1) - monotonicity constraint
 
-         IF ( ( CN( I+1 ) - CN( I ) ) * ( CN( I ) - CN( I-1 ) ) .GT. 0.0 ) THEN
+         IF ( ( CN( I+1 ) - CN( I ) ) * ( CN( I ) - CN( I-1 ) ) .GT. 0.0D0 ) THEN
             DC( I ) = SIGN( 1.0, DC( I ) ) * MIN(
      &                                      ABS( DC( I ) ),
      &                                2.0 * ABS( CN( I+1 ) - CN( I ) ),
@@ -517,7 +517,7 @@ C generate piecewise parabolic distributions
 
 C monotonicity
 
-         IF ( ( CR( I ) - CN( I ) ) * ( CN( I ) - CL( I ) ) .GT. 0.0 ) THEN
+         IF ( ( CR( I ) - CN( I ) ) * ( CN( I ) - CL( I ) ) .GT. 0.0D0 ) THEN
 
             DC( I ) = CR( I ) - CL( I )  ! temporary computation of dc and c6
             C6( I ) = 6.0 * ( CN( I ) - 0.5 * ( CL( I ) + CR( I ) ) )

@@ -207,10 +207,10 @@ C-------------------------------------------------------------------------------
                      End If
                   End Do ! e2c_cats
                   If ( Tot_Ag .ge. 1.0e-6 ) then
-                     If ( MHp1( c,r ) / Tot_Ag .Gt. 1.0e-9 .And.
-     &                    MHp1( c,r ) / Tot_Ag .Lt. 1.0e-4 .And.
-     &                    MHp2( c,r ) / Tot_Ag .Gt. 1.0e-9 .And.
-     &                    MHp2( c,r ) / Tot_Ag .Lt. 1.0e-4 ) Then
+                     If ( MHp1( c,r ) / Tot_Ag .Gt. 1.0D-9 .And.
+     &                    MHp1( c,r ) / Tot_Ag .Lt. 1.0D-4 .And.
+     &                    MHp2( c,r ) / Tot_Ag .Gt. 1.0D-9 .And.
+     &                    MHp2( c,r ) / Tot_Ag .Lt. 1.0D-4 ) Then
 ! get the agricultrual only relevant number
                         MHp1( c,r ) = MHp1( c,r ) / Tot_Ag
                         MHp2( c,r ) = MHp2( c,r ) / Tot_Ag
@@ -418,16 +418,16 @@ C-------------------------------------------------------------------------------
                       endif
                      
                     if( cat_lu( j ).eq.'AG' ) then   ! Ag
-                        cnh3g1j = Min( Max( frac_sol1*gamma1( c,r ), C_gam / MET_DATA%SOIM1( c,r ) ),
+                        cnh3g1j = Min( Max( frac_sol1*gamma1( c,r ), REAL ( C_gam / MET_DATA%SOIM1( c,r ), 8 ) ),
      &                                     maxgam)
 
-                        cnh3g2j = Min( Max( frac_sol2*gamma2( c,r ), C_gam / w5cm), 
+                        cnh3g2j = Min( Max( frac_sol2*gamma2( c,r ), REAL ( C_gam / w5cm , 8 ) ), 
      &                                     maxgam )
                         agfrac  = agfrac  + GRID_DATA%LUFRAC( c,r,j )
                      else                             ! Ag mosaic 67% ag 33% mosaic 
-                        cnh3g1j = Min( Max( frac_sol1*gamma1( c,r ), C_gam / MET_DATA%SOIM1( c,r ))
+                        cnh3g1j = Min( Max( frac_sol1*gamma1( c,r ), REAL ( C_gam / MET_DATA%SOIM1( c,r ), 8 ) )
      &                                    * twothree + onethree * natgam , maxgam )
-                        cnh3g2j = Min( Max( frac_sol2*gamma2( c,r ), C_gam / w5cm )
+                        cnh3g2j = Min( Max( frac_sol2*gamma2( c,r ), REAL ( C_gam / w5cm, 8 ) )
      &                                    * twothree + onethree * natgam , maxgam )
                         agfrac  = agfrac  + twothree * GRID_DATA%LUFRAC( c,r,j )
                      endif
@@ -441,8 +441,8 @@ C-------------------------------------------------------------------------------
                cnh3s   = cnh3s  + GRID_DATA%LUFRAC( c,r,j ) * cnh3sj
             End If
          End Do
-         cnh3g1 = a1 * Max( cnh3g1, 0.01 ) / (1.0 - watfrac)   ! Land only (microgram/m3)
-         cnh3g2 = a1 * Max( cnh3g2, 0.01 ) / (1.0 - watfrac)   ! Land only (microgram/m3)
+         cnh3g1 = a1 * Max( cnh3g1, 0.01D0 ) / (1.0 - watfrac)   ! Land only (microgram/m3)
+         cnh3g2 = a1 * Max( cnh3g2, 0.01D0 ) / (1.0 - watfrac)   ! Land only (microgram/m3)
          cnh3g  = Max (cnh3g1, cnh3g2)   ! use greater of layer concs
          cnh3s = cnh3s / (1.0 - watfrac)   ! Land only (microgram/m3)
 !         if(agfrac.GT.0.5.and.gamma1( c,r ).gt.50000.) then
@@ -469,7 +469,7 @@ C-------------------------------------------------------------------------------
             cnh3c = (-bq + sqrt( bq**2 - 4.0d0 * aq * cq))/(2.0d0 * aq)  ! this should always yield non-negative result
            
 ! if the compensation point less than zero reset it to zero
-            cnh3c = max( cnh3c, 0.0 )   
+            cnh3c = max( cnh3c, 0.0D0 )   
 
 !-- compute emission component using cnh3c from bidi flux for Rcut
 !         rcut = rwm + rwx*(cnh3c+1.) + (100.0-max(MET_DATA%RH( c,r ),60.0) + Rb) * MET_DATA%LAI( c,r )

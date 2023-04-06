@@ -8,10 +8,9 @@ Module HDMod
   
   public
   
-      integer, parameter              :: SPRhyd = KIND(1.0)      ! Single Precision
-      integer, parameter              :: DP_hyd = KIND(1.d0)     ! Double Precision
-      ! integer, parameter              :: QP = KIND(1.q0)     ! Quadruple Precision
-      integer, parameter              :: PRhyd = DP_hyd             ! Set the precision
+      integer, parameter                 :: SPRhyd = KIND(1.0)      ! Single Precision
+      integer, parameter                 :: DP_hyd = KIND(1.d0)     ! Double Precision
+      integer, parameter                 :: PRhyd = DP_hyd             ! Set the precision
       real(PRhyd), parameter, private    :: pi = ACOS(-1.0_PRhyd)  
       complex(PRhyd), parameter, private :: pi_c = (pi, 0.0_PRhyd)
   
@@ -34,11 +33,11 @@ Module HDMod
   
       !----- Assignment
       interface assignment(=)
-        module procedure hdual_assign_hdual, hdual_assign_dble, hdual_assign_int, & 
+        module procedure hdual_assign_hdual, hdual_assign_dble, & 
           hdual_array_assign_hdual, hdual_array_assign_hdual_array, hdual_array_assign_dble, & 
-          hdual_array_assign_dble_array, hdual_array_assign_int, hdual_array_assign_int_array, &
+          hdual_array_assign_dble_array, &
           hdual_matrix_assign_hdual, hdual_matrix_assign_hdual_matrix, hdual_matrix_assign_dble, &
-          hdual_matrix_assign_dble_matrix, hdual_matrix_assign_int, hdual_matrix_assign_int_matrix, & 
+          hdual_matrix_assign_dble_matrix, & 
           hdual_tens_assign_hdual, hdual_tens_assign_hdual_tens, hdual_tens_assign_dble, & 
           hdual_tens_assign_dble_tens, hdual_tens_assign_int, hdual_tens_assign_int_tens, hdual_4d_assign_hdual_4d, &
           hdual_4d_assign_dble_4d, hdual_4d_assign_dble_4d_SPRhyd, hdual_4d_assign_dble, hdual_5d_assign_dble
@@ -50,23 +49,23 @@ Module HDMod
       end interface
   
       interface operator(/=)
-        module procedure hdual_ne_hdual, hdual_ne_dble, hdual_ne_dble_SPRhyd, dble_ne_hdual, dble_ne_hdual_SPRhyd
+        module procedure hdual_ne_hdual, hdual_ne_dble, dble_ne_hdual, hdual_ne_dble_SPRhyd, dble_ne_hdual_SPRhyd
       end interface
   
       interface operator(>)
-        module procedure hdual_gt_hdual, hdual_gt_dble, hdual_gt_dble_SPRhyd, dble_gt_hdual, dble_gt_hdual_SPRhyd
+        module procedure hdual_gt_hdual, hdual_gt_dble, dble_gt_hdual, hdual_gt_dble_SPRhyd, dble_gt_hdual_SPRhyd
       end interface
     
       interface operator(>=)
-        module procedure hdual_ge_hdual, hdual_ge_dble, hdual_ge_dble_SPRhyd, dble_ge_hdual, dble_ge_hdual_SPRhyd
+        module procedure hdual_ge_hdual, hdual_ge_dble, dble_ge_hdual, hdual_ge_dble_SPRhyd, dble_ge_hdual_SPRhyd
       end interface
     
       interface operator(<)
-        module procedure hdual_lt_hdual, hdual_lt_dble, hdual_lt_dble_SPRhyd, dble_lt_hdual, dble_lt_hdual_SPRhyd
+        module procedure hdual_lt_hdual, hdual_lt_dble, dble_lt_hdual, hdual_lt_dble_SPRhyd, dble_lt_hdual_SPRhyd
       end interface
     
       interface operator(<=)
-        module procedure hdual_le_hdual, hdual_le_dble, hdual_le_dble_SPRhyd, dble_le_hdual, dble_le_hdual_SPRhyd
+        module procedure hdual_le_hdual, hdual_le_dble, dble_le_hdual, hdual_le_dble_SPRhyd, dble_le_hdual_SPRhyd
       end interface
   
   
@@ -186,15 +185,16 @@ Module HDMod
         end interface
   
         interface max
-          module procedure max_hdual_hdual, max_hdual_dble, max_hdual_dble_SPRhyd, max_dble_hdual, &
-            max_dble_hdual_SPRhyd, max_hdual_array_dble, max_hdual_matrix_dble, max_hdual_matrix_dble_SPRhyd, &
-            max_hdual_tens_dble, max_hdual_tens_dble_SPRhyd, &
-            max_hdual_4d_dble, max_hdual_4d_dble_SPRhyd, max_hdual_array_hdual_array, max_three_hdual
+          module procedure max_hdual_hdual, max_hdual_dble, max_dble_hdual, &
+            max_hdual_array_dble, max_hdual_matrix_dble, &
+            max_hdual_tens_dble, &
+            max_hdual_4d_dble, max_hdual_array_hdual_array, max_three_hdual, max_hdual_dble_SPRhyd, max_dble_hdual_SPRhyd, & 
+            max_hdual_matrix_dble_SPRhyd, max_hdual_tens_dble_SPRhyd, max_hdual_4d_dble_SPRhyd
         end interface
   
         interface min
-          module procedure min_hdual_hdual, min_hdual_dble, min_hdual_dble_SPRhyd, min_dble_hdual, min_dble_hdual_SPRhyd, &
-            min_hdual_three, min_hdual_four, min_hdual_five
+          module procedure min_hdual_hdual, min_hdual_dble, min_dble_hdual, &
+            min_hdual_three, min_hdual_four, min_hdual_five, min_hdual_dble_SPRhyd, min_dble_hdual_SPRhyd
         end interface
   
         interface maxval
@@ -515,18 +515,18 @@ Module HDMod
         end subroutine hdual_matrix_assign_int
   
   
-        subroutine hdual_matrix_assign_int_matrix(qleft, iright) 
-        
-          implicit none
-          TYPE(hyperdual), dimension(:,:), intent(out)  :: qleft
-          integer, dimension(:,:), intent(in)           :: iright
-        
-          qleft%x     = REAL(iright, PRhyd)
-          qleft%dx1   = 0.0_PRhyd
-          qleft%dx2   = 0.0_PRhyd
-          qleft%dx1x2 = 0.0_PRhyd
-        
-        end subroutine hdual_matrix_assign_int_matrix
+!         subroutine hdual_matrix_assign_int_matrix(qleft, iright) 
+!         
+!           implicit none
+!           TYPE(hyperdual), dimension(:,:), intent(out)  :: qleft
+!           integer, dimension(:,:), intent(in)           :: iright
+!         
+!           qleft%x     = REAL(iright, PRhyd)
+!           qleft%dx1   = 0.0_PRhyd
+!           qleft%dx2   = 0.0_PRhyd
+!           qleft%dx1x2 = 0.0_PRhyd
+!         
+!         end subroutine hdual_matrix_assign_int_matrix
   
   
         subroutine hdual_tens_assign_hdual(qleft, qright) 
@@ -585,32 +585,32 @@ Module HDMod
         end subroutine hdual_tens_assign_dble_tens
   
   
-        subroutine hdual_tens_assign_int(qleft, iright) 
-        
-          implicit none
-          TYPE(hyperdual), dimension(:,:,:), intent(out)  :: qleft
-          integer, intent(in)                             :: iright
-        
-          qleft%x     = REAL(iright, PRhyd)
-          qleft%dx1   = 0.0_PRhyd
-          qleft%dx2   = 0.0_PRhyd
-          qleft%dx1x2 = 0.0_PRhyd
-        
-        end subroutine hdual_tens_assign_int
+!         subroutine hdual_tens_assign_int(qleft, iright) 
+!         
+!           implicit none
+!           TYPE(hyperdual), dimension(:,:,:), intent(out)  :: qleft
+!           integer, intent(in)                             :: iright
+!         
+!           qleft%x     = REAL(iright, PRhyd)
+!           qleft%dx1   = 0.0_PRhyd
+!           qleft%dx2   = 0.0_PRhyd
+!           qleft%dx1x2 = 0.0_PRhyd
+!         
+!         end subroutine hdual_tens_assign_int
   
   
-        subroutine hdual_tens_assign_int_tens(qleft, iright) 
-        
-          implicit none
-          TYPE(hyperdual), dimension(:,:,:), intent(out)  :: qleft
-          integer, dimension(:,:,:), intent(in)           :: iright
-        
-          qleft%x     = REAL(iright, PRhyd)
-          qleft%dx1   = 0.0_PRhyd
-          qleft%dx2   = 0.0_PRhyd
-          qleft%dx1x2 = 0.0_PRhyd
-        
-        end subroutine hdual_tens_assign_int_tens
+!         subroutine hdual_tens_assign_int_tens(qleft, iright) 
+!         
+!           implicit none
+!           TYPE(hyperdual), dimension(:,:,:), intent(out)  :: qleft
+!           integer, dimension(:,:,:), intent(in)           :: iright
+!         
+!           qleft%x     = REAL(iright, PRhyd)
+!           qleft%dx1   = 0.0_PRhyd
+!           qleft%dx2   = 0.0_PRhyd
+!           qleft%dx1x2 = 0.0_PRhyd
+!         
+!         end subroutine hdual_tens_assign_int_tens
   
 
         subroutine hdual_4d_assign_hdual_4d(qleft, qright) 
@@ -655,18 +655,18 @@ Module HDMod
         end subroutine hdual_4d_assign_dble_4d
 
 
-        subroutine hdual_4d_assign_dble_4d_SPRhyd(qleft, xright)
-  
-          implicit none
-          TYPE(hyperdual), dimension(:,:,:,:), intent(out) :: qleft
-          REAL(SPRhyd), dimension(:,:,:,:), intent(in)     :: xright
-          
-          qleft%x = REAL(xright, PRhyd)
-          qleft%dx1 = 0.0_PRhyd
-          qleft%dx2 = 0.0_PRhyd
-          qleft%dx1x2 = 0.0_PRhyd
-  
-        end subroutine hdual_4d_assign_dble_4d_SPRhyd
+!         subroutine hdual_4d_assign_dble_4d_SPRhyd(qleft, xright)
+!   
+!           implicit none
+!           TYPE(hyperdual), dimension(:,:,:,:), intent(out) :: qleft
+!           REAL(SPRhyd), dimension(:,:,:,:), intent(in)     :: xright
+!           
+!           qleft%x = REAL(xright, PRhyd)
+!           qleft%dx1 = 0.0_PRhyd
+!           qleft%dx2 = 0.0_PRhyd
+!           qleft%dx1x2 = 0.0_PRhyd
+!   
+!         end subroutine hdual_4d_assign_dble_4d_SPRhyd
   
   
         subroutine hdual_5d_assign_dble(qleft, xright)
@@ -901,7 +901,7 @@ Module HDMod
           REAL(SPRhyd), intent(in)    :: xright
           logical                     :: bool
           
-          bool = (REAL(qleft%x,SPRhyd) >= xright)
+          bool = (REAL(qleft%x,PRhyd) >= xright)
           
         end function hdual_ge_dble_SPRhyd
         
@@ -952,6 +952,7 @@ Module HDMod
           bool = ( qleft%x < xright )
           
         end function hdual_lt_dble
+        
   
         function hdual_lt_dble_SPRhyd(qleft, xright) result(bool)
   
@@ -975,6 +976,7 @@ Module HDMod
           bool = ( xleft <  qright%x )
           
         end function dble_lt_hdual
+  
   
         function dble_lt_hdual_SPRhyd(xleft, qright) result(bool)
   
@@ -7346,6 +7348,19 @@ Module HDMod
   
           end function hderfc
 
+      
+          ! For resetting asymptotic behavior of sensitivities     
+      	  subroutine reset_hyd_sens(qleft, qright) 
+      	  	implicit none
+      	  	TYPE(hyperdual), intent(inout) :: qleft
+      	  	TYPE(hyperdual), intent(in)    :: qright
+      	  	
+      	  	qleft%dx1 = qright%dx1
+      	  	qleft%dx2 = qright%dx2
+      	  	qleft%dx1x2 = qright%dx1x2
+      	
+      	  end subroutine reset_hyd_sens
+      	  
       
       end module HDMod
   

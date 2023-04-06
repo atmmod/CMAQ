@@ -18,20 +18,21 @@
 !------------------------------------------------------------------------!
 
 C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-      REAL FUNCTION ZFDBC (C1, C2, V1, V2)
+      TYPE(hyperdual) FUNCTION ZFDBC (C1, C2, V1, V2)
 
 c Zero Flux Divergence Boundary Condition (See Jon Pleim's JGR (1991) paper)
 c To eliminate reflections and other boundary anomalies
 C Problem if V1 is outflow, but V2 is inflow
-
+	  USE HDMod
       IMPLICIT NONE
       REAL SMALL
       PARAMETER (SMALL = 1.0E-03 )   ! for small wind speed (m/s)
-      REAL C1, C2, V1, V2
+      TYPE(hyperdual) :: C1, C2
+      REAL V1, V2
  
       IF ( ABS( V1 ) .GE. SMALL ) THEN
          IF ( V1 * V2 .GT. 0.0 ) THEN
-            ZFDBC = MAX (0.0, C1 - V2 / V1 * (C2 - C1)) 
+            ZFDBC = MAX (0.0D0, C1 - V2 / V1 * (C2 - C1)) 
          ELSE
             ZFDBC = C1         ! nothing changes for wind divergence at edge
          END IF

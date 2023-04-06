@@ -86,14 +86,7 @@ C     USE PA_DEFN, Only: LIPR   ! Process Analysis control and data variables
       INCLUDE 'mpif.h'
 #endif
 C Arguments:
-      TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
-      REAL( 8 ), ALLOCATABLE :: CGRID_AERO_DX1( :,:,:,: )
-      REAL( 8 ), ALLOCATABLE :: CGRID_AERO_DX2( :,:,:,: )
-      REAL( 8 ), ALLOCATABLE :: CGRID_AERO_DX1X2( :,:,:,: )
-      
-      REAL( 8 ), ALLOCATABLE :: CGRID_CHEM_DX1( :,:,:,: )
-      REAL( 8 ), ALLOCATABLE :: CGRID_CHEM_DX2( :,:,:,: )
-      REAL( 8 ), ALLOCATABLE :: CGRID_CHEM_DX1X2( :,:,:,: )      
+      TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )    
 
       INTEGER, INTENT(INOUT) :: JDATE        ! current model date, coded YYYYDDD
       INTEGER, INTENT(INOUT) :: JTIME        ! current model time, coded HHMMSS
@@ -124,7 +117,7 @@ C Local Variables:
       
       INTEGER         :: V, S
 c      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
-      TYPE(hyperdual), parameter :: PERT_HYPERDUAL = hyperdual(0.0D0, 1.D0, 1.D0, 0.0D0)
+      TYPE(hyperdual), parameter :: PERT_HYPERDUAL = hyperdual(0.0D0, 1.0d0, 1.0d0, 0.0D0)
       TYPE(hyperdual), parameter :: PERT_HYPERDUAL_1 = hyperdual(0.0D0, 1.D0, 0.0d0, 0.0D0)
       TYPE(hyperdual), parameter :: PERT_HYPERDUAL_2 = hyperdual(0.0d0, 0.0d0, 1.D0, 0.0d0)
 
@@ -146,7 +139,8 @@ c      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
          END SUBROUTINE PA_UPDATE
          SUBROUTINE HADV ( CGRID, JDATE, JTIME, TSTEP, ASTEP )
-            REAL, POINTER             :: CGRID( :,:,:,: )
+         	use HDMod
+            TYPE(hyperdual), POINTER             :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )     :: JDATE, JTIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
             INTEGER, INTENT( IN )     :: ASTEP( : )
@@ -170,7 +164,8 @@ c      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
          END SUBROUTINE DECOUPLE
          SUBROUTINE HDIFF ( CGRID, JDATE, JTIME, TSTEP )
-            REAL, POINTER             :: CGRID( :,:,:,: )
+         	USE HDMod
+            TYPE(hyperdual), POINTER             :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )     :: JDATE, JTIME
             INTEGER, INTENT( IN )     :: TSTEP( 3 )
          END SUBROUTINE HDIFF
@@ -228,13 +223,7 @@ C-----------------------------------------------------------------------
 #ifdef isam
       IF ( FIRSTIME ) THEN
          FIRSTIME = .FALSE.
-         ALLOCATE( CGRID0( NCOLS,NROWS,NLAYS,NSPCSD ) )
-         ALLOCATE( CGRID_AERO_DX1( NCOLS,NROWS,NLAYS,NSPCSD ) )
-         ALLOCATE( CGRID_AERO_DX2( NCOLS,NROWS,NLAYS,NSPCSD ) )
-         ALLOCATE( CGRID_AERO_DX1X2( NCOLS,NROWS,NLAYS,NSPCSD ) )
-         ALLOCATE( CGRID_CHEM_DX1( NCOLS,NROWS,NLAYS,NSPCSD ) )
-         ALLOCATE( CGRID_CHEM_DX2( NCOLS,NROWS,NLAYS,NSPCSD ) )
-         ALLOCATE( CGRID_CHEM_DX1X2( NCOLS,NROWS,NLAYS,NSPCSD ) )         
+         ALLOCATE( CGRID0( NCOLS,NROWS,NLAYS,NSPCSD ) )               
       END IF
 #endif
 
@@ -265,34 +254,29 @@ C-----------------------------------------------------------------------
       IF ( MYPE .EQ. 0 ) CALL LOG_MESSAGE( OUTDEV, XMSG )
       CALL LOG_MESSAGE( LOGDEV, XMSG )
 
-
- 	   IF (JTIME .EQ. 0) THEN
-c        Hyperdual perturbation at the very first, ASO4J -> 130 ; ANO3J -> 134
-C        Isoprene is 55, NH3 is 213, ANH4K -> 171
-c        OLE is 53 ; IOLE is 54, still true for aero7
-
-C    CGRID(:, :, 1, 66) = CGRID(:, :, 1, 66) + PERT_HYPERDUAL
- 	    
-c       Hyperdual <-- CD
+	! JDATE = 2016183 for july 1st
+ 	   IF ( JTIME .EQ. 0 ) THEN
  	      DO V = 1, N_CSPCS
          	      S = CONC_MAP( V )
          	      SGRID( :,:,:,V ) = REAL ( CGRID( :,:, CONC_BLEV:CONC_ELEV,S )%x , 4 )
-      	END DO
+      	  END DO
       	
-      	CALL WR_CONC ( JDATE, JTIME, TSTEP( 1 ) )
- 	    
+      	  CALL WR_CONC ( JDATE, JTIME, TSTEP( 1 ) )
+      	  
+      	  ! Perturb CGRID at the very beginning
+C     	  CGRID(:,:,1,66) = CGRID(:,:,1,66) + PERT_HYPERDUAL
+      	  
  	    END IF
 	  
 	  
 C Synchronization Step Physical Processes Sequence
+    
       
       CALL VDIFF ( CGRID, JDATE, JTIME, TSTEP)
       IF ( CKSUM ) CALL CKSUMMER ( 'VDIFF', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE ( 'VDIF', CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'VDIFF' )
       
-
-
       IF ( .NOT. COLUMN_MODEL ) THEN
 C couple CGRID for advection and horizontal diffusion
 C The COUPLE routine converts aerosol mass from ug/m3 to kg/m3. The 
@@ -302,21 +286,22 @@ C DECOUPLE routine converts it back to ug/m3.
          IF ( CKSUM ) CALL CKSUMMER ( 'COUPLE', CGRID, JDATE, JTIME )
          IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'COUPLE' )
 C        
-C        CALL SUBST_BARRIER()
-C        CALL HADV ( CGRID, JDATE, JTIME, TSTEP, ASTEP )
-C        IF ( CKSUM ) CALL CKSUMMER ( 'HADV', CGRID, JDATE, JTIME )
-C     ! IF ( LIPR ) CALL PA_UPDATE ( 'HADV', CGRID, JDATE, JTIME, TSTEP )
-C        IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'HADV' )
-        
+
+         CALL SUBST_BARRIER()
+         CALL HADV ( CGRID, JDATE, JTIME, TSTEP, ASTEP )
+         IF ( CKSUM ) CALL CKSUMMER ( 'HADV', CGRID, JDATE, JTIME )
+      ! IF ( LIPR ) CALL PA_UPDATE ( 'HADV', CGRID, JDATE, JTIME, TSTEP )
+         IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'HADV' )
+                 
          CALL ZADV ( CGRID, JDATE, JTIME, TSTEP )
          IF ( CKSUM ) CALL CKSUMMER ( 'ADV', CGRID, JDATE, JTIME )
          ! IF ( LIPR ) CALL PA_UPDATE ( 'ZADV', CGRID, JDATE, JTIME, TSTEP )
          IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'ZADV' )
          
-C        CALL HDIFF ( CGRID, JDATE, JTIME, TSTEP )
-C        IF ( CKSUM ) CALL CKSUMMER ( 'HDIFF', CGRID, JDATE, JTIME )
-C        ! IF ( LIPR ) CALL PA_UPDATE ( 'HDIF', CGRID, JDATE, JTIME, TSTEP )
-C        IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'HDIFF' )
+         CALL HDIFF ( CGRID, JDATE, JTIME, TSTEP )
+         IF ( CKSUM ) CALL CKSUMMER ( 'HDIFF', CGRID, JDATE, JTIME )
+         ! IF ( LIPR ) CALL PA_UPDATE ( 'HDIF', CGRID, JDATE, JTIME, TSTEP )
+         IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'HDIFF' )
 
 C decouple CGRID for cloud and chemistry
 
@@ -329,21 +314,18 @@ C decouple CGRID for cloud and chemistry
          IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'DECOUPLE' )
       END IF
 C     
-C     CGRID_AERO_DX1 = CGRID%dx1
-C     CGRID_AERO_DX2 = CGRID%dx2
-C     CGRID_AERO_DX1X2 = CGRID%dx1x2    
+ 
         
       CALL PHOT ( CGRID, JDATE, JTIME, TSTEP )
       IF ( CKSUM ) CALL CKSUMMER ( 'PHOT', CGRID, JDATE, JTIME )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'PHOT' )
             
-C
+      
       CALL CLDPROC ( CGRID, JDATE, JTIME, TSTEP )
       IF ( CKSUM ) CALL CKSUMMER ( 'CLDPROC', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE ( 'CLDS', CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CLDPROC' )
-   
-C      CGRID(:, :, :, 133) = CGRID(:, :, :, 133) + PERT_HYPERDUAL
+      
          
       IF ( STM ) CALL STM_WRAP_GAS ( CGRID, JDATE, JTIME, .TRUE. )
       CALL CHEM ( CGRID, JDATE, JTIME, TSTEP )
@@ -351,11 +333,7 @@ C      CGRID(:, :, :, 133) = CGRID(:, :, :, 133) + PERT_HYPERDUAL
       ! IF ( LIPR ) CALL PA_UPDATE ( 'CHEM', CGRID, JDATE, JTIME, TSTEP ) 
       IF ( STM ) CALL STM_WRAP_GAS ( CGRID, JDATE, JTIME, .FALSE. )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CHEM' )
-      
-C     CGRID_CHEM_DX1 = CGRID%dx1
-C     CGRID_CHEM_DX2 = CGRID%dx2
-C     CGRID_CHEM_DX1X2 = CGRID%dx1x2   
-
+ 
 C
 C#ifdef potvorto3
 C     CALL PVO3 ( CGRID, JDATE, JTIME )
@@ -367,21 +345,29 @@ C#endif
 #ifdef isam
       CGRID0  = CGRID
 #endif
-      
-      CALL AERO ( CGRID, JDATE, JTIME, TSTEP )
+	            
+      CALL AERO ( CGRID, JDATE, JTIME, TSTEP )   
       IF ( CKSUM ) CALL CKSUMMER ( 'AERO', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE_AERO ( CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'AERO' )
       IF ( STM ) CALL STM_WRAP_AE ( CGRID, JDATE, JTIME )
       
-      CGRID_AERO_DX1 = CGRID%dx1
-C     CGRID_AERO_DX2 = CGRID%dx2
-C     CGRID_AERO_DX1X2 = CGRID%dx1x2   
-C     
-C     CGRID%dx1 = 0.d0
-C     CGRID%dx2 = 0.d0
-C     CGRID%dx1x2 = 0.d0
-      
+C     CGRID(:, :, 20, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 21, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 22, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 23, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 24, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 25, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 26, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 27, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 28, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 29, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 30, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 31, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 32, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 33, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 34, :)%dx1x2 = 0.0d0
+C     CGRID(:, :, 35, :)%dx1x2 = 0.0d0
 #ifdef isam
       CALL SA_WRAP_AE( CGRID0, CGRID, JDATE, JTIME, TSTEP )
 #endif

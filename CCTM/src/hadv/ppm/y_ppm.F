@@ -63,7 +63,7 @@ C-----------------------------------------------------------------------
 #ifdef sens
       USE DDM3D_DEFN, ONLY:SENGRID, NPMAX, NP, BSEN, BCS, DATENUM, IPT, IDATE, IPARM, IREGION, CKTIME, STARTDATE
 #endif 
-
+	  USE HDMod
       IMPLICIT NONE
 
 C Includes:
@@ -73,7 +73,7 @@ C Includes:
 
 C Arguments:
 
-      REAL, POINTER :: CGRID( :,:,:,: )
+      TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
       INTEGER, INTENT( IN ) :: FDATE         ! current model date, coded YYYYDDD
       INTEGER, INTENT( IN ) :: FTIME         ! current model time, coded HHMMSS
       INTEGER, INTENT( IN ) :: TSTEP         ! time step (HHMMSS)
@@ -82,7 +82,7 @@ C Arguments:
 
 C External Functions:
 
-      REAL,    EXTERNAL :: ZFDBC
+      TYPE(hyperdual),    EXTERNAL :: ZFDBC
 
 C Parameters:
 
@@ -109,8 +109,8 @@ C Local Variables:
       REAL,    SAVE :: DX2                      ! dx2 (meters)
       INTEGER, SAVE :: ASPC                     ! RHOJ index in CGRID
 
-      REAL, ALLOCATABLE, SAVE :: VELY( : ),     ! Velocities along a column
-     &                           CONY( :,: )    ! Conc's along a column
+      REAL, ALLOCATABLE, SAVE :: VELY( : )     ! Velocities along a column
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: CONY( :,: ) ! Conc's along a column
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: SA_CONY( :,: )
 #endif
@@ -129,9 +129,9 @@ C Local Variables:
 
 #ifdef parallel
       INTEGER NORTH_ROW
-      REAL, ALLOCATABLE, SAVE :: HALO_NORTH( :,:,: )
-      REAL, ALLOCATABLE, SAVE :: HALO_SOUTH( :,:,: )
-      REAL, ALLOCATABLE, SAVE :: BUF_NS( :,:,: )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: HALO_NORTH( :,:,: )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: HALO_SOUTH( :,:,: )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: BUF_NS( :,:,: )
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: SA_HALO_NORTH( :,:,: )
       REAL, ALLOCATABLE, SAVE :: SA_HALO_SOUTH( :,:,: )
@@ -161,13 +161,14 @@ C Required interface for allocatable array dummy arguments
             REAL,            INTENT( OUT )    :: UHAT( :,: )
          END SUBROUTINE HCONTVEL
          SUBROUTINE HPPM ( NI, NJ, CON, VEL, DT, DS, ORI )
+         	USE HDMod
 ! #ifdef parallel
             INTEGER, PARAMETER                :: SWP = 3
 ! #else
 !           INTEGER, PARAMETER                :: SWP = 1
 ! #endif
             INTEGER,         INTENT( IN )     :: NI, NJ
-            REAL,            INTENT( IN OUT ) :: CON( 1-SWP:,1: )
+            TYPE(hyperdual),            INTENT( IN OUT ) :: CON( 1-SWP:,1: )
             REAL,            INTENT( IN )     :: VEL( : )
             REAL,            INTENT( IN )     :: DT
             REAL,            INTENT( IN )     :: DS
@@ -227,9 +228,9 @@ C Get dx2 from HGRD_DEFN module
             XMSG = 'Failure allocating HALO_NORTH, HALO_SOUTH, or BUF_NS'
             CALL M3EXIT ( PNAME, FDATE, FTIME, XMSG, XSTAT1 )
          END IF
-         HALO_NORTH = 0.0   ! array
-         HALO_SOUTH = 0.0   ! array
-         BUF_NS     = 0.0   ! array
+         HALO_NORTH = 0.0D0   ! array
+         HALO_SOUTH = 0.0D0  ! array
+         BUF_NS     = 0.0D0   ! array
 #ifdef isam
          SA_HALO_NORTH = 0.0   ! array
          SA_HALO_SOUTH = 0.0   ! array
@@ -321,8 +322,16 @@ C Get the contravariant x2 velocity component
          END DO
       END DO
 
-      CALL SUBST_COMM (HALO_SOUTH, HALO_NORTH, DSPL_N1_E0_S0_W0, DRCN_N)
-      CALL SUBST_COMM (BUF_NS,     HALO_SOUTH, DSPL_N0_E0_S1_W0, DRCN_S)
+      CALL SUBST_COMM (HALO_SOUTH%x, HALO_NORTH%x, DSPL_N1_E0_S0_W0, DRCN_N)
+      CALL SUBST_COMM (HALO_SOUTH%dx1, HALO_NORTH%dx1, DSPL_N1_E0_S0_W0, DRCN_N)
+      CALL SUBST_COMM (HALO_SOUTH%dx2, HALO_NORTH%dx2, DSPL_N1_E0_S0_W0, DRCN_N)
+      CALL SUBST_COMM (HALO_SOUTH%dx1x2, HALO_NORTH%dx1x2, DSPL_N1_E0_S0_W0, DRCN_N)
+      
+      CALL SUBST_COMM (BUF_NS%x,     HALO_SOUTH%x, DSPL_N0_E0_S1_W0, DRCN_S)
+      CALL SUBST_COMM (BUF_NS%dx1,     HALO_SOUTH%dx1, DSPL_N0_E0_S1_W0, DRCN_S)
+      CALL SUBST_COMM (BUF_NS%dx2,     HALO_SOUTH%dx2, DSPL_N0_E0_S1_W0, DRCN_S)
+      CALL SUBST_COMM (BUF_NS%dx1x2,     HALO_SOUTH%dx1x2, DSPL_N0_E0_S1_W0, DRCN_S)
+      
 #ifdef sens
       DO NP = 1, NPMAX
          CALL SUBST_COMM( S_HALO_SOUTH(:,:,:,NP), S_HALO_NORTH(:,:,:,NP),
@@ -383,7 +392,10 @@ C South boundary
      &               ZFDBC ( CONY( 1,SPC ), CONY( 2,SPC ),
      &                       VELY( 1 ),     VELY( 2 ) )
                ELSE    ! inflow
-                  CONY( 1-SWP:0,SPC ) = BCON( SFX+COL,SPC )
+                  CONY( 1-SWP:0,SPC )%x = REAL ( BCON( SFX+COL,SPC ) , 8 )
+                  CONY( 1-SWP:0,SPC )%dx1 = 0.d0
+                  CONY( 1-SWP:0,SPC )%dx2 = 0.d0
+                  CONY( 1-SWP:0,SPC )%dx1x2 = 0.d0
                END IF
             END IF
 
@@ -395,7 +407,10 @@ C North boundary
      &               ZFDBC ( CONY( NROWS,SPC ), CONY( NROWS-1,SPC ),
      &                       VELY( NROWS+1 ),   VELY( NROWS ) )
                ELSE    ! inflow
-                  CONY( NROWS+1:NROWS+SWP,SPC ) = BCON( NFX+COL,SPC )
+                  CONY( NROWS+1:NROWS+SWP,SPC )%x = REAL ( BCON( NFX+COL,SPC ) , 8 )
+                  CONY( NROWS+1:NROWS+SWP,SPC )%dx1 = 0.d0
+                  CONY( NROWS+1:NROWS+SWP,SPC )%dx2 = 0.d0
+                  CONY( NROWS+1:NROWS+SWP,SPC )%dx1x2 = 0.d0
                END IF
             END IF
 

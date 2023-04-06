@@ -512,7 +512,7 @@ C--------------------------------------------------------------------------
             End Do
 
             If ( .Not. WRITE3( MEDIA_CONC, MEDIA_NAMES( V ), MDATE, MTIME,
-     &                WRMC%x ) ) Then
+     &                REAL ( WRMC%x, 4 ) ) ) Then
                XMSG = 'Could not write ' // MEDIA_CONC // ' file'
                Call M3EXIT( PNAME, MDATE, MTIME, XMSG, XSTAT1 )
             End If

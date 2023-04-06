@@ -795,7 +795,7 @@ C************* Call the Hg air surface exchange subroutine *********************
 
                ! Check for negative values or NaN's
 
-            IF ( depvel_gas( n,c,r ) .LT. 0.0 .OR.
+            IF ( depvel_gas( n,c,r ) .LT. 0.0D0 .OR.
      &           depvel_gas( n,c,r ) .NE. depvel_gas( n,c,r ) ) GO TO 999            
 
          END DO ddloop  ! (l = 1, n_spc_m3dry)

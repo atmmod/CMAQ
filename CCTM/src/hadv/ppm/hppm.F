@@ -136,7 +136,7 @@ C----------------------------------------------------------------------
 #else
       USE NOOP_MODULES        ! stenex (using NOOP_UTIL_MODULE)
 #endif
-
+	  USE HDMod
       IMPLICIT NONE
 
 C Includes:
@@ -156,7 +156,7 @@ C Includes:
 C Arguments:
  
       INTEGER, INTENT( IN )    :: NI, NJ      ! number of zones (cells)
-      REAL,    INTENT( INOUT ) :: CON( 1-SWP:,1: ) ! conc's in the zones (cells)
+      TYPE(hyperdual),    INTENT( INOUT ) :: CON( 1-SWP:,1: ) ! conc's in the zones (cells)
       REAL,    INTENT( IN )    :: VEL( : )    ! velocities at zone (cell) boundaries
       REAL,    INTENT( IN )    :: DT          ! time step
       REAL,    INTENT( IN )    :: DS          ! distance between zone (cell) boundaries
@@ -183,15 +183,15 @@ C Local variables:
 !     REAL :: DC    ( 0-X1:NI+X1+1,SIZE( CON,2 ) ) ! CR - CL
 !     REAL :: C6    ( 1-X1:NI+X1 )                 ! coefficient of second-order term
 
-      REAL, ALLOCATABLE, SAVE :: FM( :,: ) ! outflux from left or bottom of cell
-      REAL, ALLOCATABLE, SAVE :: FP( :,: ) ! outflux from right or top of cell
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: FM( :,: ) ! outflux from left or bottom of cell
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: FP( :,: ) ! outflux from right or top of cell
 
-      REAL, ALLOCATABLE, SAVE :: CM( :,: ) ! zone R.H. trial intercept
-      REAL, ALLOCATABLE, SAVE :: CL( : )   ! zone L.H. intercept
-      REAL, ALLOCATABLE, SAVE :: CR( : )   ! zone R.H. intercept
-      REAL, ALLOCATABLE, SAVE :: DC( :,: ) ! CR - CL
-      REAL, ALLOCATABLE, SAVE :: C6( : )   ! coefficient of second-order term
-      REAL C0, C1
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: CM( :,: ) ! zone R.H. trial intercept
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: CL( : )   ! zone L.H. intercept
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: CR( : )   ! zone R.H. intercept
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DC( :,: ) ! CR - CL
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: C6( : )   ! coefficient of second-order term
+      TYPE(hyperdual)         :: C0, C1
 
       LOGICAL, SAVE :: BNDY_LO_PE, BNDY_HI_PE
 
@@ -237,8 +237,8 @@ C----------------------------------------------------------------------
 C Set all fluxes to zero. Either positive or negative flux will remain zero
 C depending on the sign of the velocity.
 
-      FM( 1:NI+1,: ) = 0.0
-      FP( 0:NI,: ) = 0.0
+      FM( 1:NI+1,: ) = 0.0D0
+      FP( 0:NI,: ) = 0.0D0
 
 ! #ifndef parallel
 C If PE near bottom or left domain boundary...
@@ -277,13 +277,13 @@ C Equation (1.7)
 C Guarantee that CM lies between CON(I) and CON(I+1) - monotonicity constraint
 
 C Equation (1.8)
-            IF ( C0 * C1 .GT. 0.0 ) THEN
+            IF ( C0 * C1 .GT. 0.0D0 ) THEN
                DC( I,S ) = SIGN( 1.0, DC( I,S ) )
      &                   * MIN(      ABS( DC( I,S ) ),
      &                         2.0 * ABS( C0 ),
      &                         2.0 * ABS( C1 ) )
             ELSE
-               DC( I,S ) = 0.0
+               DC( I,S ) = 0.0D0
             END IF
 
          END DO   ! I
@@ -309,7 +309,7 @@ C Equation (1.15)
 C Monotonicity
  
             IF ( ( CR( I ) - CON( I,S ) )
-     &        * ( CON( I,S ) - CL( I ) ) .GT. 0.0 ) THEN
+     &        * ( CON( I,S ) - CL( I ) ) .GT. 0.0D0 ) THEN
 
 C Temporary computation of DC and C6
                DC( I,S ) = CR( I ) - CL( I )

@@ -442,11 +442,16 @@ C...  convert to moles of aerosol per mole of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               FAC = CNV1 / DENS( COL, ROW, LAY ) / AE_MOLWT( SPC - AE_STRT + 1 )
-              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0E-30/FAC )
+              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0D-30/FAC )
               CGRID( COL, ROW, LAY, SPC ) = FAC * CCMIN
+     		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
+     		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
+     		  	CGRID( COL, ROW, LAY, SPC )%dx2 = 0.d0
+     		  	CGRID( COL, ROW, LAY, SPC )%dx1x2 = 0.d0
+     		  ENDIF              
 #ifdef sens
               DO NP = 1, NPMAX
-                IF ( CGRID( COL, ROW, LAY, SPC ) .LE. 1.0E-30 ) THEN
+                IF ( CGRID( COL, ROW, LAY, SPC ) .LE. 1.0D-30 ) THEN
                    SENGRID( COL, ROW, LAY, NP, SPC ) = 0.0
                 ELSE
                    SENGRID( COL, ROW, LAY, NP, SPC ) = FAC * SENGRID( COL, ROW, LAY, NP, SPC )
@@ -469,11 +474,16 @@ C...    convert to # per mole of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               FAC = CNV3 / DENS( COL, ROW, LAY )
-              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0E-30/FAC )
+              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0D-30/FAC )
               CGRID( COL, ROW, LAY, SPC ) = FAC * CCMIN
+     		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
+     		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
+     		  	CGRID( COL, ROW, LAY, SPC )%dx2 = 0.d0
+     		  	CGRID( COL, ROW, LAY, SPC )%dx1x2 = 0.d0
+     		  ENDIF
 #ifdef sens
               DO NP = 1, NPMAX
-                IF ( CGRID( COL, ROW, LAY, SPC ) .LE. 1.0E-30 ) THEN
+                IF ( CGRID( COL, ROW, LAY, SPC ) .LE. 1.0D-30 ) THEN
                    SENGRID( COL, ROW, LAY, NP, SPC ) = 0.0
                 ELSE
                    SENGRID( COL, ROW, LAY, NP, SPC ) = FAC * SENGRID( COL, ROW, LAY, NP, SPC )
@@ -496,11 +506,16 @@ C...    convert to m2 per mole of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               FAC = CNV2 / DENS( COL, ROW, LAY )
-              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0E-30/FAC )
+              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0D-30/FAC )
               CGRID( COL, ROW, LAY, SPC ) = FAC * CCMIN
+     		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
+     		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
+     		  	CGRID( COL, ROW, LAY, SPC )%dx2 = 0.d0
+     		  	CGRID( COL, ROW, LAY, SPC )%dx1x2 = 0.d0
+     		  ENDIF
 #ifdef sens
               DO NP = 1, NPMAX
-                IF ( CGRID( COL, ROW, LAY, SPC ) .LE. 1.0E-30 ) THEN
+                IF ( CGRID( COL, ROW, LAY, SPC ) .LE. 1.0D-30 ) THEN
                    SENGRID( COL, ROW, LAY, NP, SPC ) = 0.0
                 ELSE
                    SENGRID( COL, ROW, LAY, NP, SPC ) = FAC * SENGRID( COL, ROW, LAY, NP, SPC )
@@ -521,10 +536,15 @@ C...determine no. of moles of non-reactive gas per moles of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               CGRID( COL, ROW, LAY, SPC ) = MAX( CGRID( COL, ROW, LAY, SPC )
-     &                                    * 1.0E-6, 1.0E-36 )
+     &                                    * 1.0D-6, 1.0D-36 )
+     		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
+     		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
+     		  	CGRID( COL, ROW, LAY, SPC )%dx2 = 0.d0
+     		  	CGRID( COL, ROW, LAY, SPC )%dx1x2 = 0.d0
+     		  ENDIF
 #ifdef sens
               DO NP = 1, NPMAX
-                IF ( CGRID( COL, ROW, LAY, SPC ) .LE. 1.0E-30 ) THEN
+                IF ( CGRID( COL, ROW, LAY, SPC ) .LE. 1.0D-30 ) THEN
                    SENGRID( COL, ROW, LAY, NP, SPC ) = 0.0
                 ELSE
                    SENGRID( COL, ROW, LAY, NP, SPC ) = SENGRID( COL, ROW, LAY, NP, SPC )
@@ -546,10 +566,15 @@ C...determine no. of moles of tracer gas per moles of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               CGRID( COL, ROW, LAY, SPC ) = MAX( CGRID( COL, ROW, LAY, SPC )
-     &                                    * 1.0E-6, 1.0E-36 )
+     &                                    * 1.0D-6, 1.0D-36 )
+     		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
+     		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
+     		  	CGRID( COL, ROW, LAY, SPC )%dx2 = 0.d0
+     		  	CGRID( COL, ROW, LAY, SPC )%dx1x2 = 0.d0
+     		  ENDIF
 #ifdef sens
               DO NP = 1, NPMAX
-                IF ( CGRID( COL, ROW, LAY, SPC ) .LE. 1.0E-30 ) THEN
+                IF ( CGRID( COL, ROW, LAY, SPC ) .LE. 1.0D-30 ) THEN
                   SENGRID( COL, ROW, LAY, NP, SPC ) = 0.0
                 ELSE
                   SENGRID( COL, ROW, LAY, NP, SPC ) = SENGRID( COL, ROW, LAY, NP, SPC ) 
@@ -770,7 +795,7 @@ C...  convert to ppmV gas
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               CGRID( COL, ROW, LAY, SPC ) = CGRID( COL, ROW, LAY, SPC )
-     &                                    * 1.0E+6
+     &                                    * 1.0D+6
 #ifdef sens
               DO NP = 1, NPMAX
                 SENGRID( COL, ROW, LAY, NP, SPC ) =
@@ -856,7 +881,7 @@ C...convert to ppmV non-reactive gas
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               CGRID( COL, ROW, LAY, SPC ) = CGRID( COL, ROW, LAY, SPC )
-     &                                    * 1.0E+6
+     &                                    * 1.0D+6
 #ifdef sens
               DO NP = 1, NPMAX
                 SENGRID( COL, ROW, LAY, NP, SPC ) = SENGRID( COL, ROW, LAY, NP, SPC )
@@ -877,7 +902,7 @@ C...convert to ppmV tracer gas
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               CGRID( COL, ROW, LAY, SPC ) = CGRID( COL, ROW, LAY, SPC )
-     &                                    * 1.0E+6
+     &                                    * 1.0D+6
 #ifdef sens
               DO NP = 1, NPMAX
                 SENGRID( COL, ROW, LAY, NP, SPC ) = SENGRID( COL, ROW, LAY, NP, SPC )

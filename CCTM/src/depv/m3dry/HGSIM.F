@@ -625,23 +625,23 @@ C******************************************************************************
          Hgc   = Hgc + NHS(2)
          Hgs   = Hgs + NHS(3) 
  
-         IF ( Hgm .LT. 0.0 ) THEN
+         IF ( Hgm .LT. 0.0D0 ) THEN
 
             XMSG = '*** Negative concentration in Hgm resetting it to zero ***'
             CALL M3WARN( PNAME, JDATE, JTIME, XMSG )
-            Hgm = max(Hgm,0.0)
+            Hgm = max(Hgm,0.0D0)
 
          END IF
 
-         IF ( Hgc .LT. 0.0 ) THEN
+         IF ( Hgc .LT. 0.0D0 ) THEN
 
             XMSG = '*** Negative concentration in Hgc resetting it to zero ***'
             CALL M3WARN( PNAME, JDATE, JTIME, XMSG )
-            Hgc = max(Hgc, 0.0)
+            Hgc = max(Hgc, 0.0D0)
 
          END IF
 
-         IF ( Hgs .LT. 0.0 ) THEN
+         IF ( Hgs .LT. 0.0D0 ) THEN
 ! This can happen when the soil moisture approaches zero limiting the Hg that 
 ! can evade from this source.
             XMSG = '*** Negative concentration in Hgs resetting it to zero flux condition ***'
@@ -857,7 +857,7 @@ C******************************************************************************
 
          END IF         
     
-         IF ( DGM .LT. 0.0 .OR. DRM .LT. 0.0 ) THEN
+         IF ( DGM .LT. 0.0D0 .OR. DRM .LT. 0.0D0 ) THEN
             
             XMSG = '*** Negative concentration ***'   
             WRITE(LOGDEV,*) 'awhg',awhg,'HG',HG
