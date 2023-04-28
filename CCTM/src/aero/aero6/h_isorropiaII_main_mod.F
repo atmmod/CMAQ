@@ -10400,13 +10400,13 @@ c #endif
 ! *** SOLVE FOREWARD PROBLEM ********************************************
 !
 50    IF (IPROB.eq.0) THEN
-         IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE.  TINY) THEN                                                 !Everything=0
+         IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. (8*TINY)) THEN                                                 !Everything=0
             CALL INIT1 (WI, RHI, TEMPI)
-         ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN !Ca,K,Mg,Na,Cl,NO3=0
+         ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. (6*TINY)) THEN !Ca,K,Mg,Na,Cl,NO3=0
             CALL ISRP1F (WI, RHI, TEMPI)
-         ELSE IF (WI(1)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN       !Ca,K,Mg,Na,Cl=0
+         ELSE IF (WI(1)+WI(5)+WI(6)+WI(7)+WI(8) .LE. (5*TINY)) THEN       !Ca,K,Mg,Na,Cl=0
             CALL ISRP2F (WI, RHI, TEMPI)
-         ELSE IF (WI(6)+WI(7)+WI(8) .LE. TINY) THEN                   !Ca,K,Mg=0
+         ELSE IF (WI(6)+WI(7)+WI(8) .LE. (3*TINY)) THEN                   !Ca,K,Mg=0
             CALL ISRP3F (WI, RHI, TEMPI)
          ELSE
             CALL ISRP4F (WI, RHI, TEMPI, COL, ROW, LAYER, fwdsens)
@@ -10423,13 +10423,13 @@ C           STOP
       ELSE
 ! 3.37d-15, 2.2393d-15, 1.16193d-15, 1.0349d-15
          fwdsens = .TRUE. 
-         IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN                                                 !Everything=0
+         IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. (8*TINY)) THEN                                                 !Everything=0
             CALL INIT1 (WI, RHI, TEMPI)
-         ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN !Ca,K,Mg,Na,Cl,NO3=0
+         ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. (6*TINY)) THEN !Ca,K,Mg,Na,Cl,NO3=0
             CALL ISRP1R (WI, RHI, TEMPI)
-         ELSE IF (WI(1)+WI(5)+WI(6)+WI(7)+WI(8) .LE. TINY) THEN       !Ca,K,Mg,Na,Cl=0
+         ELSE IF (WI(1)+WI(5)+WI(6)+WI(7)+WI(8) .LE. (5*TINY)) THEN       !Ca,K,Mg,Na,Cl=0
             CALL ISRP2R (WI, RHI, TEMPI)
-         ELSE IF (WI(6)+WI(7)+WI(8) .LE. TINY) THEN                  !Ca,K,Mg=0
+         ELSE IF (WI(6)+WI(7)+WI(8) .LE. (3*TINY)) THEN                  !Ca,K,Mg=0
             CALL ISRP3R (WI, RHI, TEMPI)
          ELSE
             CALL ISRP4R (WI, RHI, TEMPI, COL, ROW, LAYER)
@@ -17484,7 +17484,7 @@ c      & (Z(I+4)+Z(J+3)) - H
       !   WI(1) = 1.D-10  ! Na+  : 1e-4 umoles/m3
       !   WI(2) = 1.D-10  ! SO4- : 1e-4 umoles/m3
       !ENDIF
-      IF (WI(1)+WI(2)+WI(4) .LE. TINY) THEN
+      IF (WI(1)+WI(2)+WI(4) .LE. (3*TINY)) THEN
          WI(1) = TINY  ! Na+  : 1e-4 umoles/m3
          WI(2) = TINY  ! SO4- : 1e-4 umoles/m3
       ENDIF
