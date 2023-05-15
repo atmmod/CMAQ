@@ -223,6 +223,7 @@ C     Private :: GETASR
       Private :: FUNCO4
       Private :: FUNCO3A
       Private :: FUNCO2A
+      Private :: FUNCM8_no_sens
       Private :: FUNCM8
       Private :: FUNCM7
       Private :: FUNCM6
@@ -10497,7 +10498,7 @@ C           STOP
       OTHER(3) = SULRATW
       OTHER(4) = SODRAT
       OTHER(5) = IONIC_MASTER
-      OTHER(6) = ICLACT
+      OTHER(6) = REAL(ICLACT, 8)
       OTHER(7) = SO4RAT
       OTHER(8) = CRNARAT
       OTHER(9) = CRRAT
@@ -17469,25 +17470,30 @@ c      & (Z(I+4)+Z(J+3)) - H
 !
 ! *** ADJUST FOR TOO LITTLE AMMONIUM AND CHLORIDE ***********************
 !
+
+C     WI(3) = MAX (WI(3), 1.D-10)  ! NH4+ : 1e-4 umoles/m3
+C     WI(5) = MAX (WI(5), 1.D-10)  ! Cl-  : 1e-4 umoles/m3
+      
       ! To have better conservation of mass, change to TINY
       ! (hotp 11/14/07)
-      !WI(3) = MAX (WI(3), 1.D-10)  ! NH4+ : 1e-4 umoles/m3
-      !WI(5) = MAX (WI(5), 1.D-10)  ! Cl-  : 1e-4 umoles/m3
+      
       WI(3) = MAX (WI(3), TINY)  ! NH4+ : 1e-4 umoles/m3
       WI(5) = MAX (WI(5), TINY)  ! Cl-  : 1e-4 umoles/m3
 !
 ! *** ADJUST FOR TOO LITTLE SODIUM, SULFATE AND NITRATE COMBINED ********
 !
-      ! To have better conservation of mass, change to TINY
-      ! (hotp 11/14/07)
-      !IF (WI(1)+WI(2)+WI(4) .LE. 1d-10) THEN
-      !   WI(1) = 1.D-10  ! Na+  : 1e-4 umoles/m3
-      !   WI(2) = 1.D-10  ! SO4- : 1e-4 umoles/m3
-      !ENDIF
-      IF (WI(1)+WI(2)+WI(4) .LE. (3*TINY)) THEN
-         WI(1) = TINY  ! Na+  : 1e-4 umoles/m3
-         WI(2) = TINY  ! SO4- : 1e-4 umoles/m3
+
+      IF (WI(1)+WI(2)+WI(4) .LE. 1d-10) THEN
+         WI(1) = 1.D-10  ! Na+  : 1e-4 umoles/m3
+         WI(2) = 1.D-10  ! SO4- : 1e-4 umoles/m3
       ENDIF
+      
+      ! To have better conservation of mass, change to TINY
+      ! (hotp 11/14/07)      
+C     IF (WI(1)+WI(2)+WI(4) .LE. (3*TINY)) THEN
+C        WI(1) = TINY  ! Na+  : 1e-4 umoles/m3
+C        WI(2) = TINY  ! SO4- : 1e-4 umoles/m3
+C     ENDIF
 !
 ! *** INITIALIZE ALL VARIABLES IN COMMON BLOCK **************************
 !
@@ -17679,15 +17685,15 @@ c      & (Z(I+4)+Z(J+3)) - H
 !
 ! *** ADJUST FOR TOO LITTLE AMMONIUM AND CHLORIDE ***********************
 !
-!      WI(3) = MAX (WI(3), 1.D-10)  ! NH4+ : 1e-4 umoles/m3
-!      WI(5) = MAX (WI(5), 1.D-10)  ! Cl-  : 1e-4 umoles/m3
+       WI(3) = MAX (WI(3), 1.D-10)  ! NH4+ : 1e-4 umoles/m3
+       WI(5) = MAX (WI(5), 1.D-10)  ! Cl-  : 1e-4 umoles/m3
 !
 ! *** ADJUST FOR TOO LITTLE SODIUM, SULFATE AND NITRATE COMBINED ********
 !
-!      IF (WI(1)+WI(2)+WI(4) .LE. 1d-10) THEN
-!         WI(1) = 1.D-10  ! Na+  : 1e-4 umoles/m3
-!         WI(2) = 1.D-10  ! SO4- : 1e-4 umoles/m3
-!      ENDIF
+       IF (WI(1)+WI(2)+WI(4) .LE. 1d-10) THEN
+          WI(1) = 1.D-10  ! Na+  : 1e-4 umoles/m3
+          WI(2) = 1.D-10  ! SO4- : 1e-4 umoles/m3
+       ENDIF
 !
 ! *** INITIALIZE ALL VARIABLES IN COMMON BLOCK **************************
 !
@@ -24962,7 +24968,7 @@ C  *** CALCULATE RATIOS *************************************************
       DX = (PSI6HI-PSI6LO)/real(NDIV, 8)
       DO 10 I=1,NDIV
          X2 = X1+DX
-         Y2 = FUNCO7 (X2, COL, ROW, LAYER)
+         Y2 = FUNCO7_no_sens (X2)
          
          IF ( GNH3%x .GT. GNH3_MAX ) THEN
          	GNH3_MAX = GNH3%x
@@ -25003,7 +25009,7 @@ C  *** CALCULATE RATIOS *************************************************
 C        IF ( ABS(X2 - X1) .GT. EPS*2.D0*X1 ) THEN
          CALL RSTGAMP ! Reinitialize activity coefficients (SLC C2012-01-01)
 C        ENDIF
-         Y3 = FUNCO7 (X3, COL, ROW, LAYER) 
+         Y3 = FUNCO7_no_sens (X3) 
          
          IF ( GNH3%x .GT. GNH3_MAX ) THEN
          	GNH3_MAX = GNH3%x
@@ -27305,7 +27311,7 @@ C        ENDIF
       DX = (PSI6HI-PSI6LO)/real(NDIV, 8)
       DO 10 I=1,NDIV
          X2 = X1+DX
-         Y2 = FUNCM8 (X2)
+         Y2 = FUNCM8_no_sens (X2)
          IF (SIGN(ONE,Y1)*SIGN(ONE,Y2).LT.ZERO) GOTO 20  ! (Y1*Y2.LT.ZERO)
          X1 = X2
          Y1 = Y2
@@ -27324,7 +27330,7 @@ C        ENDIF
 20    DO 30 I=1,MAXIT
          X3 = 0.5_PRhyd*(X1+X2)
          CALL RSTGAMP ! Reinitialize activity coefficients (SLC C2012-01-01)
-         Y3 = FUNCM8 (X3)
+         Y3 = FUNCM8_no_sens (X3)
          IF (SIGN(ONE,Y1)*SIGN(ONE,Y3) .LE. ZERO) THEN  ! (Y1*Y3 .LE. ZERO)
             Y2    = Y3
             X2    = X3
@@ -27494,7 +27500,121 @@ C        ENDIF
 !
       END
 
-
+      type(hyperdual) FUNCTION FUNCM8_no_sens (X)
+      type(hyperdual) :: X
+      type(hyperdual) :: A1, A2, A3, A4, A5, A6, A7, A8, A9, A64
+      type(hyperdual) :: PSI6LO, PSI6HI, DELTA, BB, CC, DD, RIZ
+      type(hyperdual) :: VHTA, GKAMA, BBP, CCP, DDP
+      type(hyperdual) :: VITA, DIAK, DELT, PSI31, PSI32
+      type(hyperdual) :: SMIN, OHI, HI
+      Integer :: I, ISLV
+!
+      ! changes made by hotp 8/2/07
+      ! explicitly declared all variables in SOLUT
+      ! made SOLUT THREADPRIVATE for OPENMP parallelization
+!=======!      Real(kind=fp) :: CHI1, CHI2, CHI3, CHI4, CHI5, CHI6, CHI7, CHI8
+!=======!      Real(kind=fp) :: CHI9, CHI10, CHI11, CHI12, CHI13, CHI14, CHI15
+!=======!      Real(kind=fp) :: CHI16, CHI17, PSI1, PSI2, PSI3, PSI4, PSI5, PSI6
+!=======!      Real(kind=fp) :: PSI7, PSI8, PSI9, PSI10, PSI11, PSI12, PSI13
+!=======!      Real(kind=fp) :: PSI14, PSI15, PSI16, PSI17, A1, A2, A3, A4, A5, A6
+!=======!      Real(kind=fp) :: A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17
+!=======!      COMMON /SOLUT/ CHI1, CHI2, CHI3, CHI4, CHI5, CHI6, CHI7, CHI8,
+!=======!     &               CHI9, CHI10, CHI11, CHI12, CHI13, CHI14, CHI15,
+!=======!     &               CHI16, CHI17, PSI1, PSI2, PSI3, PSI4, PSI5, PSI6,
+!=======!     &               PSI7, PSI8, PSI9, PSI10, PSI11, PSI12, PSI13,
+!=======!     &               PSI14, PSI15, PSI16, PSI17, A1, A2, A3, A4, A5, A6,
+!=======!     &               A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17
+!=======!!$OMP THREADPRIVATE( /SOLUT/ )
+!
+! *** SETUP PARAMETERS ************************************************
+!
+      PSI6%x   = X%x
+      PSI1%x   = CHI1%x
+      PSI2%x   = ZERO
+      PSI3%x   = ZERO
+      PSI7%x   = CHI7%x
+      PSI8%x   = CHI8%x
+      PSI9%x   = CHI9%x
+      PSI10%x  = CHI10%x
+      PSI11%x  = ZERO
+      FRST   = .TRUE.
+      CALAIN = .TRUE.
+!
+! *** SOLVE EQUATIONS ; WITH ITERATIONS FOR ACTIVITY COEF. ************
+!
+      DO 10 I=1,NSWEEP
+      
+      A4%x  = (XK2/XKW)*R*TEMP*(GAMA(10)%x/GAMA(5)%x)**2.0_PRhyd
+      A5%x  = XK4 *R*TEMP*(WATER%x/GAMA(10)%x)**2.0_PRhyd
+      A6%x  = XK3 *R*TEMP*(WATER%x/GAMA(11)%x)**2.0_PRhyd    
+!
+!  CALCULATE DISSOCIATION QUANTITIES
+!
+      PSI5%x = CHI5%x*(PSI6%x+PSI7%x) - A6%x/A5%x*PSI8%x*(CHI6%x-PSI6%x-PSI3%x)
+      PSI5%x = PSI5%x/(A6%x/A5%x*(CHI6%x-PSI6%x-PSI3%x) + PSI6%x + PSI7%x)
+      PSI5%x = MIN(MAX(PSI5%x, TINY),CHI5%x)
+!
+      IF (W(3).GT.TINY .AND. WATER.GT.TINY) THEN  ! First try 3rd order soln
+         BB%x   =-(CHI4%x + PSI6%x + PSI5%x + 1.d0/A4%x)
+         CC%x   = CHI4%x*(PSI5%x+PSI6%x)
+         DD%x   = MAX(BB%x*BB%x-4.d0*CC%x,ZERO)
+         PSI4%x =0.5d0*(-BB%x - SQRT(DD%x))
+         PSI4%x = MIN(MAX(PSI4%x,ZERO),CHI4%x)
+      ELSE
+         PSI4%x = TINY
+      ENDIF
+!
+! *** CALCULATE SPECIATION ********************************************
+!
+      MOLAL (2)%x = PSI8%x + PSI7%x + 2.0_PRhyd*PSI1%x               ! NAI
+      MOLAL (3)%x = PSI4%x                                  ! NH4I
+      MOLAL (4)%x = PSI6%x + PSI7%x                           ! CLI
+      MOLAL (5)%x = PSI2%x + PSI1%x + PSI9%x + PSI10%x            ! SO4I
+      MOLAL (6)%x = ZERO                                  ! HSO4I
+      MOLAL (7)%x = PSI5%x + PSI8%x                           ! NO3I
+      MOLAL (8)%x = PSI11%x                                 ! CAI
+      MOLAL (9)%x = 2.0_PRhyd*PSI9%x                            ! KI
+      MOLAL (10)%x= PSI10%x                                 ! MGI
+!
+      SMIN%x      = 2.d0*MOLAL(5)%x+MOLAL(7)%x+MOLAL(4)%x-MOLAL(2)%x-MOLAL(3)%x
+     &            - MOLAL(9)%x - 2.0_PRhyd*MOLAL(10)%x
+      CALL CALCPH (SMIN, HI, OHI)
+      MOLAL (1)%x = HI%x
+!
+      GNH3%x      = MAX(CHI4%x - PSI4%x, TINY)
+      GHNO3%x     = MAX(CHI5%x - PSI5%x, TINY)
+      GHCL%x      = MAX(CHI6%x - PSI6%x, TINY)
+!
+      CNH42S4%x   = ZERO
+      CNH4NO3%x   = ZERO
+      CNACL%x     = ZERO
+      CNANO3%x    = ZERO
+      CNA2SO4%x   = ZERO
+      CK2SO4%x    = ZERO
+      CMGSO4%x    = ZERO
+      CCASO4%x    = CHI11%x
+!
+      CALL CALCMR                                    ! Water content
+!
+! *** CALCULATE ACTIVITIES OR TERMINATE INTERNAL LOOP *****************
+!
+      IF (FRST.AND.CALAOU .OR. .NOT.FRST.AND.CALAIN) THEN
+         CALL CALCACT
+      ELSE
+         GOTO 20
+      ENDIF
+10    CONTINUE
+!
+! *** CALCULATE FUNCTION VALUE FOR OUTER LOOP ***************************
+!
+!20    FUNCM8 = MOLAL(3)*MOLAL(4)/GHCL/GNH3/A6/A4 - ONE
+20    FUNCM8_no_sens%x = MOLAL(1)%x*MOLAL(4)%x/GHCL%x/A6%x - ONE
+!
+      RETURN
+!
+! *** END OF FUNCTION FUNCM8 *******************************************
+!
+      END
 !=======================================================================
 !
 ! *** ISORROPIA CODE II
@@ -34921,8 +35041,8 @@ C        ENDIF
 !=======================================================================
 !
       SUBROUTINE CALCL9
-	use HDMod 
-	implicit none 
+	  use HDMod 
+	  implicit none 
       type(hyperdual) :: BB, CC, DD, LAMDA, A9
       Integer :: I
       ! changes made by hotp 8/2/07
@@ -37454,9 +37574,7 @@ C        ENDIF
       CNAHSO4 = ZERO
       CKHSO4  = ZERO
       CCASO4  = W(6)
-! #if defined( ISORROPIA_V22 )
       CMGSO4  = ZERO
-! #endif
 !
       CALL CALCMR                                      ! Water content
 !

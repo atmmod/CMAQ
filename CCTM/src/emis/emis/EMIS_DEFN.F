@@ -520,10 +520,10 @@ C Retrieve Emissions from All Stream Types
      &                        NL, ISRM, VDEMIS_READ )
           	   
           	   ! Try the multiplicative perturbation with the hyperdual components 
-C         	   IF (ISRM .EQ. 1) THEN  
-C         	    VDEMIS_READ(11, 1, :, :) = VDEMIS_READ(11, 1, : ,:) * 0.75
-C         	   	VDEMIS_READ(11, 1, :, :) = VDEMIS_READ(11, 1, :, :) * hyperdual(1.0d0, 1.0d0, 1.0d0, 0.0d0)
-C         	   ENDIF
+          	   IF (ISRM .EQ. 1) THEN  
+          	   	VDEMIS_READ(8, 1, :, :) = VDEMIS_READ(8, 1, :, :) * hyperdual(1.0d0, 1.0d0, 1.0d0, 0.0d0)
+          	   	VDEMIS_READ(9, 1, :, :) = VDEMIS_READ(9, 1, :, :) * hyperdual(1.0d0, 1.0d0, 1.0d0, 0.0d0)
+          	   ENDIF
      		   
                CALL EMISS_SCALING( VDEMIS_READ, ISRM, NL, VDEMIS_SCALED )
                CALL EMISS_SIZE_DIST( ISRM, VDEMIS_SCALED, NL )
@@ -544,8 +544,8 @@ C              endif
              CASE ( 4 )
                NL = 1
                CALL GET_BEIS ( JDATE, JTIME, TSTEP )
-               VDEMIS_BI(6, :, :) = VDEMIS_BI(6, :, :) * 0.75
-               VDEMIS_BI(6, :, :) = VDEMIS_BI(6, :, :) * hyperdual(1.0d0, 0.0d0, 1.0d0, 0.0d0)
+C              VDEMIS_BI(6, :, :) = VDEMIS_BI(6, :, :) * 0.75
+C              VDEMIS_BI(6, :, :) = VDEMIS_BI(6, :, :) * hyperdual(1.0d0, 0.0d0, 1.0d0, 0.0d0)
                
 C              IF ( JTIME .LE. 5730 ) THEN
                	  ! Only use hyperdual perturbation for non-zero emissions

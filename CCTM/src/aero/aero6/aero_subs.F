@@ -1630,8 +1630,9 @@ C *** Change in volatile inorganic PM concentration to achieve
 C     equilibrium, calculated as initial-gas-phase concentration minus 
 C     equilibrium gas-phase concentration.  DVOLINORG is positive for
 C     condensation and negative for evaporation.
-
+	
 	  ! If the real concentration of NH3 fluctuates too much in forward ISORROPIA 
+	  FwdSens = .TRUE. 
 	  IF ( FwdIso .AND. (FwdSens .eq. .FALSE.) ) THEN
 	  	call reset_hyd_sens( gas( 1 ), precursor_conc( nh3_idx ) * CFAC_GNH3)
 	  	call reset_hyd_sens( gas( 2 ), precursor_conc( hno3_idx ) * CFAC_GHNO3)

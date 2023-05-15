@@ -33,11 +33,11 @@ Module HDMod
   
       !----- Assignment
       interface assignment(=)
-        module procedure hdual_assign_hdual, hdual_assign_dble, & 
+        module procedure hdual_assign_hdual, hdual_assign_dble, hdual_assign_int, & 
           hdual_array_assign_hdual, hdual_array_assign_hdual_array, hdual_array_assign_dble, & 
-          hdual_array_assign_dble_array, &
+          hdual_array_assign_dble_array, hdual_array_assign_int, hdual_array_assign_int_array, &
           hdual_matrix_assign_hdual, hdual_matrix_assign_hdual_matrix, hdual_matrix_assign_dble, &
-          hdual_matrix_assign_dble_matrix, & 
+          hdual_matrix_assign_dble_matrix, hdual_matrix_assign_int, hdual_matrix_assign_int_matrix, & 
           hdual_tens_assign_hdual, hdual_tens_assign_hdual_tens, hdual_tens_assign_dble, & 
           hdual_tens_assign_dble_tens, hdual_tens_assign_int, hdual_tens_assign_int_tens, hdual_4d_assign_hdual_4d, &
           hdual_4d_assign_dble_4d, hdual_4d_assign_dble_4d_SPRhyd, hdual_4d_assign_dble, hdual_5d_assign_dble
@@ -515,18 +515,18 @@ Module HDMod
         end subroutine hdual_matrix_assign_int
   
   
-!         subroutine hdual_matrix_assign_int_matrix(qleft, iright) 
-!         
-!           implicit none
-!           TYPE(hyperdual), dimension(:,:), intent(out)  :: qleft
-!           integer, dimension(:,:), intent(in)           :: iright
-!         
-!           qleft%x     = REAL(iright, PRhyd)
-!           qleft%dx1   = 0.0_PRhyd
-!           qleft%dx2   = 0.0_PRhyd
-!           qleft%dx1x2 = 0.0_PRhyd
-!         
-!         end subroutine hdual_matrix_assign_int_matrix
+        subroutine hdual_matrix_assign_int_matrix(qleft, iright) 
+        
+          implicit none
+          TYPE(hyperdual), dimension(:,:), intent(out)  :: qleft
+          integer, dimension(:,:), intent(in)           :: iright
+        
+          qleft%x     = REAL(iright, PRhyd)
+          qleft%dx1   = 0.0_PRhyd
+          qleft%dx2   = 0.0_PRhyd
+          qleft%dx1x2 = 0.0_PRhyd
+        
+        end subroutine hdual_matrix_assign_int_matrix
   
   
         subroutine hdual_tens_assign_hdual(qleft, qright) 
@@ -585,32 +585,32 @@ Module HDMod
         end subroutine hdual_tens_assign_dble_tens
   
   
-!         subroutine hdual_tens_assign_int(qleft, iright) 
-!         
-!           implicit none
-!           TYPE(hyperdual), dimension(:,:,:), intent(out)  :: qleft
-!           integer, intent(in)                             :: iright
-!         
-!           qleft%x     = REAL(iright, PRhyd)
-!           qleft%dx1   = 0.0_PRhyd
-!           qleft%dx2   = 0.0_PRhyd
-!           qleft%dx1x2 = 0.0_PRhyd
-!         
-!         end subroutine hdual_tens_assign_int
+        subroutine hdual_tens_assign_int(qleft, iright) 
+        
+          implicit none
+          TYPE(hyperdual), dimension(:,:,:), intent(out)  :: qleft
+          integer, intent(in)                             :: iright
+        
+          qleft%x     = REAL(iright, PRhyd)
+          qleft%dx1   = 0.0_PRhyd
+          qleft%dx2   = 0.0_PRhyd
+          qleft%dx1x2 = 0.0_PRhyd
+        
+        end subroutine hdual_tens_assign_int
   
   
-!         subroutine hdual_tens_assign_int_tens(qleft, iright) 
-!         
-!           implicit none
-!           TYPE(hyperdual), dimension(:,:,:), intent(out)  :: qleft
-!           integer, dimension(:,:,:), intent(in)           :: iright
-!         
-!           qleft%x     = REAL(iright, PRhyd)
-!           qleft%dx1   = 0.0_PRhyd
-!           qleft%dx2   = 0.0_PRhyd
-!           qleft%dx1x2 = 0.0_PRhyd
-!         
-!         end subroutine hdual_tens_assign_int_tens
+        subroutine hdual_tens_assign_int_tens(qleft, iright) 
+        
+          implicit none
+          TYPE(hyperdual), dimension(:,:,:), intent(out)  :: qleft
+          integer, dimension(:,:,:), intent(in)           :: iright
+        
+          qleft%x     = REAL(iright, PRhyd)
+          qleft%dx1   = 0.0_PRhyd
+          qleft%dx2   = 0.0_PRhyd
+          qleft%dx1x2 = 0.0_PRhyd
+        
+        end subroutine hdual_tens_assign_int_tens
   
 
         subroutine hdual_4d_assign_hdual_4d(qleft, qright) 
@@ -655,18 +655,18 @@ Module HDMod
         end subroutine hdual_4d_assign_dble_4d
 
 
-!         subroutine hdual_4d_assign_dble_4d_SPRhyd(qleft, xright)
-!   
-!           implicit none
-!           TYPE(hyperdual), dimension(:,:,:,:), intent(out) :: qleft
-!           REAL(SPRhyd), dimension(:,:,:,:), intent(in)     :: xright
-!           
-!           qleft%x = REAL(xright, PRhyd)
-!           qleft%dx1 = 0.0_PRhyd
-!           qleft%dx2 = 0.0_PRhyd
-!           qleft%dx1x2 = 0.0_PRhyd
-!   
-!         end subroutine hdual_4d_assign_dble_4d_SPRhyd
+        subroutine hdual_4d_assign_dble_4d_SPRhyd(qleft, xright)
+  
+          implicit none
+          TYPE(hyperdual), dimension(:,:,:,:), intent(out) :: qleft
+          REAL(SPRhyd), dimension(:,:,:,:), intent(in)     :: xright
+          
+          qleft%x = REAL(xright, PRhyd)
+          qleft%dx1 = 0.0_PRhyd
+          qleft%dx2 = 0.0_PRhyd
+          qleft%dx1x2 = 0.0_PRhyd
+  
+        end subroutine hdual_4d_assign_dble_4d_SPRhyd
   
   
         subroutine hdual_5d_assign_dble(qleft, xright)
@@ -6196,12 +6196,12 @@ Module HDMod
           function min_dble_hdual_SPRhyd(x1, q2) result(q_out)
   
             implicit none
-            real(SPRhyd), intent(in)        :: x1
+            real(SPRhyd), intent(in)    :: x1
             TYPE(hyperdual), intent(in) :: q2
             TYPE(hyperdual)             :: q_out
   
             if (REAL(x1,PRhyd).LE.q2%x) then
-              q_out = REAL(x1,PRhyd)
+              q_out%x = REAL(x1,PRhyd)
               q_out%dx1 = 0.0_PRhyd
               q_out%dx2 = 0.0_PRhyd
               q_out%dx1x2 = 0.0_PRhyd
