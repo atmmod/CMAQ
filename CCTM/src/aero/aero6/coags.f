@@ -171,13 +171,13 @@ C *** Local Variables:
       TYPE(hyperdual) :: XM2AT, XM3AT, XM2AC, XM3AC
 
 C *** correction factors for coagulation rates      
-      REAL( 8 ) :: BM0    ( 10 )        ! M0 INTRAmodal FM - RPM values
-      REAL( 8 ) :: BM0IJ  ( 10,10,10 )  ! M0 INTERmodal FM
-      REAL( 8 ) :: BM3I   ( 10,10,10 )  ! M3 INTERmodal FM- RPM values
-      REAL( 8 ) :: BM2II  ( 10 )        ! M2 INTRAmodal FM
-      REAL( 8 ) :: BM2IITT( 10 )        ! M2 INTRAmodal total
-      REAL( 8 ) :: BM2IJ  ( 10,10,10 )  ! M2 INTERmodal FM i to j
-      REAL( 8 ) :: BM2JI  ( 10,10,10 )  ! M2 total INTERmodal  j from i
+      REAL :: BM0    ( 10 )        ! M0 INTRAmodal FM - RPM values
+      REAL :: BM0IJ  ( 10,10,10 )  ! M0 INTERmodal FM
+      REAL :: BM3I   ( 10,10,10 )  ! M3 INTERmodal FM- RPM values
+      REAL :: BM2II  ( 10 )        ! M2 INTRAmodal FM
+      REAL :: BM2IITT( 10 )        ! M2 INTRAmodal total
+      REAL :: BM2IJ  ( 10,10,10 )  ! M2 INTERmodal FM i to j
+      REAL :: BM2JI  ( 10,10,10 )  ! M2 total INTERmodal  j from i
 
 C *** populate the arrays for the correction factors.
 

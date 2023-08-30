@@ -108,6 +108,7 @@
 
       ! Grid and High-Level Model Parameters
       LOGICAL :: NEW_START       = .TRUE.   ! Start New Simulation. Not a Restart
+      LOGICAL :: HYD_NEW_START   = .TRUE.   ! Start New Simulation. Not a Restart for HYD
       CHARACTER(1) :: ISAM_NEW_START = 'Y'  ! Start New Simulation. Not a Restart for ISAM
       CHARACTER(16) :: GRID_NAME = ''       ! grid name selected from GRIDDESC
       CHARACTER(16) :: PROGNAME  = 'DRIVER' ! Program name selected from GRIDDESC
@@ -344,6 +345,9 @@
     
       ! Determine if this run is a new start or a restart
       CALL GET_ENV ( ISAM_NEW_START, 'ISAM_NEW_START', ISAM_NEW_START, VARDEV )
+      
+      ! Determine if this run is a new start or a restart
+      CALL GET_ENV( HYD_NEW_START, 'HYD_NEW_START', HYD_NEW_START, VARDEV )
     
       ! Get Grid Name
       CALL GET_ENV ( STRTEMP, 'GRID_NAME', GRID_NAME, VARDEV )

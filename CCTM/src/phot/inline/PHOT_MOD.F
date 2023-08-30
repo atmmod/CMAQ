@@ -1074,7 +1074,7 @@ C     revised interpolation method for a general number of
 C     interpolation points
 C
 C-----------------------------------------------------------------------
-
+	  USE HDMod
       IMPLICIT NONE
 
 !***arguments
@@ -1808,22 +1808,20 @@ C-----------------------------------------------------------------------
 
       FDR(LEV) = 1.0D0    ! this the downward flux at the top of the model
       EDR(LEV) = MU * FDR(LEV) 
-      EDN(LEV) = REAL( FDN0 , 8 )
+      EDN(LEV) = FDN0
       EUP(LEV) = Y(ROW) * E3(J) - Y(ROW + 1) * E4(J) + CUP(J) 
-      FDN(LEV) = EDN(LEV)%x * REAL( MU1 )
-      FUP(LEV) = EUP(LEV)%x * REAL( MU1 )
+      FDN(LEV) = EDN(LEV) * MU1 
+      FUP(LEV) = EUP(LEV) * MU1
 
       DO 60, LEV = 2, NLAYER + 1
-
-c        There was a REAL here, what is the purpose? 
 
         FDR(LEV) = EXP( MAX( LOG_DBLE_SMALLEST, -TAUSLA(LEV-1) )  ) 
 !         FDR(LEV) = REAL( EXPONS(LEV-1) ) ! REAL( EXP( MAX( LOG_DBLE_SMALLEST, -TAUSLA(LEV-1) )  ) )
          EDR(LEV) = MU * FDR(LEV)
          EDN(LEV) = Y(ROW) * E3(J) + Y(ROW + 1) * E4(J) + CDNTN(J) 
          EUP(LEV) = Y(ROW) * E1(J) + Y(ROW + 1) * E2(J) + CUPTN(J) 
-         FDN(LEV) = EDN(LEV) * REAL( MU1 )
-         FUP(LEV) = EUP(LEV) * REAL( MU1 )
+         FDN(LEV) = EDN(LEV) * MU1 
+         FUP(LEV) = EUP(LEV) * MU1 
 
          ROW = ROW + 2
          J = J + 1

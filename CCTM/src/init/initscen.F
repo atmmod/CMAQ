@@ -221,7 +221,7 @@ C Load CGRID
       IF ( N_GC_SPC .GT. 0 ) THEN
          FNAME = INIT_CONC_1
          CALL LOAD_CGRID ( FNAME, 'GC', CMIN, CGRID )
-         IF ( .NOT. NEW_START ) THEN
+         IF ( .NOT. HYD_NEW_START ) THEN
          	FNAME = INIT_DX1_1
          	CALL LOAD_DX1GRID( FNAME, 'GC', CGRID)
          	FNAME = INIT_DX2_1
@@ -253,7 +253,7 @@ C Get aerosols IC's
       IF ( N_AE_SPC .GT. 0 ) THEN
          FNAME = INIT_CONC_1
          CALL LOAD_CGRID ( FNAME, 'AE', CMIN, CGRID )
-         IF ( .NOT. NEW_START ) THEN
+         IF ( .NOT. HYD_NEW_START ) THEN
          	FNAME = INIT_DX1_1
          	CALL LOAD_DX1GRID( FNAME, 'AE', CGRID)
          	FNAME = INIT_DX2_1
@@ -267,7 +267,7 @@ C Get non-reactives IC's
       IF ( N_NR_SPC .GT. 0 ) THEN
          FNAME = INIT_CONC_1
          CALL LOAD_CGRID ( FNAME, 'NR', CMIN, CGRID )
-         IF ( .NOT. NEW_START ) THEN
+         IF ( .NOT. HYD_NEW_START ) THEN
          	FNAME = INIT_DX1_1
          	CALL LOAD_DX1GRID( FNAME, 'NR', CGRID)
          	FNAME = INIT_DX2_1
@@ -281,7 +281,7 @@ C Get tracer IC's
       IF ( N_TR_SPC .GT. 0 ) THEN
          FNAME = INIT_CONC_1
          CALL LOAD_CGRID ( FNAME, 'TR', CMIN, CGRID )
-         IF ( .NOT. NEW_START ) THEN
+         IF ( .NOT. HYD_NEW_START ) THEN
          	FNAME = INIT_DX1_1
          	CALL LOAD_DX1GRID( FNAME, 'TR', CGRID)
          	FNAME = INIT_DX2_1
@@ -365,10 +365,16 @@ C Test opening existing conc file for update
       
       ! Write the initial sensitivities. It should write 0 for a new fresh start. 
       ! to the dx1, dx2, and dx1x2 files. 
-C     IF (.NOT. NEW_START) THEN
+
       CALL WR_INIT_HYD ( CGRID, STDATE, STTIME, TSTEP( 1 ) )
       CALL LOG_HEADING( LOGDEV, "Open or Create Average Concentration File" )
       CALL OPACONC ( STDATE, STTIME, TSTEP( 1 ) )
+C     CALL LOG_HEADING( LOGDEV, "Open or Create Average DX1 File")
+C     CALL OPADX1 ( STDATE, STTIME, TSTEP( 1 ) )
+C     CALL LOG_HEADING( LOGDEV, "Open or Create Average DX2 File")
+C     CALL OPADX2 ( STDATE, STTIME, TSTEP( 1 ) )
+C     CALL LOG_HEADING( LOGDEV, "Open or Create Average DX1X2 File")
+C     CALL OPADX1X2 ( STDATE, STTIME, TSTEP( 1 ) )
       
       CALL LOG_HEADING( LOGDEV, "Open or Create Wet Deposition File" )
       CALL OPWDEP  ( STDATE, STTIME, TSTEP( 1 ) )

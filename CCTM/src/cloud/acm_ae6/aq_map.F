@@ -252,8 +252,6 @@ C...load gas-phase concentrations
 
         DO ISRG = 1, NSRGGAS( IGAS )
           PNTR = CGRID2AQ_MAP( LSRGGAS( IGAS, ISRG ) )
-C         GAS( IGAS ) = GAS( IGAS ) + REAL( POLC( PNTR ), 8 )
-C         Ignore sensitivity here J.E.L.
 		  GAS( IGAS ) = GAS( IGAS ) + POLC( PNTR ) 
 #ifdef sens
           DO NP = 1, NPMAX

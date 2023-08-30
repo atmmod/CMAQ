@@ -453,10 +453,11 @@ c..Get rate constants
                FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%dx1x2 = KHETERO( NPH,C,R,L )%dx1x2
                                              
                CALL CALC_RCONST( TEMP, ATMPRES, H2O, RJIN, HET, LSUNLIGHT, LAND, RKI_SAV, NCELL )
-C              FORALL( NPH = 1:NRXNS )RKI( NPH ) = RKI_SAV( NCELL, NPH )
- 	           DO NPH = 1, NRXNS
- 	              RKI( NPH ) = RKI_SAV( NCELL, NPH )   ! Only take the x component to see whether the impact is caused by RKI calculation
- 	           ENDDO
+               
+               FORALL( NPH = 1:NRXNS )RKI( NPH )%x = RKI_SAV( NCELL, NPH )%x
+               FORALL( NPH = 1:NRXNS )RKI( NPH )%dx1 = RKI_SAV( NCELL, NPH )%dx1
+               FORALL( NPH = 1:NRXNS )RKI( NPH )%dx2 = RKI_SAV( NCELL, NPH )%dx2
+               FORALL( NPH = 1:NRXNS )RKI( NPH )%dx1x2 = RKI_SAV( NCELL, NPH )%dx1x2
 #ifdef isam
 #if defined(isam) || defined(verbose_isam)
 C...For diagnosing IRR calculations in log files

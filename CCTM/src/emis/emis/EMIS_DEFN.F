@@ -305,7 +305,6 @@ C Local Variables:
          REAL             DELT          ! interpolation factor
          INTEGER          C, R, L, N, S, V, ISTR, ISRM, NL ! loop induction variables
          INTEGER          S_STRT, S_END ! substitute loop induction variables
-         
          TYPE(hyperdual), ALLOCATABLE, SAVE :: VDEMIS_READ (:,:,:,:) ! Emissions as they are provided by each stream
          TYPE(hyperdual), ALLOCATABLE, SAVE :: VDEMIS_SCALED( :,:,:,: ) ! Emissions after user scaling, and spatial scaling         
          TYPE(hyperdual), ALLOCATABLE, SAVE :: VDEMIS_CONV  ( :,:,:,: ) ! Emissions after converting to units for VDIFF
@@ -583,7 +582,10 @@ C		   VDEMIS_BI(6,:,:) = VDEMIS_BI(6,:,:) * hyperdual(1.0d0, 1.0d0, 1.0d0, 0.0d0
                CALL GET_LTNG ( JDATE, JTIME, TSTEP )
                DO L = 1,NL
                   FORALL( ISTR = 1:N_EMIS_ISTR, MAP_EMtoSURR( ISTR,ISRM ) .GT. 0 )
-                     VDEMIS_READ( ISTR,L,:,: )%x = REAL ( VDEMIS_LT( :,:,L ) , 8 )   
+                     VDEMIS_READ( ISTR,L,:,: )%x = REAL ( VDEMIS_LT( :,:,L ) , 8 )  
+                     VDEMIS_READ( ISTR,L,:,: )%dx1 = 0.0d0 
+                     VDEMIS_READ( ISTR,L,:,: )%dx2 = 0.0d0 
+                     VDEMIS_READ( ISTR,L,:,: )%dx1x2 = 0.0d0 
                   END FORALL
                END DO
                CALL EMISS_SCALING( VDEMIS_READ, ISRM, NL, VDEMIS_SCALED )
@@ -946,7 +948,7 @@ C-----------------------------------------------------------------------
       
       DO C = 1, NCOLS
       	DO R = 1, NROWS
-      	  DO L = 1, EMLAYS
+      	  DO L = 1, NL
       	  	DO ISTR = 1, N_EMIS_ISTR
       	  	   IF ( MAP_EMtoGAS( ISTR ) .NE. 0 ) THEN
       	  	   	  VDEMIS0(ISTR, L, C, R) = CNVTC(L, C, R) * VDEMIS0(ISTR, L, C, R) 
@@ -1007,7 +1009,7 @@ C    &    VDEMIS0( ISTR,1:NL,:,: )%dx1x2 = CONVN( 1:NL,:,: ) * VDEMIS0( ISTR,1:N
       
       DO C = 1, NCOLS
       	DO R = 1, NROWS
-      	  DO L = 1, EMLAYS
+      	  DO L = 1, NL
       	  	DO ISTR = 1, N_EMIS_ISTR
       	  	   IF ( MAP_EMtoDIFF( ISTR ) .NE. 0 ) THEN
       	  	   	  VDEMIS( MAP_EMtoDIFF(ISTR),L,C,R) = VDEMIS(MAP_EMtoDIFF(ISTR),L,C,R) + VDEMIS0(ISTR,L,C,R) 
@@ -1088,6 +1090,9 @@ C    &                VDEMIS0( ISTR,1:NL,:,: )%dx1x2
 
       ELSE ! reset slightly negative values to 0.0
           WHERE ( VDEMIS%x .LT. 0.0D0 ) VDEMIS%x = 0.0D0
+          WHERE ( VDEMIS%x .LT. 0.0D0 ) VDEMIS%dx1 = 0.0D0
+          WHERE ( VDEMIS%x .LT. 0.0D0 ) VDEMIS%dx2 = 0.0D0
+          WHERE ( VDEMIS%x .LT. 0.0D0 ) VDEMIS%dx1x2 = 0.0D0
       END IF
 
       END FUNCTION EMISS_NEG_CHECK    

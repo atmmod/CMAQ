@@ -1826,7 +1826,7 @@ C     Willeke, K. and  J. E. Brockmann, Extinction coefficients for
 C     multmodal atmospheric particle size distributions, Atmospheric
 C     Environment, vol. 11, pp 95-999, 1977.
 C-----------------------------------------------------------------------
-
+	  USE HDMod
       IMPLICIT NONE
 
 C***include files

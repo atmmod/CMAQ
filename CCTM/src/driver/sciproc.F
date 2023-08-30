@@ -55,11 +55,11 @@ C    16 Sep 16 J.Young: update for inline procan (IPR)
 C    10 July 19 F. Sidi: Renamed Couple_WRF to be couple
 C-----------------------------------------------------------------------
 
-C     USE UTILIO_DEFN, ONLY: DT2STR, WKDAY
-C     USE RUNTIME_VARS, ONLY: LOGDEV, OUTDEV, MYPE, CKSUM, 
-C    &                        PRINT_PROC_TIME, WEEKDAY, 
-C    &                        LOG_MESSAGE, TIMING_SPLIT, STM,
-C    &                        COLUMN_MODEL
+c     USE UTILIO_DEFN, ONLY: DT2STR, WKDAY
+C   USE RUNTIME_VARS, ONLY: LOGDEV, OUTDEV, MYPE, CKSUM, 
+C  &                        PRINT_PROC_TIME, WEEKDAY, 
+C  &                        LOG_MESSAGE, TIMING_SPLIT, STM,
+C  &                        COLUMN_MODEL
 #ifdef parallel
       USE SE_MODULES            ! stenex (using SE_UTIL_MODULE)
 #else
@@ -77,8 +77,8 @@ C     USE PA_DEFN, Only: LIPR   ! Process Analysis control and data variables
       
       USE STM_MODULE, ONLY: STM_WRAP_GAS, STM_WRAP_AE
       USE STD_CONC           ! Write conc in STD_CONC, edited by J.E.L.
-      USE RUNTIME_VARS       ! CONC_BLEV, CONC_ELEV are here, J.E.L.
-      USE UTILIO_DEFN        ! J.E.L.       IMPLICIT NONE  
+      USE RUNTIME_VARS      ! CONC_BLEV, CONC_ELEV are here, J.E.L.
+      USE UTILIO_DEFN        ! J.E.L.       
 
       IMPLICIT NONE   
 
@@ -352,22 +352,6 @@ C#endif
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'AERO' )
       IF ( STM ) CALL STM_WRAP_AE ( CGRID, JDATE, JTIME )
       
-C     CGRID(:, :, 20, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 21, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 22, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 23, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 24, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 25, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 26, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 27, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 28, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 29, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 30, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 31, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 32, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 33, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 34, :)%dx1x2 = 0.0d0
-C     CGRID(:, :, 35, :)%dx1x2 = 0.0d0
 #ifdef isam
       CALL SA_WRAP_AE( CGRID0, CGRID, JDATE, JTIME, TSTEP )
 #endif

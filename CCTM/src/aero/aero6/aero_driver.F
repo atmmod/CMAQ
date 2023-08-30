@@ -391,12 +391,9 @@ C *** initialize conc arrays
 
       N_APMDIAG_STEP = N_APMDIAG_STEP + 1
       
-C     CGRID(:,:,:,213) = CGRID(:,:,:,213) + PERT_HYPERDUAL
       DO L = 1, NLAYS
          DO R = 1, NROWS
-            DO C = 1, NCOLS
-			   
-			   
+            DO C = 1, NCOLS      
 C *** Grid cell meteorological data.
                AIRTEMP  = TA   ( C,R,L )
                AIRPRES  = PRES ( C,R,L )   ! Note pascals
@@ -576,10 +573,7 @@ C *** Accumulate wet diameters, 2nd, and 3rd moments to average aerosol diagnost
             END DO ! loop on COLS
          END DO ! loop on ROWS
       END DO ! loop on NLAYS
-            
-C  	  CGRID(:,:,:,:)%dx1 = 0.d0
-C     CGRID(:,:,:,:)%dx2 = 0.d0
-C     CGRID(:,:,:,:)%dx1x2 = 0.d0
+
 C *** From AEROPROC call to ORGAER...
 !     If ( pfc .gt. 0 ) Then
 !        Write( xmsg,'(a,i8)' ) 'possible false convergences in soa bisection:', pfc

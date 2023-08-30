@@ -416,9 +416,9 @@
          LOGICAL,     SAVE :: FIRSTIME = .TRUE.
 
 C statement function for ERF approximation
-C        REAL              :: ERF                ! ERF approx. statement function
-C        REAL              :: X                  ! dummy argument for ERF
-C        ERF( X ) = SIGN( 1.0, X ) * SQRT( 1.0 - EXP( -4.0 * X * X / PI ) )
+         REAL              :: ERF                ! ERF approx. statement function
+         REAL              :: X                  ! dummy argument for ERF
+         ERF( X ) = SIGN( 1.0, X ) * SQRT( 1.0 - EXP( -4.0 * X * X / PI ) )
 !-----------------------------------------------------------------------
          
          CALL UPCASE(LTNG_FNAME)

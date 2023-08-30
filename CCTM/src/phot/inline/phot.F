@@ -1226,72 +1226,72 @@ C...modules
          END IF
 
          VARNM = 'CO_COLUMN'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, CO_COLUMN%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( CO_COLUMN%x , 4 ) ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
          VARNM = 'SO2_COLUMN'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, SO2_COLUMN%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( SO2_COLUMN%x , 4 ) ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
          VARNM = 'NO2_COLUMN'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, NO2_COLUMN%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( NO2_COLUMN%x , 4 ) ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
          VARNM = 'HCHO_COLUMN'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, HCHO_COLUMN%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( HCHO_COLUMN%x , 4 ) ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'TROPO_O3_COLUMN'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, TROPO_OC%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( TROPO_OC%x , 4 ) ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
 
          VARNM = 'TRANS_DIFFUSE'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, TRANSMIS_DIFFUSE%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( TRANSMIS_DIFFUSE%x , 4 ) ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'TRANS_DIRECT'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, TRANSMIS_DIRECT%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( TRANSMIS_DIRECT%x , 4 ) ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'REFLECTION'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REFLECT_COEFF%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( REFLECT_COEFF%x , 4 ) ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'CLR_TRANS_DIF'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, CLR_TRANSMISSION%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( CLR_TRANSMISSION%x , 4 ) ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'CLR_TRANS_DIR'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, CLR_TRANS_DIRECT%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( CLR_TRANS_DIRECT%x , 4 ) ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'CLR_REFLECTION'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, CLR_REFLECTION%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( CLR_REFLECTION%x , 4 ) ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'TROPO_O3_EXCEED'
          TROPO_O3_EXCEED = TROPO_O3_EXCEED / REAL( MAX(1, TSTEP_COUNT) )
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, TROPO_O3_EXCEED%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( TROPO_O3_EXCEED%x , 4 ) ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
@@ -1383,14 +1383,14 @@ C...modules
 
             VARNM = 'TAU_TOT_W' // WLTXT( IWL )
             IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE,
-     &                         OTIME, TAU_TOT_WL( :,:,IWL )%x ) ) THEN
+     &                         OTIME, REAL ( TAU_TOT_WL( :,:,IWL )%x , 4 ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
 
             VARNM = 'TAUO3_TOP_W' // WLTXT( IWL )
             IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE,
-     &                         OTIME, TAUO3_TOP_WL( :,:,IWL )%x ) ) THEN
+     &                         OTIME, REAL ( TAUO3_TOP_WL( :,:,IWL )%x , 4 ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
@@ -1418,7 +1418,7 @@ C...modules
          DO IPHOT = 1, NPHOTAB
             OUTPUT_BUFF( 1:NCOLS,1:NROWS,1:NLAYS_DIAG ) = RJ( 1:NCOLS,1:NROWS,1:NLAYS_DIAG,IPHOT )
             IF ( .NOT. WRITE3( CTM_RJ_2, PHOTAB( IPHOT ), ODATE,
-     &                         OTIME, OUTPUT_BUFF%x  ) ) THEN
+     &                         OTIME, REAL ( OUTPUT_BUFF%x , 4 ) ) ) THEN
                XMSG = 'Could not write ' // CTM_RJ_2 // ' file'
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
@@ -1430,7 +1430,7 @@ C...modules
 
          VARNM = 'CFRAC_3D'
          OUTPUT_BUFF( 1:NCOLS,1:NROWS,1:NLAYS_DIAG ) = REAL ( CFRAC_3D( 1:NCOLS,1:NROWS,1:NLAYS_DIAG ) , 8 )
-         IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, OUTPUT_BUFF%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( OUTPUT_BUFF%x , 4 ) ) ) THEN
               XMSG = 'Could not write ' // TRIM( VARNM ) // ' to ' // CTM_RJ_3 // ' file'
               CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
@@ -1439,44 +1439,44 @@ C...modules
             IWL = DIAG_WVL( L )
 
             VARNM = 'ACTINIC_FX_W' // WLTXT( IWL )
-            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, ACTINIC_FX( :,:,:,L )%x ) ) THEN
+            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( ACTINIC_FX( :,:,:,L )%x , 4 ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
 
             VARNM = 'AERO_SSA_W' // WLTXT( IWL )
-            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, AERO_SSA( :,:,:,L )%x ) ) THEN
+            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( AERO_SSA( :,:,:,L )%x , 4 ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
 
             VARNM = 'AERO_ASYM_W' // WLTXT( IWL )
-            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, AERO_ASYM( :,:,:,L )%x ) ) THEN
+            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( AERO_ASYM( :,:,:,L )%x , 4 ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
 
             VARNM = 'EXT_AERO_W' // WLTXT( IWL )
-            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, AERO_EXT( :,:,:,L )%x ) ) THEN
+            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( AERO_EXT( :,:,:,L )%x , 4 ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
 
             VARNM = 'EXT_W' // WLTXT( IWL )
-            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, TOT_EXT( :,:,:,L )%x ) ) THEN
+            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( TOT_EXT( :,:,:,L )%x , 4 ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
 
             VARNM = 'GAS_EXT_W' // WLTXT( IWL )
-            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, GAS_EXT( :,:,:,L )%x ) ) THEN
+            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( GAS_EXT( :,:,:,L )%x , 4 ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
          END DO
 
          VARNM = 'EXT_AERO_W550'
-         IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, AERO_EXT_550( :,:,: )%x ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( AERO_EXT_550( :,:,: )%x , 4 ) ) ) THEN
              XMSG = 'Error writing variable ' // VARNM
              CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF

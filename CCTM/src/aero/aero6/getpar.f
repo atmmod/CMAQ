@@ -163,7 +163,7 @@ c         below the minimum limit.
          xfsum = one3d * Log( xxm0 ) + two3d * Log( xxm3 )
 
          if ( fixed_sg ) then
-            l2sg  = aeromode_lnsg( n ) ** 2 
+            l2sg  = aeromode_lnsg( n ) ** 2.0D0 
          else
             xxm2  = moment2_conc( n )
 

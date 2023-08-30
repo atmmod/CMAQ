@@ -95,6 +95,7 @@ C-----------------------------------------------------------------------
       USE SEDIMENTATION
       USE VDIFF_DIAG
 !       USE PA_DEFN, Only: LIPR ! Process Anaylsis control and data variables
+      USE HDMod
 
 #ifdef isam
       USE SA_DEFN, Only: ITAG, N_SPCTAG, VNAM_SPCTAG, SA_DDEP, SA_BIDI, ISAM, NTAG_SA, 

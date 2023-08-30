@@ -1125,12 +1125,6 @@ C-----------------------------------------------------------------------
            indx = map_OAtoAERO( i )
            totaer%x = max( sum( aerospc_conc( indx,: )%x , mask = 
      &                 .NOT. aero_missing( indx,: ) ), conmin )
-C          totaer%dx1 = sum( aerospc_conc( indx,: )%dx1 , mask = 
-C    &                 .NOT. aero_missing( indx,: ) )
-C          totaer%dx2 = sum( aerospc_conc( indx,: )%dx2 , mask = 
-C    &                 .NOT. aero_missing( indx,: ) )
-C          totaer%dx1x2 = sum( aerospc_conc( indx,: )%dx1x2 , mask = 
-C    &                 .NOT. aero_missing( indx,: ) )  
           
            ! If the concentration is less than conmin, then all the hyperdual
            ! Components should be zero. 
@@ -2053,7 +2047,7 @@ C     Function inputs and output
       Integer, INTENT(IN) :: n                          ! number of semivolatile species
       Real, INTENT(IN) :: mlwt(n)                    ! molecular weights of semivolatiles
       TYPE(hyperdual), INTENT(IN) :: semivol(n)  
-      REAL :: cstar(n)                                ! semivolatile mass, sat conc in ug/m3
+      REAL, INTENT(IN) :: cstar(n)                                ! semivolatile mass, sat conc in ug/m3
       TYPE(hyperdual)            :: eqnerror                         ! result, deviation from 0.0 in equation
 
 C     Local variables

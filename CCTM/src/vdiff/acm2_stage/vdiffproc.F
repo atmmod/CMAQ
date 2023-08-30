@@ -95,6 +95,7 @@ C-----------------------------------------------------------------------
       USE SEDIMENTATION
       USE VDIFF_DIAG
       USE PA_DEFN, Only: LIPR ! Process Analysis control and data variables
+      USE HDMod
 
 #ifdef isam
       USE SA_DEFN, Only: ITAG, N_SPCTAG, VNAM_SPCTAG, SA_DDEP
@@ -108,7 +109,7 @@ C-----------------------------------------------------------------------
 
 C Arguments:
 
-      REAL, POINTER :: CGRID( :,:,:,: )              !  concentrations
+      TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )   !  concentrations
       INTEGER      JDATE        ! current model date, coded YYYYDDD
       INTEGER      JTIME        ! current model time, coded HHMMSS
       INTEGER      TSTEP( 3 )   ! time step vector (HHMMSS)
@@ -133,15 +134,15 @@ C Local Variables:
 
       REAL             FCMSF                         ! loop local RMSFX4( C,R )
 
-      REAL, ALLOCATABLE, SAVE :: CNGRD( :,:,:,: )    ! cgrid aero in mixing ratio
-      REAL, ALLOCATABLE, SAVE :: DDEP     ( :,:,: )   ! ddep accumulator
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: CNGRD( :,:,:,: )    ! cgrid aero in mixing ratio
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DDEP     ( :,:,: )   ! ddep accumulator
       REAL, ALLOCATABLE, SAVE :: ICMP     ( :,:,: )   ! component flux accumlator 
-      REAL, ALLOCATABLE, SAVE :: DDEPJ    ( :,:,:,: ) ! ddep for mosaic
-      REAL, ALLOCATABLE, SAVE :: DDEPJ_FST( :,:,:,: ) ! ddep for stomtal/cuticular pathway
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DDEPJ    ( :,:,:,: ) ! ddep for mosaic
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DDEPJ_FST( :,:,:,: ) ! ddep for stomtal/cuticular pathway
 
-      REAL     :: WRDD( NCOLS,NROWS )                 ! ddep write buffer
-      REAL     :: WRDDJ( NCOLS,NROWS,N_LUFRAC+1 )     ! mosaic ddep write buffer
-      REAL     :: WRDDJ_FST( NCOLS,NROWS,N_LUFRAC+1 ) ! mosaic stomatal flux write buffer
+      TYPE(hyperdual)     :: WRDD( NCOLS,NROWS )                 ! ddep write buffer
+      TYPE(hyperdual)     :: WRDDJ( NCOLS,NROWS,N_LUFRAC+1 )     ! mosaic ddep write buffer
+      TYPE(hyperdual)     :: WRDDJ_FST( NCOLS,NROWS,N_LUFRAC+1 ) ! mosaic stomatal flux write buffer
 
       REAL, ALLOCATABLE, SAVE :: DDEP_PA  ( :,:,: )   ! ddep for process analysis
       REAL, ALLOCATABLE, SAVE :: EMIS_PA( :,:,:,: )   ! emis for process analysis
@@ -153,7 +154,7 @@ C Local Variables:
       REAL     :: SEDDY ( NLAYS,NCOLS,NROWS )   ! flipped EDDYV
       REAL        DTSEC                         ! model time step in seconds
 
-      REAL, ALLOCATABLE, SAVE :: VSED_AE( :,:,:,: )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: VSED_AE( :,:,:,: )
 
 C Local Variables
 
@@ -175,26 +176,29 @@ C Local Variables
             INTEGER,        INTENT( IN )  :: TSTEP( 3 )
          END SUBROUTINE PA_UPDATE_DDEP
          SUBROUTINE CONV_CGRID ( CGRID, JDATE, JTIME, CNGRD )
-            REAL, POINTER :: CGRID( :,:,:,: )
+            use HDMod
+            TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
             INTEGER,        INTENT( IN )  :: JDATE, JTIME
-            REAL,           INTENT( INOUT ) :: CNGRD( :,:,:,: )
+            TYPE(hyperdual), INTENT( INOUT ) :: CNGRD( :,:,:,: )
          END SUBROUTINE CONV_CGRID
          SUBROUTINE REV_CGRID ( CNGRD, JDATE, JTIME, CGRID )
-            REAL,           INTENT( INOUT ) :: CNGRD( :,:,:,: )
+         	use HDMod
+            TYPE(hyperdual),  INTENT( INOUT ) :: CNGRD( :,:,:,: )
             INTEGER,        INTENT( IN )  :: JDATE, JTIME
-            REAL, POINTER :: CGRID( :,:,:,: )
+            TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
          END SUBROUTINE REV_CGRID
          SUBROUTINE EDDYX ( EDDYV )
             REAL,           INTENT( OUT ) :: EDDYV( :,:,: )
          END SUBROUTINE EDDYX
          SUBROUTINE VDIFFACMX( dtsec, seddy, ddep, icmp, ddepj, ddepj_fst, cngrd )
+            use HDMod
             REAL, INTENT( IN )    :: dtsec
             REAL, INTENT( INOUT ) :: seddy( :,:,: )
-            REAL, INTENT( INOUT ) :: ddep ( :,:,: )
+            TYPE(hyperdual), INTENT( INOUT ) :: ddep ( :,:,: )
             REAL, INTENT( INOUT ) :: icmp ( :,:,: )
-            REAL, INTENT( INOUT ), OPTIONAL :: ddepj    ( :,:,:,: )
-            REAL, INTENT( INOUT ), OPTIONAL :: ddepj_fst( :,:,:,: )
-            REAL, INTENT( INOUT ) :: cngrd( :,:,:,: )
+            TYPE(hyperdual), INTENT( INOUT ), OPTIONAL :: ddepj    ( :,:,:,: )
+            TYPE(hyperdual), INTENT( INOUT ), OPTIONAL :: ddepj_fst( :,:,:,: )
+            TYPE(hyperdual), INTENT( INOUT ) :: cngrd( :,:,:,: )
          END SUBROUTINE VDIFFACMX
 #ifdef isam
          SUBROUTINE SA_OPWDDEP ( SADEPFILE, JDATE, JTIME, TSTEP )
@@ -257,8 +261,8 @@ C Allocate and initialize dry deposition array
             XMSG = 'Failure allocating DDEP'
             CALL M3EXIT( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
-         DDEP = 0.0   ! array assignment
-  
+         DDEP = 0.0d0   ! array assignment
+ 
          ALLOCATE ( ICMP( LCMP,NCOLS,NROWS ), STAT = ASTAT )
          IF ( ASTAT .NE. 0 ) THEN
             XMSG = 'Failure allocating ICMP'
@@ -283,20 +287,20 @@ C Allocate and initialize dry deposition array
 #endif
 
 C Set up for process analysis
-         IF ( LIPR ) THEN
-            CALL LOG_HEADING( LOGDEV, "Initialize Surface Exchange for Process Analysis" )
-
-            ALLOCATE ( EMIS_PA( NCOLS,NROWS,EMLAYS,N_SPC_DIFF ), STAT = ASTAT )
-            IF ( ASTAT .NE. 0 ) THEN
-               XMSG = 'EMIS_PA memory allocation failed'
-               CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
-            END IF
-            ALLOCATE ( DDEP_PA( NCOLS,NROWS,N_SPC_DEPV ), STAT = ASTAT )
-            IF ( ASTAT .NE. 0 ) THEN
-               XMSG = 'DDEP_PA memory allocation failed'
-               CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
-            END IF
-         END IF
+C        IF ( LIPR ) THEN
+C           CALL LOG_HEADING( LOGDEV, "Initialize Surface Exchange for Process Analysis" )
+C
+C           ALLOCATE ( EMIS_PA( NCOLS,NROWS,EMLAYS,N_SPC_DIFF ), STAT = ASTAT )
+C           IF ( ASTAT .NE. 0 ) THEN
+C              XMSG = 'EMIS_PA memory allocation failed'
+C              CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
+C           END IF
+C           ALLOCATE ( DDEP_PA( NCOLS,NROWS,N_SPC_DEPV ), STAT = ASTAT )
+C           IF ( ASTAT .NE. 0 ) THEN
+C              XMSG = 'DDEP_PA memory allocation failed'
+C              CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
+C           END IF
+C        END IF
 
 C Set up for grav. settling
          IF ( GRAV_SETL ) THEN
@@ -309,14 +313,14 @@ C Set up for grav. settling
             END IF
          END IF
 
-         N_SPC_CGRID = SIZE ( CGRID,4 )
+         N_SPC_CGRID = SIZE ( CGRID%x,4 )
 
          ALLOCATE ( CNGRD( N_SPC_CGRID,NLAYS,NCOLS,NROWS ), STAT = ASTAT )
          IF ( ASTAT .NE. 0 ) THEN
             XMSG = 'Failure allocating CNGRD'
             CALL M3EXIT( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
-         CNGRD = 0.0   ! array assignment
+         CNGRD = 0.0d0   ! array assignment
        
 !----------------------------------------------------------------------------------------
 !  Move to ASX driver to get stage data set up mapping in init_stage
@@ -328,7 +332,7 @@ C Set up for grav. settling
                XMSG = 'Failure allocating DDEPJ'
                CALL M3EXIT( PNAME, MDATE, MTIME, XMSG, XSTAT1 )
             END IF
-            DDEPJ = 0.0   ! array assignment
+            DDEPJ = 0.0d0   ! array assignment
             IF ( IO_PE_INCLUSIVE )
      &         CALL OPDDEP_MOS ( JDATE, JTIME, TSTEP( 1 ), N_SPC_DDEP )
             IF ( FST ) THEN
@@ -337,7 +341,7 @@ C Set up for grav. settling
                   XMSG = 'Failure allocating DDEPJ_FST'
                   CALL M3EXIT( PNAME, MDATE, MTIME, XMSG, XSTAT1 )
                END IF
-               DDEPJ_FST = 0.0   ! array assignment
+               DDEPJ_FST = 0.0d0   ! array assignment
                IF ( IO_PE_INCLUSIVE )
      &            CALL OPDDEP_FST ( JDATE, JTIME, TSTEP( 1 ), N_SPC_DDEP )
             END IF   ! if Fst
@@ -376,14 +380,14 @@ C Calculate the changes in the layer J-,K-mode aerosol concentrations
 C read & interpolate emissions data => VDEMIS_DIFF from EMIS_DEFN module
       CALL GET_EMIS ( MDATE, MTIME, TSTEP, CGRID )
 
-      IF ( LIPR ) THEN
-         DO S = 1, N_SPC_DIFF
-            DO L = 1, EMLAYS
-               EMIS_PA( :,:,L,S ) = VDEMIS_DIFF( S,L,:,: )
-            END DO
-         END DO
-         CALL PA_UPDATE_EMIS ( 'VDIF', EMIS_PA, JDATE, JTIME, TSTEP )
-      END IF
+C     IF ( LIPR ) THEN
+C        DO S = 1, N_SPC_DIFF
+C           DO L = 1, EMLAYS
+C              EMIS_PA( :,:,L,S ) = VDEMIS_DIFF( S,L,:,: )
+C           END DO
+C        END DO
+C        CALL PA_UPDATE_EMIS ( 'VDIF', EMIS_PA, JDATE, JTIME, TSTEP )
+C     END IF
 
       CALL EDDYX ( EDDYV )
 
@@ -394,11 +398,11 @@ C EDDYV returned = Kz, where Kz is in m**2/sec
       END DO
 
       IF ( WSTEP .EQ. 0 ) THEN
-         DDEP = 0.0                      ! array assignment
-         ICMP = 0.0                      ! array assignment
+         DDEP = 0.0D0                      ! array assignment
+         ICMP = 0.0                        ! array assignment
          IF ( MOSAIC ) THEN
-            DDEPJ = 0.0                  ! array assignment
-            IF ( FST ) DDEPJ_FST = 0.0   ! array assignment
+            DDEPJ = 0.0D0                  ! array assignment
+            IF ( FST ) DDEPJ_FST = 0.0D0   ! array assignment
          END IF
       END IF
 
@@ -483,7 +487,7 @@ C If last call this hour:  write accumulated depositions:
             END DO
 
             IF ( .NOT. WRITE3( CTM_DRY_DEP_1, DDEP_SPC( V ),
-     &                 MDATE, MTIME, WRDD ) ) THEN
+     &                 MDATE, MTIME, REAL ( WRDD%x , 4 ) ) ) THEN
                XMSG = 'Could not write ' // CTM_DRY_DEP_1 // ' file'
                CALL M3EXIT( PNAME, MDATE, MTIME, XMSG, XSTAT1 )
             END IF
@@ -491,9 +495,9 @@ C If last call this hour:  write accumulated depositions:
 ! STAGE Diagnostic output
          IF ( ABFLUX ) THEN
             DO I = 1, LCMP 
-               WRDD = ICMP( I,:,: )
+               WRDD = REAL ( ICMP( I,:,: ) , 8 )
                IF ( .NOT. WRITE3( CTM_DRY_DEP_1, CMPSPC( I ),
-     &              MDATE, MTIME, WRDD ) ) THEN
+     &              MDATE, MTIME, REAL ( WRDD%x , 4 ) ) ) THEN
                   XMSG = 'Could not write ' // CTM_DRY_DEP_1 // ' file'
                   CALL M3EXIT( PNAME, MDATE, MTIME, XMSG, XSTAT1 )
                END IF     
@@ -603,7 +607,7 @@ C Write other diagnostics
 
             DO V = 1, N_SPC_DDEP
                S = DD2DV( V )
-               WRDD = 0.0 ! reuse array since it has already been written for hour
+               WRDD = 0.0D0 ! reuse array since it has already been written for hour
                DO R = 1, NROWS
                   DO C = 1, NCOLS
                      DO J = 1, N_LUFRAC
@@ -630,7 +634,7 @@ C Write other diagnostics
 
                DO V = 1, N_SPC_DDEP
                   S = DD2DV( V )
-                  WRDD = 0.0 ! reuse array since it has already been written for hour
+                  WRDD = 0.0D0 ! reuse array since it has already been written for hour
                   DO R = 1, NROWS
                      DO C = 1, NCOLS
                         DO J = 1, N_LUFRAC
@@ -649,7 +653,7 @@ C Write other diagnostics
                   END DO
              
                   IF ( .NOT. WRITE3( CTM_DRY_DEP_FST, DDEP_SPC( V ),
-     &                       MDATE, MTIME, WRDDJ_FST ) ) THEN
+     &                       MDATE, MTIME, REAL ( WRDDJ_FST%x , 4 ) ) ) THEN
                      XMSG = 'Could not write ' // CTM_DRY_DEP_FST // ' file'
                      CALL M3EXIT( PNAME, MDATE, MTIME, XMSG, XSTAT1 )
                   END IF
@@ -668,16 +672,16 @@ C Write other diagnostics
             CALL WRASX_MEDIA( MDATE, MTIME )
          END IF 
  
-         IF ( LIPR ) THEN
-            DO V = 1, N_SPC_DEPV
-               DO R = 1, NROWS
-                  DO C = 1, NCOLS
-                     DDEP_PA( C,R,V ) = DDEP( V,C,R )
-                  END DO
-               END DO
-            END DO
-            CALL PA_UPDATE_DDEP ( 'VDIF', DDEP_PA, JDATE, JTIME, TSTEP )
-         END IF
+C        IF ( LIPR ) THEN
+C           DO V = 1, N_SPC_DEPV
+C              DO R = 1, NROWS
+C                 DO C = 1, NCOLS
+C                    DDEP_PA( C,R,V ) = DDEP( V,C,R )
+C                 END DO
+C              END DO
+C           END DO
+C           CALL PA_UPDATE_DDEP ( 'VDIF', DDEP_PA, JDATE, JTIME, TSTEP )
+C        END IF
          IF( ABFLUX ) THEN
 ! Swap diagnostic deposition and fluxes for NH3 to allow the same post processing scripts for
 ! both bidirectional and unidirectional simulations.
@@ -695,31 +699,31 @@ C Write other diagnostics
 
 C re-set dry deposition array to zero
 
-         DDEP = 0.0
+         DDEP = 0.0D0
          ICMP = 0.0
          IF ( MOSAIC ) THEN
-            DDEPJ = 0.0   ! array assignment
-            IF ( FST ) DDEPJ_FST = 0.0   ! array assignment
+            DDEPJ = 0.0D0   ! array assignment
+            IF ( FST ) DDEPJ_FST = 0.0D0   ! array assignment
          END IF
 
-#ifdef isam
-         WRDD = 0.0
-         DO ITAG = 1, N_SPCTAG
-            DO R = 1, NROWS
-               DO C = 1, NCOLS
-                  WRDD( C,R ) = SA_DDEP( C,R,ITAG )
-               END DO
-            END DO
-
-            IF ( .NOT. WRITE3( SA_DD_1, VNAM_SPCTAG( ITAG ),
-     &                         MDATE, MTIME, WRDD ) ) THEN
-               XMSG = 'Could not write ' // SA_DD_1 // ' file'
-               CALL M3EXIT( PNAME, MDATE, MTIME, XMSG, XSTAT1 )
-            END IF
-         END DO
-
-         SA_DDEP = 0.0
-#endif
+C#ifdef isam
+C        WRDD = 0.0
+C        DO ITAG = 1, N_SPCTAG
+C           DO R = 1, NROWS
+C              DO C = 1, NCOLS
+C                 WRDD( C,R ) = SA_DDEP( C,R,ITAG )
+C              END DO
+C           END DO
+C
+C           IF ( .NOT. WRITE3( SA_DD_1, VNAM_SPCTAG( ITAG ),
+C    &                         MDATE, MTIME, WRDD ) ) THEN
+C              XMSG = 'Could not write ' // SA_DD_1 // ' file'
+C              CALL M3EXIT( PNAME, MDATE, MTIME, XMSG, XSTAT1 )
+C           END IF
+C        END DO
+C
+C        SA_DDEP = 0.0
+C#endif
 
       END IF
 

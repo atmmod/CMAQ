@@ -63,7 +63,7 @@ C-----------------------------------------------------------------------
 #ifdef sens
       USE DDM3D_DEFN, ONLY:SENGRID, NPMAX, NP, BSEN, BCS, DATENUM, IPT, IDATE, IPARM, IREGION, CKTIME, STARTDATE
 #endif 
-	  USE HDMod
+	   USE HDMod
       IMPLICIT NONE
 
 C Includes:

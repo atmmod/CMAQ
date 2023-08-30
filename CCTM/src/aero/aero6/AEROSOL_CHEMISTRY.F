@@ -2003,8 +2003,8 @@ C     Davis et al. (2008) for a discussion of these options.
                   GAM1     = MIN( 1.0D0 / ( 1.0D0 + EXP( -LAM1 )), 0.08585d0 ) ! Eq 8
                   GAM2     = MIN( 1.0D0 / ( 1.0D0 + EXP( -LAM2 )), 0.053d0   )   ! Eq 9
                   N2O5_GAMMA_RESULT =  ( X1 * GAM1 )            ! Eq 12
-     &                       +  ( X2 * GAM2 )
-     &                       +  ( X3 * GAM3 )
+     &                              +  ( X2 * GAM2 )
+     &                              +  ( X3 * GAM3 )
 
                END IF
             END IF

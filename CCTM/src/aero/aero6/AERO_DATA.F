@@ -117,7 +117,7 @@ C----------------------------------------------------------------------
 #ifdef sens
       USE DDM3D_DEFN, ONLY : NP, NPMAX
       Use aero_ddm3d, ONLY : s_aerospc_conc, ae_ddm3d_ready,
-     &                       init_aero_ddm3d, s_aerospc_conc
+     &                       init_aero_ddm3d
 #endif 
 
 
@@ -1480,7 +1480,7 @@ C     moment [ m**2/m**3 ]
             If ( wet_moments_flag ) Then
                m2( n ) = initialM2
             Else
-               m2( n ) = initialM2 * ( wetsumM3 / initialM3 ) ** Real( two3rds, 8 )
+               m2( n ) = initialM2 * ( wetsumM3 / initialM3 ) ** two3rds
             End if
          End Do
 

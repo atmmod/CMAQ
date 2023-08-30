@@ -388,15 +388,15 @@ C                IF( CALL_IRR ) CALL PA_IRR ( .FALSE., RKI, YC, DTC )
                  CALL SA_IRR_UNBLOCKED ( .FALSE., RKI, YC, DTC )
                  UPDATE_PROBABILITIES = .FALSE.
 #endif
-				  IF ( N_EBI_MID_HYD .EQ. NEBI ) THEN
-				  	DO S = 1, NUMB_MECH_SPC
-				  	IF ( YC( S )%x .LT. 1.d-25 ) THEN
-				  		YC( S )%dx1 = 0.d0
-				  		YC( S )%dx2 = 0.d0
-				  		YC( S )%dx1x2 = 0.d0
-				  	ENDIF
-				  	ENDDO
-				  ENDIF
+ 			  IF ( N_EBI_MID_HYD .EQ. NEBI ) THEN
+ 			  	DO S = 1, NUMB_MECH_SPC
+ 			  	IF ( YC( S )%x .LT. 1.d-25 ) THEN
+ 			  		YC( S )%dx1 = 0.d0
+ 			  		YC( S )%dx2 = 0.d0
+ 			  		YC( S )%dx1x2 = 0.d0
+ 			  	ENDIF
+ 			  	ENDDO
+ 			  ENDIF
 				  	
 #ifdef sens
 C YCDDM is the value at the middle time step

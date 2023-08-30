@@ -10423,7 +10423,7 @@ C           STOP
 !
       ELSE
 ! 3.37d-15, 2.2393d-15, 1.16193d-15, 1.0349d-15
-         fwdsens = .TRUE. 
+C        fwdsens = .TRUE. 
          IF (WI(1)+WI(2)+WI(3)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. (8*TINY)) THEN                                                 !Everything=0
             CALL INIT1 (WI, RHI, TEMPI)
          ELSE IF (WI(1)+WI(4)+WI(5)+WI(6)+WI(7)+WI(8) .LE. (6*TINY)) THEN !Ca,K,Mg,Na,Cl,NO3=0
@@ -14392,8 +14392,8 @@ C           STOP
 !=======================================================================
 !
       SUBROUTINE CALCPH (GG, HI, OHI)
-	use HDMod 
-	implicit none 
+      use HDMod 
+      implicit none 
       type(hyperdual) :: GG, HI, OHI
       type(hyperdual) :: CN, AKW, BB, CC, DD
 !
@@ -24954,10 +24954,10 @@ C  *** CALCULATE RATIOS *************************************************
       X1 = PSI6LO
       Y1 = FUNCO7 (X1, COL, ROW, LAYER)
       ! Initialize the GNH3 values
-      GNH3_MAX = GNH3%x
-      GNH3_MIN = GNH3%x
-      GHNO3_MAX = GHNO3%x
-      GHNO3_MIN = GHNO3%x
+C     GNH3_MAX = GNH3%x
+C     GNH3_MIN = GNH3%x
+C     GHNO3_MAX = GHNO3%x
+C     GHNO3_MIN = GHNO3%x
       
       IF (CHI6.LE.TINY) GOTO 50
 !cc      IF (ABS(Y1).LE.EPS .OR. CHI6.LE.TINY) GOTO 50
@@ -24970,21 +24970,21 @@ C  *** CALCULATE RATIOS *************************************************
          X2 = X1+DX
          Y2 = FUNCO7_no_sens (X2)
          
-         IF ( GNH3%x .GT. GNH3_MAX ) THEN
-         	GNH3_MAX = GNH3%x
-         ENDIF
-         
-         IF (GHNO3%x .GT. GHNO3_MAX) THEN
-         	GHNO3_MAX = GHNO3%x
-         ENDIF
-         
-         IF ( GNH3%x .LT. GNH3_MIN ) THEN
-         	GNH3_MIN = GNH3%x
-         ENDIF
-         
-         IF ( GHNO3%x .LT. GHNO3_MIN ) THEN
-         	GHNO3_MIN = GHNO3%x
-         ENDIF      
+C        IF ( GNH3%x .GT. GNH3_MAX ) THEN
+C        	GNH3_MAX = GNH3%x
+C        ENDIF
+C        
+C        IF (GHNO3%x .GT. GHNO3_MAX) THEN
+C        	GHNO3_MAX = GHNO3%x
+C        ENDIF
+C        
+C        IF ( GNH3%x .LT. GNH3_MIN ) THEN
+C        	GNH3_MIN = GNH3%x
+C        ENDIF
+C        
+C        IF ( GHNO3%x .LT. GHNO3_MIN ) THEN
+C        	GHNO3_MIN = GHNO3%x
+C        ENDIF      
             
          IF (SIGN(ONE,Y1)*SIGN(ONE,Y2).LT.ZERO) GOTO 20  ! (Y1*Y2.LT.ZERO)
          X1 = X2
@@ -25011,21 +25011,21 @@ C        IF ( ABS(X2 - X1) .GT. EPS*2.D0*X1 ) THEN
 C        ENDIF
          Y3 = FUNCO7_no_sens (X3) 
          
-         IF ( GNH3%x .GT. GNH3_MAX ) THEN
-         	GNH3_MAX = GNH3%x
-         ENDIF
-         
-         IF (GHNO3%x .GT. GHNO3_MAX) THEN
-         	GHNO3_MAX = GHNO3%x
-         ENDIF
-         
-         IF ( GNH3%x .LT. GNH3_MIN ) THEN
-         	GNH3_MIN = GNH3%x
-         ENDIF 
-         
-         IF ( GHNO3%x .LT. GHNO3_MIN ) THEN
-         	GHNO3_MIN = GHNO3%x
-         ENDIF  
+C        IF ( GNH3%x .GT. GNH3_MAX ) THEN
+C        	GNH3_MAX = GNH3%x
+C        ENDIF
+C        
+C        IF (GHNO3%x .GT. GHNO3_MAX) THEN
+C        	GHNO3_MAX = GHNO3%x
+C        ENDIF
+C        
+C        IF ( GNH3%x .LT. GNH3_MIN ) THEN
+C        	GNH3_MIN = GNH3%x
+C        ENDIF 
+C        
+C        IF ( GHNO3%x .LT. GHNO3_MIN ) THEN
+C        	GHNO3_MIN = GHNO3%x
+C        ENDIF  
          
          IF (SIGN(ONE,Y1)*SIGN(ONE,Y3) .LE. ZERO) THEN  ! (Y1*Y3 .LE. ZERO)
             Y2   = Y3
@@ -25059,13 +25059,13 @@ C        ENDIF
       ENDIF
 !     
 !     IF the concentration fluctuates too much during calco7: 
-	  IF ( ( GNH3_MAX / GNH3_MIN ) .GT. 1.D7) THEN 
-		  fwdsens = .false. 
-	  ENDIF
-	  
-	  IF ( ( GHNO3_MAX / GHNO3_MIN ) .GT. 1.D7) THEN 
-		  fwdsens = .false. 
-	  ENDIF
+C  IF ( ( GNH3_MAX / GNH3_MIN ) .GT. 1.D7) THEN 
+C	  fwdsens = .false. 
+C  ENDIF
+C  
+C  IF ( ( GHNO3_MAX / GHNO3_MIN ) .GT. 1.D7) THEN 
+C	  fwdsens = .false. 
+C  ENDIF
 
       RETURN
 !
@@ -25343,8 +25343,8 @@ C        ENDIF
 !=======================================================================
 !
       SUBROUTINE CALCO6
-	use HDMod 
-	implicit none 
+      use HDMod 
+      implicit none 
       type(hyperdual) :: FRCA, FRSO4, FRK, FRMG, FRNA, FRCL, FRNO3
       type(hyperdual) :: ALF, BET, GAM, RTSQ, A1, A2, THETA1, THETA2
       type(hyperdual) :: BB, CC, LAMDA, LAMDA1, LAMDA2, KAPA, KAPA1
@@ -39532,7 +39532,6 @@ C
         IF(METSTBL.EQ.1) THEN
          SCASE = 'W13'
          CALL CALCW13(COL, ROW, LAYER)                 ! Only liquid (metastable)
-C        CALL CALCL9
         ELSE
 C
            IF (RH.LT.DRCACL2) THEN
@@ -43014,6 +43013,9 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+
+
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -43227,6 +43229,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -43468,6 +43472,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -43711,6 +43717,9 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -44031,6 +44040,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -44394,6 +44405,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -44737,6 +44750,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -44969,6 +44984,9 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -45229,6 +45247,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -45487,6 +45507,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -45827,6 +45849,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -46214,6 +46238,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -46689,6 +46715,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -47127,8 +47155,7 @@ C     ENDIF
          OHI= 0.5D0*(-BB + SQRT(DD))
          HI = AKW/OHI
       ENDIF
-
-
+      
 C
 C UNDISSOCIATED SPECIES EQUILIBRIA
 C
@@ -47167,6 +47194,15 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+      ! Criteria 2: Close to Neutral but not corrected by the SQRT(AKW)
+C     IF (HI%x .NE. OHI%x) THEN        
+C       IF ( ( (HI%x / OHI%x) .LE. 1.D3) .OR. ( (OHI%x / HI%x) .LE. 1.D3 ) ) THEN 
+C         HI  = SQRT(AKW)  
+C         OHI = AKW/HI    
+C       ENDIF     
+C     ENDIF
+C      
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -47222,11 +47258,7 @@ C
       CMGNO32 = ZERO
       CMGCL2  = ZERO
       CCACL2  = ZERO
-      
-C     IF (GG .LT. TINY2) THEN
-C     	IGNORE_SENS = .TRUE. 
-C     ENDIF
-C     
+           
       RETURN
 C
 C *** END OF SUBROUTINE CALCW13 ******************************************
@@ -47401,6 +47433,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -47661,6 +47695,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -47923,6 +47959,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -48209,6 +48247,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -48514,6 +48554,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -48844,6 +48886,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -49205,6 +49249,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -49631,6 +49677,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -50057,6 +50105,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -50488,6 +50538,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C
@@ -50949,6 +51001,8 @@ C
       HI = SQRT(AKW)
       OHI   = AKW/HI
       ENDIF
+      
+
 C
 C *** SAVE CONCENTRATIONS IN MOLAL ARRAY ******************************
 C

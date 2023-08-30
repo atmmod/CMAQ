@@ -56,6 +56,7 @@ C-----------------------------------------------------------------------
       USE MOSAIC_MOD, ONLY: Tile_Data
       USE VDIFF_DIAG, NLPCR => NLPCR_MEAN
       USE HGRD_DEFN,only : COLSX_PE, ROWSX_PE
+      USE HDMod
 
 #ifdef isam
       USE SA_DEFN, ONLY: N_SPCTAG, ISAM, VNAM_SPCTAG, TRANSPORT_SPC,
@@ -74,11 +75,11 @@ C Arguments:
       REAL, INTENT( IN )    :: DTSEC                ! model time step in seconds
 C--- SEDDY is strictly an input, but it gets modified here
       REAL, INTENT( INOUT ) :: SEDDY    ( :,:,: )   ! flipped EDDYV
-      REAL, INTENT( INOUT ) :: DDEP     ( :,:,: )   ! ddep accumulator
+      TYPE(hyperdual), INTENT( INOUT ) :: DDEP     ( :,:,: )   ! ddep accumulator
       REAL, INTENT( INOUT ) :: ICMP     ( :,:,: )   ! component flux accumlator 
-      REAL, INTENT( INOUT ), OPTIONAL :: DDEPJ    ( :,:,:,: ) ! ddep for mosaic
-      REAL, INTENT( INOUT ), OPTIONAL :: DDEPJ_FST( :,:,:,: ) ! ddep for stomtal/cuticular pathway
-      REAL, INTENT( INOUT ) :: CNGRD    ( :,:,:,: ) ! cgrid replacement
+      TYPE(hyperdual), INTENT( INOUT ), OPTIONAL :: DDEPJ    ( :,:,:,: ) ! ddep for mosaic
+      TYPE(hyperdual), INTENT( INOUT ), OPTIONAL :: DDEPJ_FST( :,:,:,: ) ! ddep for stomtal/cuticular pathway
+      TYPE(hyperdual), INTENT( INOUT ) :: CNGRD    ( :,:,:,: ) ! cgrid replacement
 
 C Parameters:
 
@@ -96,15 +97,15 @@ C Local Variables:
 
       LOGICAL, SAVE :: FIRSTIME = .TRUE.
 
-      REAL, ALLOCATABLE, SAVE :: DD_FAC     ( : )   ! combined subexpression
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DD_FAC     ( : )   ! combined subexpression
       REAL, ALLOCATABLE, SAVE :: DD_FACJ    ( :,: ) ! combined subexpression for mosaic
       REAL, ALLOCATABLE, SAVE :: DD_FACJ_FST( :,: ) ! combined subexpression for mosaic
-      REAL, ALLOCATABLE, SAVE :: DDBF       ( : )   ! secondary DDEP
-      REAL, ALLOCATABLE, SAVE :: DDBFJ      ( :,: ) ! secondary DDEP for mosaic
-      REAL, ALLOCATABLE, SAVE :: DDBFJ_FST  ( :,: ) ! secondary DDEP for mosaic
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DDBF       ( : )   ! secondary DDEP
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DDBFJ      ( :,: ) ! secondary DDEP for mosaic
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DDBFJ_FST  ( :,: ) ! secondary DDEP for mosaic
       REAl, ALLOCATABLE, SAVE :: CMPF       ( : )   ! intermediate CMP
-      REAL, ALLOCATABLE, SAVE :: CONC       ( :,: ) ! secondary CGRID expression
-      REAL, ALLOCATABLE, SAVE :: EMIS       ( :,: ) ! emissions subexpression
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: CONC       ( :,: ) ! secondary CGRID expression
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: EMIS       ( :,: ) ! emissions subexpression
       REAL        DTDENS1                       ! DT * layer 1 air density
 
 C ACM Local Variables
@@ -120,27 +121,28 @@ C ACM Local Variables
       REAL     :: CC    ( NLAYS )               ! subdiagonal
       REAL     :: EE1   ( NLAYS )               ! superdiagonal for MATRIX1
       REAL     :: EE2   ( NLAYS )               ! superdiagonal for TRI
-      REAL, ALLOCATABLE, SAVE :: DD ( :,: )     ! R.H.S
-      REAL, ALLOCATABLE, SAVE :: UU ( :,: )     ! returned solution
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DD ( :,: )     ! R.H.S
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: UU ( :,: )     ! returned solution
       REAL        DFACP, DFACQ
       REAL     :: DFSP( NLAYS ), DFSQ( NLAYS )  ! intermediate loop factors
-      REAL        DELC, DELP, RP, RQ
+      TYPE(hyperdual) :: DELC
+      REAL        DELP, RP, RQ
       REAL     :: LFAC1( NLAYS )                ! intermediate factor for CONVT
       REAL     :: LFAC2( NLAYS )                ! intermediate factor for CONVT
       REAL     :: LFAC3( NLAYS )                ! intermediate factor for eddy
       REAL     :: LFAC4( NLAYS )                ! intermediate factor for eddy
-      REAL, ALLOCATABLE, SAVE :: DEPVCR     ( : )   ! dep vel in one cell
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: DEPVCR     ( : )   ! dep vel in one cell
       REAL, ALLOCATABLE, SAVE :: DEPVJCR    ( :,: ) ! dep vel in one cell for each landuse
-      REAL, ALLOCATABLE, SAVE :: POLJ       ( :,: ) ! prodn/lossrate for each landuse
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: POLJ       ( :,: ) ! prodn/lossrate for each landuse
                                                     ! category
       REAL, ALLOCATABLE, SAVE :: DEPVJCR_FST( :,: ) ! dep vel (stomatal uptake only) in
                                                     ! one cell for each landuse category
-      REAL, ALLOCATABLE, SAVE :: EFAC1 ( : )
-      REAL, ALLOCATABLE, SAVE :: EFAC2 ( : )
-      REAL, ALLOCATABLE, SAVE :: POL   ( : )    ! prodn/lossrate = PLDV/DEPV
-      REAL        PLDV_HONO                     ! PLDV for HONO
-      REAL        DEPV_NO2                      ! dep vel of NO2
-      REAL        DEPV_HNO3                     ! dep vel of HNO3
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: EFAC1 ( : )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: EFAC2 ( : )
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: POL   ( : )    ! prodn/lossrate = PLDV/DEPV
+      TYPE(hyperdual)        PLDV_HONO                     ! PLDV for HONO
+      TYPE(hyperdual)        DEPV_NO2                      ! dep vel of NO2
+      TYPE(hyperdual)        DEPV_HNO3                     ! dep vel of HNO3
       REAL        FNL                           ! ACM2 Variable
       INTEGER     NLP, NL, LCBL
       INTEGER, SAVE :: NO2_HIT, HONO_HIT, HNO3_HIT, NO2_MAP, HNO3_MAP
@@ -186,15 +188,17 @@ C ACM Local Variables
 
       INTERFACE
          SUBROUTINE MATRIX1 ( KL, A, B, E, D, X )
+         	USE HDMod
             INTEGER,        INTENT( IN )  :: KL
             REAL,           INTENT( IN )  :: A( : ), B( : ), E( : )
-            REAL,           INTENT( IN )  :: D( :,: )
-            REAL,           INTENT( OUT ) :: X( :,: )
+            TYPE(hyperdual),           INTENT( IN )  :: D( :,: )
+            TYPE(hyperdual),           INTENT( OUT ) :: X( :,: )
          END SUBROUTINE MATRIX1
          SUBROUTINE TRI ( L, D, U, B, X )
+         	use HDMod
             REAL,           INTENT( IN )  :: L( : ), D( : ), U( : )
-            REAL,           INTENT( IN )  :: B( :,: )
-            REAL,           INTENT( OUT ) :: X( :,: )
+            TYPE(hyperdual),           INTENT( IN )  :: B( :,: )
+            TYPE(hyperdual),           INTENT( OUT ) :: X( :,: )
          END SUBROUTINE TRI
 #ifdef isam
          SUBROUTINE SA_MATRIX1 ( KL, A, B, E, D, X )
@@ -268,7 +272,7 @@ C set auxiliary depv arrays
             XMSG = 'Failure allocating CONC or EMIS'
             CALL M3EXIT( PNAME, MDATE, MTIME, XMSG, XSTAT1 )
          END IF
-         CONC = 0.0; EMIS = 0.0   ! array assignment
+         CONC = 0.0d0; EMIS = 0.0d0   ! array assignment
 
          ALLOCATE ( DD( N_SPC_DIFF,NLAYS ),
      &              UU( N_SPC_DIFF,NLAYS ), STAT = ASTAT )
@@ -276,7 +280,7 @@ C set auxiliary depv arrays
             XMSG = 'Failure allocating DD or UU'
             CALL M3EXIT( PNAME, MDATE, MTIME, XMSG, XSTAT1 )
          END IF
-         DD = 0.0; UU = 0.0   ! array assignment
+         DD = 0.0D0; UU = 0.0d0   ! array assignment
 
          HONO_HIT = 0; HNO3_HIT = 0; NO2_HIT  = 0; NH3_HIT = 0
                        HNO3_MAP = 0; NO2_MAP  = 0
@@ -746,8 +750,8 @@ C --------------- END of HET HONO RX ----------
 
             DO L = 1, NLAYS
                DO V = 1, N_SPC_DIFF
-                  DD( V,L ) = 0.0
-                  UU( V,L ) = 0.0
+                  DD( V,L ) = 0.0d0
+                  UU( V,L ) = 0.0d0
                END DO
             END DO
 
@@ -833,8 +837,8 @@ C update conc
 C reinitialize for TRI solver
                DO L = 1, NLAYS
                   DO V = 1, N_SPC_DIFF
-                     DD( V,L ) = 0.0
-                     UU( V,L ) = 0.0
+                     DD( V,L ) = 0.0d0
+                     UU( V,L ) = 0.0d0
                   END DO
 #ifdef isam
                   DO JSPCTAG = 1, N_SPCTAG

@@ -7349,10 +7349,10 @@ Module HDMod
           end function hderfc
 
       
-          ! For resetting asymptotic behavior of sensitivities     
+          ! For resetting the sensitivitiies behavior of sensitivities     
       	  subroutine reset_hyd_sens(qleft, qright) 
       	  	implicit none
-      	  	TYPE(hyperdual), intent(inout) :: qleft
+      	  	TYPE(hyperdual), intent(out) :: qleft
       	  	TYPE(hyperdual), intent(in)    :: qright
       	  	
       	  	qleft%dx1 = qright%dx1

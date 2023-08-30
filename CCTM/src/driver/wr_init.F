@@ -58,8 +58,8 @@ C Arguments:
 
 C Local Variables:
 
-      REAL( 8 ), ALLOCATABLE :: DBUFF( :,:,: ) 
-      REAL, ALLOCATABLE      :: DBUFFP( :, :, :), DBUFFTA( :, :, :), DBUFFQV(:, :, :)
+      REAL, ALLOCATABLE :: DBUFF( :,:,: ), DBUFFP( :, :, :),
+     &                     DBUFFTA( :, :, :), DBUFFQV(:, :, :)
 
       INTEGER      ALLOCSTAT
 
