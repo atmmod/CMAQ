@@ -50,13 +50,14 @@ C-------------------------------------------------------------------------------
       USE CGRID_SPCS          ! CGRID mechanism species
       USE STAGE_DATA
       USE AERO_DATA, Only: N_MODE
+      USE HDMod
 
       IMPLICIT NONE
 
 C shared variables 
       INTEGER, ALLOCATABLE, SAVE :: DEPV_SUR( : )   ! pointer to surrogate
-      REAL, ALLOCATABLE, SAVE :: VDEP( : )    ! deposition  velocity [ m/s ]
-      REAL, ALLOCATABLE, SAVE :: VDEPJ( :,: ) ! deposition  velocity [ m/s ]
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: VDEP( : )    ! deposition  velocity [ m/s ]
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: VDEPJ( :,: ) ! deposition  velocity [ m/s ]
       REAL,    SAVE           :: xcent
       REAL,    SAVE           :: ycent
       REAL, SAVE                 :: scc_pr_23( dep_gas_all )        ! (SCC/PR)**2/3, fn of DIF0
@@ -85,9 +86,9 @@ C gas phase species indexes
       Integer, PRIVATE           :: ALLOCSTAT
       CHARACTER( 96 )            :: xmsg = ' '
 C Aerosol deposition arrays
-      REAL, ALLOCATABLE, SAVE  :: XXLSG( : ) ! log of standard deviation
-      REAL, ALLOCATABLE, SAVE  :: DG( : )    ! geometric mean diameter
-      REAL, ALLOCATABLE, SAVE  :: PDENS( : ) ! particle density         
+      TYPE(hyperdual), ALLOCATABLE, SAVE  :: XXLSG( : ) ! log of standard deviation
+      TYPE(hyperdual), ALLOCATABLE, SAVE  :: DG( : )    ! geometric mean diameter
+      TYPE(hyperdual), ALLOCATABLE, SAVE  :: PDENS( : ) ! particle density         
 
 
       Contains
@@ -295,15 +296,16 @@ C-----------------------------------------------------------------
          Use NH3_BIDI_MOD
          Use MOSAIC_MOD, Only: Tile_Data 
          Use HGSIM
+         USE HDMod
 
          Implicit None
 
          Integer, Intent( IN )  :: JDate, JTime, c, r      ! internal simulation date&time
-         REAL,    Intent( IN )  :: cgridl1( : )    ! layer 1 concentrations
+         TYPE(hyperdual),    Intent( IN )  :: cgridl1( : )    ! layer 1 concentrations
          REAL,    Intent( IN )  :: TStep           ! Time step in seconds
-         Real,    Intent( OUT ) :: pvd( : )        ! model emissions term
-         Real,    Intent( OUT ) :: cmp( : )        ! diagnostic component fluxes 
-         Real,    Intent( OUT ) :: depvel_gas( : ) ! instantanious deposition velocity 
+         TYPE(hyperdual),    Intent( OUT ) :: pvd( : )        ! model emissions term
+         TYPE(hyperdual),    Intent( OUT ) :: cmp( : )        ! diagnostic component fluxes 
+         TYPE(hyperdual) ,    Intent( OUT ) :: depvel_gas( : ) ! instantanious deposition velocity 
 C Parameters specific to gas_x. Currently based on m3dry but subject to change
          Real, Parameter :: a0         = 8.0        ! [dim'less]
          Real, Parameter :: d3         = 1.38564e-2 ! [dim'less]
@@ -320,7 +322,8 @@ C Parameters specific to gas_x. Currently based on m3dry but subject to change
          Real, Parameter :: rt25inK    = 1.0/(stdtemp + 25.0) ! 298.15K = 25C
          Real, Parameter :: rwm = 31.5              ! Minimum NH3 cuticle resistance [s/m] from Massad et al. 2010
          Real            :: rh_func                 ! functions of humidity
-         Real            :: surf_bldg, surf_leaf, kno2, conc_no2
+         Real            :: surf_bldg, surf_leaf, kno2 
+         TYPE(hyperdual) :: conc_no2
          Real            :: heff_ap, heff_wat, heff
          Real            :: hplus
          Real            :: w10cm
@@ -333,22 +336,24 @@ C Parameters specific to gas_x. Currently based on m3dry but subject to change
          Real            :: snow, no_snow, wet, dry, veg, no_veg, ice_snow, melt_snow    ! fractional land coverage
          Real            :: frac_lu                                                      ! fractional land use
          Real            :: hcan, ustg, del0
-         Real            :: LU_Flux, Grid_Flux
-         Real            :: c_atm, c_z0, c_leaf, c_stom, c_cut, c_grnd, c_wat ! Compensation points  
-         Real            :: soil_flux                                         ! soil emission and deposition for soil biogeochem
-         Real            :: f_emis, f_dep, f_stom, f_cut, f_soil, flux_ag, f_nat, f_wat ! component fluxes
+         TYPE(hyperdual) :: LU_Flux, Grid_Flux
+         TYPE(hyperdual) :: c_atm, c_z0, c_leaf
+         TYPE(hyperdual) :: c_stom, c_cut, c_wat, c_grnd ! Compensation points  
+         TYPE(hyperdual) :: soil_flux                                         ! soil emission and deposition for soil biogeochem
+         TYPE(hyperdual) :: f_dep, f_stom, f_cut, f_nat, flux_ag, f_soil, f_wat, f_emis
          Real            :: ctemp2, lv, cp_air, tw, dw25, kvisw, dw, scw_pr_23, scn
          Real            :: pChang, kwChang, ciodide, qiodide
          integer         :: l, n, s
          LOGICAL         :: effective  ! true=compute effective Henry's Law const
          Real, External  :: hlconst
 ! Hg bidi variables 
-         Real            :: Hg_st, Hg_cut, Hg_grnd, Hg_wat, flux_hgII
+         TYPE(hyperdual) :: Hg_st, Hg_cut, Hg_grnd, Hg_wat 
+         TYPE(hyperdual) :: flux_hgII
    
          effective = .TRUE.
 
 ! initialize the bidi flux production term
-         Tile_Data%pol( :,:,c,r ) = 0.0  
+         Tile_Data%pol( :,:,c,r ) = 0.0d0  
 
 ! column met variables 
          temp_2m = Met_Data%TEMP2(c,r)
@@ -395,9 +400,9 @@ C Parameters specific to gas_x. Currently based on m3dry but subject to change
          k_vis  = kvis*1.0e-4 * ( temp_2m/STDTEMP )**1.81 ! Following Massman 1999
          dwat_T    = dwat*1.0e-4 * ( temp_2m/STDTEMP )**1.81 ! Following Massman 1999
          n = 0
-         cmp = 0.0
-         pvd = 0.0
-         depvel_gas = 0.0
+         cmp = 0.0d0
+         pvd = 0.0d0
+         depvel_gas = 0.0d0
          spc_loop: Do s = 1, dep_gas_all
             IF ( .NOT. asx_run_map( s ) ) CYCLE spc_loop
             n = n + 1
@@ -407,16 +412,16 @@ C Parameters specific to gas_x. Currently based on m3dry but subject to change
             scc_pr_23( s ) = ( ( k_vis / dif_T ) / pr ) ** twothirds
 
             c_atm = max( cgridl1( n ), 1.0e-30 )
-            Grid_Flux = 0.0
-            f_emis    = 0.0
-            f_dep     = 0.0
-            f_stom    = 0.0
-            f_cut     = 0.0
-            f_soil    = 0.0
-            flux_ag   = 0.0
-            f_nat     = 0.0
-            f_wat     = 0.0
-            soil_flux = 0.0
+            Grid_Flux = 0.0d0
+            f_emis    = 0.0d0
+            f_dep     = 0.0d0
+            f_stom    = 0.0d0
+            f_cut     = 0.0d0
+            f_soil    = 0.0d0
+            flux_ag   = 0.0d0
+            f_nat     = 0.0d0
+            f_wat     = 0.0d0
+            soil_flux = 0.0d0
             heff_wat  = hlconst( H_name_all( s ), tw, effective, hplus_h2o )* 0.08205 * tw
             heff_ap   = hlconst( H_name_all( s ), temp_2m, effective, hplus_ap )
             heff      = hlconst( H_name_all( s ), temp_2m, effective, hplus )* 0.08205 * temp_2m
@@ -424,18 +429,18 @@ C Parameters specific to gas_x. Currently based on m3dry but subject to change
                Call  Get_Hg_Comp( Hg_st, Hg_cut, Hg_grnd, Hg_wat, c_atm, heff_wat, heff, r, c )
             End If
             lu_loop: Do l = 1, n_lufrac
-               c_z0   = 0.0
-               c_leaf = 0.0
+               c_z0   = 0.0d0
+               c_leaf = 0.0d0
                If( HGBIDI .And. s .Eq. s_Hg) Then
                   c_stom = Hg_st
                   c_cut  = Hg_cut
                   c_grnd = Hg_grnd
                   c_wat  = Hg_wat
                Else
-                  c_stom = 0.0
-                  c_cut  = 0.0
-                  c_grnd = 0.0
-                  c_wat  = 0.0
+                  c_stom = 0.0d0
+                  c_cut  = 0.0d0
+                  c_grnd = 0.0d0
+                  c_wat  = 0.0d0
                End If
                Rb     = 0.0
                Rb_leaf= 0.0
@@ -501,7 +506,7 @@ c        Iodide in sea-water based on SST  (mol /dm-3)
                   LU_Flux     = (c_atm-c_wat)/( Ra + Rb + Rwat )                         ! positive values for deposition
                   If(c_wat .Gt. 0.0 ) Then
                      vd =  1.0 / ( Ra + Rb + Rwat )
-                     Tile_Data%depvel_gasj( l,s,c,r ) = vd
+                     Tile_Data%depvel_gasj( l,s,c,r ) = REAL ( vd , 8 )
                      Tile_Data%pol( l,s,c,r ) = c_wat / ( Ra + Rb + Rwat )
                   Else
                      Tile_Data%depvel_gasj( l,s,c,r ) = LU_Flux / c_atm
@@ -680,7 +685,7 @@ C Calcuate Bare Soil Resistance
 ! Bidirectional exchange
 !-------------------------------------------------------------------------------------------------                                                               
                      Tile_Data%pol( l,s,c,r ) = max( vd * c_atm - LU_Flux, 0.0 )          ! should always be greater than 0
-                     Tile_Data%depvel_gasj( l,s,c,r ) = vd                                ! Deposition velocity
+                     Tile_Data%depvel_gasj( l,s,c,r ) = REAL ( vd , 8 )                   ! Deposition velocity
                      f_soil = f_soil + frac_lu * ( veg * ( ( c_grnd - c_z0 ) / Rgc ) + 
      &                                         no_veg * (c_grnd - c_atm)/( Ra + Rg ) )            ! air-soil flux
                      f_stom = f_stom + frac_lu * veg * ( c_stom - c_leaf ) / Rst 
@@ -689,7 +694,7 @@ C Calcuate Bare Soil Resistance
 !-------------------------------------------------------------------------------------------------
 ! Non bidirectional exchange
 !-------------------------------------------------------------------------------------------------   
-                     Tile_Data%depvel_gasj( l,s,c,r ) =  vd
+                     Tile_Data%depvel_gasj( l,s,c,r ) =  REAL ( vd, 8 )
                   End If ! compensation points greater than 0
                End If ! Water    
 ! Generalization of the production and deposition velocity terms
@@ -712,7 +717,7 @@ C Calcuate Bare Soil Resistance
                End If
             End If
             If(HGBIDI .And. s .Eq. s_HG ) Then
-               flux_hgII = 0.0 
+               flux_hgII = 0.0d0 
 ! negative values are deposition fluxes
                flux_hgII = -Sum( Tile_Data%depvel_gasj( :,s_HgII,c,r ) * GRID_DATA%LUFRAC( c,r,: ), mask = WATER)
 
@@ -769,8 +774,8 @@ C Calculate production (pvd) for HONO; unit = ppm * m/s
             END IF
 
             ! Check for negative values or NaN's                  
-            if(isnan(pvd(n))) write(logdev,*) 'NaN in ',vd_name( s ),' production term'
-            if(isnan(depvel_gas(n))) write(logdev,*) 'NaN in ',vd_name( s ),' Vd term'
+            if(isnan(REAL ( pvd(n)%x , 4 ) )) write(logdev,*) 'NaN in ',vd_name( s ),' production term'
+            if(isnan(REAL ( depvel_gas(n)%x, 4 ) )) write(logdev,*) 'NaN in ',vd_name( s ),' Vd term'
          End Do spc_loop
 
          Return         
@@ -802,6 +807,7 @@ C-----------------------------------------------------------------------
          USE GRID_CONF           ! horizontal & vertical domain specifications
          USE RXNS_DATA           ! chemical mechanism data
          Use MOSAIC_MOD, Only: Tile_Data 
+         USE HDMod
 
          IMPLICIT NONE
 
@@ -810,12 +816,12 @@ C Includes:
          INCLUDE SUBST_FILES_ID  ! file name parameters
 
 C Arguments
-         REAL,    POINTER       :: CGRID( :,:,:,: )
+         TYPE(hyperdual),    POINTER       :: CGRID( :,:,:,: )
          INTEGER, INTENT( IN )  :: JDATE               ! current model date , coded YYYYDDD
          INTEGER, INTENT( IN )  :: JTIME               ! current model time , coded HHMMSS
          INTEGER, INTENT( IN )  :: TSTEP               ! model time step, coded HHMMSS
          INTEGER, INTENT( IN )  :: C,R                 ! Column and Row
-         REAL,    INTENT( OUT ) :: VDEP_AE( : )        ! surrogate deposition velocities [ m s**-1 ]
+         TYPE(hyperdual),    INTENT( OUT ) :: VDEP_AE( : )        ! surrogate deposition velocities [ m s**-1 ]
 
 
 
@@ -846,30 +852,30 @@ C Meteorological variables
          INTEGER  ALLOCSTAT
 
 C modal Knudsen numbers
-         REAL KN
+         TYPE(hyperdual) KN
 
 C modal particle diffusivities for number, 2nd, and 3rd moment, or mass:
-         REAL DCHAT0
-         REAL DCHAT2
-         REAL DCHAT3
+         TYPE(hyperdual) DCHAT0
+         TYPE(hyperdual) DCHAT2
+         TYPE(hyperdual) DCHAT3
 
 C modal sedimentation velocities for number, 2nd, and 3rd moment, or mass:
-         REAL VGHAT0
-         REAL VGHAT2
-         REAL VGHAT3
+         TYPE(hyperdual) VGHAT0
+         TYPE(hyperdual) VGHAT2
+         TYPE(hyperdual) VGHAT3
 
          INTEGER NCELL, J, IM
 
-         REAL DCONST,  DCONST1
-         REAL DCONST2, DCONST3
-         REAL SC0                   ! Schmidt numbers for number
-         REAL SC2                   ! Schmidt numbers for 2ND MOMENT
-         REAL SC3                   ! Schmidt numbers for 3rd moment
-         REAL ST_VEG                ! Stokes numbers for vegetation 
-         REAL ST_SMOOTH             ! Stokes numbers for each mode following Pleim
-         REAL RD0_VEG,RD0_SMOOTH    ! canopy resistance for number
-         REAL RD2_VEG,RD2_SMOOTH    ! canopy resistance for 2nd moment
-         REAL RD3_VEG,RD3_SMOOTH    ! canopy resisteance for 3rd moment
+         TYPE(hyperdual) DCONST,  DCONST1, DCONST3
+         REAL DCONST2
+         TYPE(hyperdual) SC0                   ! Schmidt numbers for number
+         TYPE(hyperdual) SC2                   ! Schmidt numbers for 2ND MOMENT
+         TYPE(hyperdual) SC3                   ! Schmidt numbers for 3rd moment
+         TYPE(hyperdual) ST_VEG                ! Stokes numbers for vegetation 
+         TYPE(hyperdual) ST_SMOOTH             ! Stokes numbers for each mode following Pleim
+         TYPE(hyperdual) RD0_VEG,RD0_SMOOTH    ! canopy resistance for number
+         TYPE(hyperdual) RD2_VEG,RD2_SMOOTH    ! canopy resistance for 2nd moment
+         TYPE(hyperdual) RD3_VEG,RD3_SMOOTH    ! canopy resisteance for 3rd moment
          REAL UTSCALE               ! scratch function of USTAR and WSTAR
          REAL NU                    ! kinematic viscosity [ m**2 s**-1 ]
          REAL TWOXLM                ! 2 X atmospheric mean free path
@@ -885,29 +891,29 @@ C Parameters
 
 C Scalar variables for VARIABLE standard deviations.
 
-         REAL    L2SG
+         TYPE(hyperdual)    L2SG
 
-         REAL    E1                  ! mode exp( log^2( sigmag )/8 )
-         REAL    ES04                !        " **4
-         REAL    ES08                !        " **8
-         REAL    ES12                !        " **12
-         REAL    ES16                !        " **16
-         REAL    ES20                !        " **20
-         REAL    ES28                !        " **28
-         REAL    ES32                !        " **32
-         REAL    ES36                !        " **36
-         REAL    ES48                !        " **48
-         REAL    ES64                !        " **64
-         REAL    ESM12               !        " **(-12)
-         REAL    ESM16               !        " **(-16)
-         REAL    ESM20               !        " **(-20)
-         REAL    ESM32               !        " **(-32)
-         REAL    EIM_VEG, EIM_SMOOTH ! Impaction efficiency
+         TYPE(hyperdual)    E1                  ! mode exp( log^2( sigmag )/8 )
+         TYPE(hyperdual)    ES04                !        " **4
+         TYPE(hyperdual)    ES08                !        " **8
+         TYPE(hyperdual)    ES12                !        " **12
+         TYPE(hyperdual)    ES16                !        " **16
+         TYPE(hyperdual)    ES20                !        " **20
+         TYPE(hyperdual)    ES28                !        " **28
+         TYPE(hyperdual)    ES32                !        " **32
+         TYPE(hyperdual)    ES36                !        " **36
+         TYPE(hyperdual)    ES48                !        " **48
+         TYPE(hyperdual)    ES64                !        " **64
+         TYPE(hyperdual)    ESM12               !        " **(-12)
+         TYPE(hyperdual)    ESM16               !        " **(-16)
+         TYPE(hyperdual)    ESM20               !        " **(-20)
+         TYPE(hyperdual)    ESM32               !        " **(-32)
+         TYPE(hyperdual)    EIM_VEG, EIM_SMOOTH ! Impaction efficiency
 
 C-----------------------------------------------------------------------
 
-         VDEP  = 0.0   ! array assignment
-         VDEPJ = 0.0   ! array assignment
+         VDEP  = 0.0d0   ! array assignment
+         VDEPJ = 0.0d0   ! array assignment
 
 C ***    Set meteorological data for the grid cell.
          AIRDENS = Met_Data%DENS1( C,R )
@@ -994,9 +1000,9 @@ C ***    Land use paramters
                Ra      = Mosaic_Data%RA( C,R,L )
                lu_frac = Grid_Data%LUFRAC( C,R,L )
 
-               RD0_Veg = 0.0
-               RD2_Veg = 0.0
-               RD3_Veg = 0.0
+               RD0_Veg = 0.0d0
+               RD2_Veg = 0.0d0
+               RD3_Veg = 0.0d0
                IF ( lu_frac .Eq. 0.0 ) Cycle lu_loop
 
 C now calculate the deposition velocities
@@ -1055,8 +1061,8 @@ C Return dry deposition velocities for aerosols (first layer only).
                VDEP_AE( V ) = VDEP( DEPV_SUR( V ) )
                Tile_Data%ADEPVJ( :,V,C,R ) = VDEPJ( :,DEPV_SUR( V ) )
             ELSE
-               VDEP_AE( V ) = 0.0
-               Tile_Data%ADEPVJ( :,V,C,R ) = 0.0 
+               VDEP_AE( V ) = 0.0D0
+               Tile_Data%ADEPVJ( :,V,C,R ) = 0.0D0 
             END IF
          END DO
                     

@@ -272,6 +272,21 @@ C Local variables:
             TYPE(hyperdual),    INTENT( IN )    :: AGRID( :,:,:,: )
             INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP
          END SUBROUTINE WR_ACONC
+         SUBROUTINE WR_ADX1 ( AGRID, JDATE, JTIME, TSTEP )
+         	use HDMod
+            TYPE(hyperdual),    INTENT( IN )    :: AGRID( :,:,:,: )
+            INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP
+         END SUBROUTINE WR_ADX1   
+         SUBROUTINE WR_ADX2 ( AGRID, JDATE, JTIME, TSTEP )
+         	use HDMod
+            TYPE(hyperdual),    INTENT( IN )    :: AGRID( :,:,:,: )
+            INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP
+         END SUBROUTINE WR_ADX2
+         SUBROUTINE WR_ADX1X2 ( AGRID, JDATE, JTIME, TSTEP )
+         	use HDMod
+            TYPE(hyperdual),    INTENT( IN )    :: AGRID( :,:,:,: )
+            INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP
+         END SUBROUTINE WR_ADX1X2        
          SUBROUTINE WR_CGRID ( CGRID, JDATE, JTIME, TSTEP )
          	use HDMod
             TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
@@ -872,7 +887,10 @@ C write conc fields
 #ifdef parallel
          IF ( LVEXT ) CALL WR_VEXT ( CGRID, JDATE, JTIME, TSTEP( 1 ) )
 #endif
-         CALL WR_ACONC ( AGRID, JDATE, JTIME, TSTEP( 1 ) )
+         CALL WR_ACONC  ( AGRID, JDATE, JTIME, TSTEP( 1 ) )
+         CALL WR_ADX1   ( AGRID, JDATE, JTIME, TSTEP( 1 ) )
+         CALL WR_ADX2   ( AGRID, JDATE, JTIME, TSTEP( 1 ) )
+         CALL WR_ADX1X2 ( AGRID, JDATE, JTIME, TSTEP( 1 ) )
 #ifdef isam
          CALL WR_SA     ( JDATE, JTIME, TSTEP, 1 )
          CALL WR_AVG_SA ( JDATE, JTIME, TSTEP( 1 ) )
