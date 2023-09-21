@@ -34,9 +34,10 @@
 !                           INIT_CONC_1 and BNDY_CONC_1
 !   13 Dec 2019 S.Napelenok: updated sensitivity files to INIT_SENS_1 and 
 !                            BNDY_SENS_1, remove REGIONS_1
+!   30 Aug 2023 E.Liu: added files for hyperdual information
 !.......................................................................
 
-      INTEGER, PARAMETER :: N_FILES = 73
+      INTEGER, PARAMETER :: N_FILES = 76
 
       CHARACTER( 16 ) :: LGCL_NAME( N_FILES ) 
       LOGICAL            IN_MODE( N_FILES )
@@ -125,6 +126,9 @@
       CHARACTER( 16 ) :: INIT_DX1_1      ! Restart DX1 values
       CHARACTER( 16 ) :: INIT_DX2_1      ! Restart DX2 values
       CHARACTER( 16 ) :: INIT_DX1X2_1    ! Restart DX1X2 values
+      CHARACTER( 16 ) :: A_DX1_1         ! Average DX1 values
+      CHARACTER( 16 ) :: A_DX2_1         ! Average DX2 values
+      CHARACTER( 16 ) :: A_DX1X2_1       ! Average DX1X2 values
 
 ! DDM Files:
 
@@ -204,20 +208,23 @@
       DATA CTM_SD_TS        / 'CTM_SD_TS       ' /
       DATA CTM_VDIFF_DIAG   / 'CTM_VDIFF_DIAG  ' /
       DATA CTM_VSED_DIAG    / 'CTM_VSED_DIAG   ' /
-      DATA  SA_CONC_1       / 'SA_CONC_1       ' /
-      DATA  SA_CGRID_1      / 'SA_CGRID_1      ' /
-      DATA  SA_ACONC_1      / 'SA_ACONC_1      ' /
-      DATA  SA_DD_1         / 'SA_DD_1         ' /
-      DATA  SA_WD_1         / 'SA_WD_1         ' /
-      DATA  CTM_DX1         / 'CTM_DX1         ' /
-      DATA  CTM_DX2         / 'CTM_DX2         ' /
-      DATA  CTM_DX1X2       / 'CTM_DX1X2       ' /
-      DATA  S_DX1           / 'S_DX1           ' /
-      DATA  S_DX2           / 'S_DX2           ' /
-      DATA  S_DX1X2         / 'S_DX1X2         ' /
-      DATA  INIT_DX1_1      / 'INIT_DX1_1      ' /
-      DATA  INIT_DX2_1      / 'INIT_DX2_1      ' /
-      DATA  INIT_DX1X2_1    / 'INIT_DX1X2_1    ' /
+      DATA SA_CONC_1       / 'SA_CONC_1       ' /
+      DATA SA_CGRID_1      / 'SA_CGRID_1      ' /
+      DATA SA_ACONC_1      / 'SA_ACONC_1      ' /
+      DATA SA_DD_1         / 'SA_DD_1         ' /
+      DATA SA_WD_1         / 'SA_WD_1         ' /
+      DATA CTM_DX1         / 'CTM_DX1         ' /
+      DATA CTM_DX2         / 'CTM_DX2         ' /
+      DATA CTM_DX1X2       / 'CTM_DX1X2       ' /
+      DATA S_DX1           / 'S_DX1           ' /
+      DATA S_DX2           / 'S_DX2           ' /
+      DATA S_DX1X2         / 'S_DX1X2         ' /
+      DATA INIT_DX1_1      / 'INIT_DX1_1      ' /
+      DATA INIT_DX2_1      / 'INIT_DX2_1      ' /
+      DATA INIT_DX1X2_1    / 'INIT_DX1X2_1    ' /
+      DATA A_DX1_1         / 'A_DX1_1         ' / 
+      DATA A_DX2_1         / 'A_DX2_1         ' / 
+      DATA A_DX1X2_1       / 'A_DX1X2_1       ' / 
 
       DATA LGCL_NAME(  1 ), IN_MODE(  1 )    / 'GRID_DOT_2D     ', .TRUE. /
       DATA LGCL_NAME(  2 ), IN_MODE(  2 )    / 'GRID_CRO_2D     ', .TRUE. /
@@ -292,5 +299,9 @@
       DATA LGCL_NAME( 71 ), IN_MODE( 71 )    / 'INIT_DX1_1      ', .FALSE. / 
       DATA LGCL_NAME( 72 ), IN_MODE( 72 )    / 'INIT_DX2_1      ', .FALSE. / 
       DATA LGCL_NAME( 73 ), IN_MODE( 73 )    / 'INIT_DX1X2_1    ', .FALSE. /
+      DATA LGCL_NAME( 74 ), IN_MODE( 74 )    / 'A_DX1_1         ', .FALSE. /
+      DATA LGCL_NAME( 75 ), IN_MODE( 75 )    / 'A_DX2_1         ', .FALSE. /
+      DATA LGCL_NAME( 76 ), IN_MODE( 76 )    / 'A_DX1X2_1       ', .FALSE. /
+      
 
 !................   end   FILES_CTM.EXT   .............................

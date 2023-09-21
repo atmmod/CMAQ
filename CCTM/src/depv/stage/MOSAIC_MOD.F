@@ -35,7 +35,7 @@ C                                            array construcs for readability.
 C                   D. Wong:   Feb 10  2019: removed all MY_N clauses
 C                   D. Wong:   Apr 24  2019: removed unused BUFF2D_2 array
 C-------------------------------------------------------------------------------
-
+	  USE HDMod
       Implicit None
 
 !      INCLUDE SUBST_CONST     ! constants
@@ -78,10 +78,10 @@ C Buffer variables
 !> Aggrigated fractional land use       
          Real,            Allocatable :: Tile       ( :,:,: ) ! aggrigated land use 
 !> Sub grid cell output:
-         Real,            Allocatable :: depvel_gasj( :,:,:,: ) ! deposition velocity by land use type
+         TYPE(hyperdual),            Allocatable :: depvel_gasj( :,:,:,: ) ! deposition velocity by land use type
          Real,            Allocatable :: vd_fst_gasj( :,:,:,: ) ! deposition velocity for stomatal
-         Real,            Allocatable :: pol        ( :,:,:,: ) ! Bidi production over loss rate
-         Real,            Allocatable :: adepvj     ( :,:,:,: ) ! aerosol deposition
+         TYPE(hyperdual),            Allocatable :: pol        ( :,:,:,: ) ! Bidi production over loss rate
+         TYPE(hyperdual),            Allocatable :: adepvj     ( :,:,:,: ) ! aerosol deposition
       End Type Tile_Type
 
       Type( Tile_Type ),     Save :: Tile_Data 

@@ -1232,7 +1232,7 @@ C *** Growth values for mode merge condition
 
 C *** For Hybrid approach, calculate dynamic mass trasfer for
 C     semi-volatile components of coarse mode (NO3, CL, NH4)   
-C  HybridSens = .TRUE. 
+      HybridSens = .TRUE. 
       IF ( HYBRID ) THEN 
 
          CNTRL( 1 ) = 1.0D0 ! reverse problem
@@ -1251,31 +1251,10 @@ C  HybridSens = .TRUE.
             IF ( INT_TIME + TSTEP .GT. DELT ) TSTEP = DELT - INT_TIME 
             INT_TIME = INT_TIME + TSTEP 
             ISTEP = ISTEP + 1   
-            
-            IF ( INT_TIME .EQ. 300.0D0 ) THEN
-              call reset_hyd_sens( moment0_conc( IMODE ), moment0_conc3_orig)
-              call reset_hyd_sens( moment2_conc( IMODE ), moment2_conc3_orig)
-              call reset_hyd_sens( moment3_conc( IMODE ), moment3_conc3_orig)
-   		      call reset_hyd_sens( aeromode_dens( IMODE ), aeromode_dens3_orig)
-   		      call reset_hyd_sens( aeromode_lnsg( IMODE ), aeromode_lnsg3_orig)
-              call reset_hyd_sens( aeromode_diam( IMODE ), aeromode_diam3_orig)
-              call reset_hyd_sens( aeromode_mass( IMODE ), aeromode_mass3_orig)
-              call reset_hyd_sens( AEROSPC_CONC( ANH4_IDX, IMODE ), anh4k_orig)
-              call reset_hyd_sens( AEROSPC_CONC( ANO3_IDX, IMODE ), ano3k_orig)
-              call reset_hyd_sens( AEROSPC_CONC( ACL_IDX, IMODE ), aclk_orig)
-              call reset_hyd_sens( AEROSPC_CONC( ASO4_IDX, IMODE ), aso4k_orig)
-              call reset_hyd_sens( AEROSPC_CONC( AH2O_IDX, IMODE ), ah2ok_orig)
-              call reset_hyd_sens( PRECURSOR_CONC( NH3_IDX ), nh3_orig)	
-              call reset_hyd_sens( PRECURSOR_CONC( HNO3_IDX ), hno3_orig)
-              call reset_hyd_sens( PRECURSOR_CONC( HCL_IDX ), hcl_orig)  
-              call reset_hyd_sens( HPLUS( IMODE ), hplus_orig)	 
-              call reset_hyd_sens( AEROSPC_CONC( ASEACAT_IDX,IMODE ), seacat_orig)
-              call reset_hyd_sens( AEROSPC_CONC( ASOIL_IDX, IMODE ), soil_orig)
-              call reset_hyd_sens( AEROSPC_CONC( ACORS_IDX, IMODE), cors_orig)           	
-            ENDIF			
-C		IF ( INT_TIME .GT. 90.0D0 ) THEN
-C			HPLUS_PREV = AERLIQ( 1 )
-C		ENDIF
+            		
+ 			IF ( INT_TIME .GT. 90.0D0 ) THEN
+ 				HPLUS_PREV = AERLIQ( 1 )
+ 			ENDIF
 			
 C *** Calculate first moments using Equation 4 of Binkowski & Shankar
 C     (1995) or Equation 3 of Binkowski and Roselle (2003).
@@ -1405,25 +1384,25 @@ C              Also obtain the aqueous H+ concentration, AERLIQ(1) [mol/m3]
             END IF   ! TrustIso
 		 
 	 ! If there is a change in H+ concentration through rev iso, ignore the sensitivities		 		 
-C	 IF ( INT_TIME .GT. 90.0D0 ) THEN
-C	 	
-C	 	! Criteria 1: Significant Change of pH during the 4 steps of reverse ISORROPIA
-C	 	! Used to be 1.25, AERLIQ(1) is the H+ concentration from the new reverse ISORROPIA run, and 
-C	 	! HPLUS_PREV is the saved H+ concentration
-C	 	IF  ( ( ( AERLIQ(1) / HPLUS_PREV ) .GE. 1.25d0 ) .OR. ( HPLUS_PREV / AERLIQ(1) ) .GE. 1.25d0 ) THEN
-C	 		HybridSens = .false.
-C	 	ENDIF
-C	 	
-C	 	! Criteria 2: Close to Neutral but not corrected by the SQRT(AKW)
-C	 	IF ( AERLIQ( 1 ) /= 0.0D0 .AND. AERLIQ( 12 ) /= 0.0D0 ) THEN
-C	 		IF (AERLIQ( 1 ) /= AERLIQ( 12 ) .AND. ( (AERLIQ( 1 ) / AERLIQ( 12 ) .LE. 1.D3 ) .OR. (AERLIQ( 12 ) / AERLIQ( 1 ) ) .LE. 1.D3 ) ) THEN
-C	 			HybridSens = .false. 
-C	 		ENDIF
-C	 	ENDIF
-C	 
-C	 ELSE    ! INT_TIME .EQ. 90.0D0 for this case, only record down HPLUS here from first rev iso
-C	 	HPLUS_PREV = AERLIQ( 1 )
-C	 ENDIF
+ 	 IF ( INT_TIME .GT. 90.0D0 ) THEN
+ 	 	
+ 	 	! Criteria 1: Significant Change of pH during the 4 steps of reverse ISORROPIA
+ 	 	! Used to be 1.25, AERLIQ(1) is the H+ concentration from the new reverse ISORROPIA run, and 
+ 	 	! HPLUS_PREV is the saved H+ concentration
+ 	 	IF  ( ( ( AERLIQ(1) / HPLUS_PREV ) .GE. 1.25d0 ) .OR. ( HPLUS_PREV / AERLIQ(1) ) .GE. 1.25d0 ) THEN
+ 	 		HybridSens = .false.
+ 	 	ENDIF
+ 	 	
+ 	 	! Criteria 2: Close to Neutral but not corrected by the SQRT(AKW)
+ 	 	IF ( AERLIQ( 1 ) /= 0.0D0 .AND. AERLIQ( 12 ) /= 0.0D0 ) THEN
+ 	 		IF (AERLIQ( 1 ) /= AERLIQ( 12 ) .AND. ( (AERLIQ( 1 ) / AERLIQ( 12 ) .LE. 1.D3 ) .OR. (AERLIQ( 12 ) / AERLIQ( 1 ) ) .LE. 1.D3 ) ) THEN
+ 	 			HybridSens = .false. 
+ 	 		ENDIF
+ 	 	ENDIF
+ 	 
+ 	 ELSE    ! INT_TIME .EQ. 90.0D0 for this case, only record down HPLUS here from first rev iso
+ 	 	HPLUS_PREV = AERLIQ( 1 )
+ 	 ENDIF
 		 
 		 
 		 
@@ -1573,44 +1552,43 @@ C     each sub-time step. This should be for the wet distribution
 	  ! If there are drastic changes in pH during rev iso, the sensitivities have asymptotic behaviors
 	  ! See Henningan et. al. 2015 ACP paper for details
 	
-	  moment0_conc3_orig = 0.0d0
-	  moment2_conc3_orig = 0.0d0
-	  moment3_conc3_orig = 0.0d0
-	  aeromode_dens3_orig = 0.0d0
-	  aeromode_lnsg3_orig = 0.0d0
-	  aeromode_diam3_orig = 0.0d0
-	  aeromode_mass3_orig = 0.0d0
-	  anh4k_orig = 0.0d0
-	  ano3k_orig = 0.0d0
-	  aso4k_orig = 0.0d0
-	  nh3_orig = 0.0d0
-	  hno3_orig = 0.0d0
-	  hcl_orig = 0.0d0
-	  hplus_orig = 0.0d0
-	  seacat_orig = 0.0d0
-	  soil_orig = 0.0d0
-	  cors_orig = 0.0d0
+C  moment0_conc3_orig = 0.0d0
+C  moment2_conc3_orig = 0.0d0
+C  moment3_conc3_orig = 0.0d0
+C  aeromode_dens3_orig = 0.0d0
+C  aeromode_lnsg3_orig = 0.0d0
+C  aeromode_diam3_orig = 0.0d0
+C  aeromode_mass3_orig = 0.0d0
+C  anh4k_orig = 0.0d0
+C  ano3k_orig = 0.0d0
+C  aso4k_orig = 0.0d0
+C  nh3_orig = 0.0d0
+C  hno3_orig = 0.0d0
+C  hcl_orig = 0.0d0
+C  hplus_orig = 0.0d0
+C  seacat_orig = 0.0d0
+C  soil_orig = 0.0d0
+C  cors_orig = 0.0d0
 	
-	  
-C HybridSens = .false.
-C     IF ( HYBRID .AND. ( HybridSens .eq. .false.) ) THEN
-C  	   ! Reset all moment related stuff
-C  		call reset_hyd_sens( moment0_conc( 3 ), moment0_conc3_orig)
-C  		call reset_hyd_sens( moment2_conc( 3 ), moment2_conc3_orig)
-C  		call reset_hyd_sens( moment3_conc( 3 ), moment3_conc3_orig)
-C  		call reset_hyd_sens( aeromode_dens( 3 ), aeromode_dens3_orig)
-C  		call reset_hyd_sens( aeromode_lnsg( 3 ), aeromode_lnsg3_orig)
-C  		call reset_hyd_sens( aeromode_diam( 3 ), aeromode_diam3_orig)
-C  		call reset_hyd_sens( aeromode_mass( 3 ), aeromode_mass3_orig)
-C  		call reset_hyd_sens( AEROSPC_CONC( ANH4_IDX, 3 ), anh4k_orig)
-C  		call reset_hyd_sens( AEROSPC_CONC( ANO3_IDX, 3 ), ano3k_orig)
-C  		call reset_hyd_sens( AEROSPC_CONC( ACL_IDX, 3 ), aclk_orig)
-C  		call reset_hyd_sens( AEROSPC_CONC( ASO4_IDX, 3 ), aso4k_orig)
-C  		call reset_hyd_sens( AEROSPC_CONC( AH2O_IDX, 3), ah2ok_orig)
-C  		call reset_hyd_sens( PRECURSOR_CONC( NH3_IDX ), nh3_orig)	
-C  		call reset_hyd_sens( PRECURSOR_CONC( HNO3_IDX ), hno3_orig)
-C  		call reset_hyd_sens( PRECURSOR_CONC( HCL_IDX ), hcl_orig)  	
-C     ENDIF
+
+      IF ( HYBRID .AND. ( HybridSens .eq. .false.) ) THEN
+   	   ! Reset all moment related stuff
+   		call reset_hyd_sens( moment0_conc( 3 ), moment0_conc3_orig)
+   		call reset_hyd_sens( moment2_conc( 3 ), moment2_conc3_orig)
+   		call reset_hyd_sens( moment3_conc( 3 ), moment3_conc3_orig)
+   		call reset_hyd_sens( aeromode_dens( 3 ), aeromode_dens3_orig)
+   		call reset_hyd_sens( aeromode_lnsg( 3 ), aeromode_lnsg3_orig)
+   		call reset_hyd_sens( aeromode_diam( 3 ), aeromode_diam3_orig)
+   		call reset_hyd_sens( aeromode_mass( 3 ), aeromode_mass3_orig)
+   		call reset_hyd_sens( AEROSPC_CONC( ANH4_IDX, 3 ), anh4k_orig)
+   		call reset_hyd_sens( AEROSPC_CONC( ANO3_IDX, 3 ), ano3k_orig)
+   		call reset_hyd_sens( AEROSPC_CONC( ACL_IDX, 3 ), aclk_orig)
+   		call reset_hyd_sens( AEROSPC_CONC( ASO4_IDX, 3 ), aso4k_orig)
+   		call reset_hyd_sens( AEROSPC_CONC( AH2O_IDX, 3), ah2ok_orig)
+   		call reset_hyd_sens( PRECURSOR_CONC( NH3_IDX ), nh3_orig)	
+   		call reset_hyd_sens( PRECURSOR_CONC( HNO3_IDX ), hno3_orig)
+   		call reset_hyd_sens( PRECURSOR_CONC( HCL_IDX ), hcl_orig)  	
+      ENDIF
       write1 = .false.
 C *** End of Coarse Mode dynamic mass transfer calculations
 

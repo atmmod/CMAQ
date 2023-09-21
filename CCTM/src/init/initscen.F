@@ -367,14 +367,16 @@ C Test opening existing conc file for update
       ! to the dx1, dx2, and dx1x2 files. 
 
       CALL WR_INIT_HYD ( CGRID, STDATE, STTIME, TSTEP( 1 ) )
+      
+      ! Open hourly average files
       CALL LOG_HEADING( LOGDEV, "Open or Create Average Concentration File" )
       CALL OPACONC ( STDATE, STTIME, TSTEP( 1 ) )
-C     CALL LOG_HEADING( LOGDEV, "Open or Create Average DX1 File")
-C     CALL OPADX1 ( STDATE, STTIME, TSTEP( 1 ) )
-C     CALL LOG_HEADING( LOGDEV, "Open or Create Average DX2 File")
-C     CALL OPADX2 ( STDATE, STTIME, TSTEP( 1 ) )
-C     CALL LOG_HEADING( LOGDEV, "Open or Create Average DX1X2 File")
-C     CALL OPADX1X2 ( STDATE, STTIME, TSTEP( 1 ) )
+      CALL LOG_HEADING( LOGDEV, "Open or Create Average DX1 File")
+      CALL OPADX1 ( STDATE, STTIME, TSTEP( 1 ) )
+      CALL LOG_HEADING( LOGDEV, "Open or Create Average DX2 File")
+      CALL OPADX2 ( STDATE, STTIME, TSTEP( 1 ) )
+      CALL LOG_HEADING( LOGDEV, "Open or Create Average DX1X2 File")
+      CALL OPADX1X2 ( STDATE, STTIME, TSTEP( 1 ) )
       
       CALL LOG_HEADING( LOGDEV, "Open or Create Wet Deposition File" )
       CALL OPWDEP  ( STDATE, STTIME, TSTEP( 1 ) )

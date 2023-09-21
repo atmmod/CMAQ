@@ -75,6 +75,7 @@ C  Whalin, L., E.-H. Kim, R. Mason, 2007, Factors influencing the oxidation,
 C     reduciton, methylation and demethylation of mercury species in costal
 C     water, Marine Chem. 107, 278-294
 C-----------------------------------------------------------------------
+      USE HDMod
       IMPLICIT NONE
 
 !    Shared variables
@@ -97,18 +98,18 @@ C-----------------------------------------------------------------------
       REAL, SAVE, PRIVATE  :: MV_air
 
 ! variable needed for analytical solutions of exchange equations
-      REAL, PRIVATE :: KO(2,2)
-      REAL, PRIVATE :: EIVAL(2)
-      REAL, PRIVATE :: VR(2,2)
+      TYPE(hyperdual), PRIVATE :: KO(2,2)
+      TYPE(hyperdual), PRIVATE :: EIVAL(2)
+      TYPE(hyperdual), PRIVATE :: VR(2,2)
       REAL, PRIVATE :: ax     ! coefficients used of the  
-      REAL, PRIVATE :: bx     ! quadratic and cubic equations
-      REAL, PRIVATE :: cx     ! ATX and ASWX
-      REAL, PRIVATE :: Qx     ! coefficients used to solve for 
+      TYPE(hyperdual), PRIVATE :: bx     ! quadratic and cubic equations
+      TYPE(hyperdual), PRIVATE :: cx     ! ATX and ASWX
+      TYPE(hyperdual), PRIVATE :: Qx     ! coefficients used to solve for 
       REAL, PRIVATE :: Rx     ! the roots of the cubic equation
       REAL, PRIVATE :: ev1    ! Temporary variables used to 
-      REAL, PRIVATE :: ev2    ! calculate the eigen vectors 
+      TYPE(hyperdual), PRIVATE :: ev2    ! calculate the eigen vectors 
       REAL, PRIVATE :: ev3    ! in ATX and ASWX
-      REAL, PRIVATE :: evmax  !
+      TYPE(hyperdual), PRIVATE :: evmax  !
       REAL, PRIVATE :: DetKO  ! Variables used to solve for the 
       REAL, PRIVATE :: DetK1  ! non-homogeneous part of the solution
       REAL, PRIVATE :: DetK2  ! a system of equations 
@@ -120,7 +121,7 @@ C-----------------------------------------------------------------------
       INTEGER, PRIVATE :: i
       INTEGER, PRIVATE :: j
       
-      REAL, PRIVATE :: B( 2 )   ! Surface media concentration vector
+      TYPE(hyperdual), PRIVATE :: B( 2 )   ! Surface media concentration vector
       REAL, PRIVATE :: NHS( 2 ) ! non-homogenious solution
 
 C input/output parameters
@@ -207,9 +208,9 @@ C-------------------------------------------------------------------------------
          IMPLICIT NONE
 
          REAL,    INTENT( IN )   :: H_wat, H_soil                      ! Effective H for Hg(0)
-         REAL,    INTENT( IN )   :: Hg_atm                             ! atm conc and land use fractions
+         TYPE(hyperdual),    INTENT( IN )   :: Hg_atm                             ! atm conc and land use fractions
          INTEGER, INTENT( IN )   :: c,r                                ! column and row
-         REAL,    INTENT( OUT )  :: Hg_st, Hg_cut, Hg_grnd, Hg_wat     ! compensation points     
+         TYPE(hyperdual),    INTENT( OUT )  :: Hg_st, Hg_cut, Hg_grnd, Hg_wat     ! compensation points     
 !********* reduction and partioning terms *******************************
          REAL :: Kow     ! Hg(0) Octanol water partioning coefficient
          REAL :: Kpwc    ! Hg(0) air-vegetation surface partitioning coefficient
@@ -249,23 +250,23 @@ C Flux unit conversions
          IF( INIT_COMP ) THEN
 ! Equilibrium Hg(0) mesophyll concentration in a 5 month box model simulation
             If( f_wat( c,r ) .eq. 1.0 ) Then
-               CMEDIA( c,r,5 ) = 0.0 ! umol/g bulk leaf concentration
-               CMEDIA( c,r,6 ) = 0.0 ! umol/g bulk leaf concentration
-               CMEDIA( c,r,3 ) = 0.0 ! umol/g bulk soil concentration
-               CMEDIA( c,r,2 ) = 3.57e-6      ! from Whalin et al 2007
+               CMEDIA( c,r,5 ) = 0.0D0 ! umol/g bulk leaf concentration
+               CMEDIA( c,r,6 ) = 0.0D0 ! umol/g bulk leaf concentration
+               CMEDIA( c,r,3 ) = 0.0D0 ! umol/g bulk soil concentration
+               CMEDIA( c,r,2 ) = 3.57d-6      ! from Whalin et al 2007
                CMEDIA( c,r,1 ) = Hg_atm * 3.0 ! assume 3x eq con.
             Else if( f_wat( c,r ) .gt. 0.0 ) Then
                CMEDIA( c,r,5 ) = fevgrn(c,r)*6.0e-6 + (1.0-fevgrn(c,r))*CMEDIA(c,r,5) ! umol/g bulk leaf concentration
                CMEDIA( c,r,6 ) = fevgrn(c,r)*6.0e-7 + (1.0-fevgrn(c,r))*CMEDIA(c,r,6) ! umol/g bulk leaf concentration
-               CMEDIA( c,r,3 ) = Hg_atm                                              ! umol/g bulk soil concentration
-               CMEDIA( c,r,2 ) = 3.57e-6      ! from Whalin et al 2007
+               CMEDIA( c,r,3 ) = Hg_atm                                             ! umol/g bulk soil concentration
+               CMEDIA( c,r,2 ) = 3.57d-6      ! from Whalin et al 2007
                CMEDIA( c,r,1 ) = Hg_atm * 3.0 ! assume 3x eq con.
             Else 
                CMEDIA( c,r,5 ) = fevgrn(c,r)*6.0e-6 + (1.0-fevgrn(c,r))*CMEDIA(c,r,5) ! umol g-1 bulk leaf concentration
                CMEDIA( c,r,6 ) = fevgrn(c,r)*6.0e-7 + (1.0-fevgrn(c,r))*CMEDIA(c,r,6) ! umol g-1 bulk leaf concentration
                CMEDIA( c,r,3 ) = Hg_atm                                               ! ppm bulk soil concentration
-               CMEDIA( c,r,2 ) = 0.0
-               CMEDIA( c,r,1 ) = 0.0
+               CMEDIA( c,r,2 ) = 0.0D0
+               CMEDIA( c,r,1 ) = 0.0D0
             End If
          End If
 
@@ -287,23 +288,25 @@ C Flux unit conversions
          USE BIDI_MOD
          USE ASX_DATA_MOD
          USE UTILIO_DEFN
+         USE HDMod
 
          IMPLICIT NONE
 
-         REAL,    INTENT( IN )   :: flx_stom, flx_cut, flx_grnd, flx_wat, flx_hgII         ! fluxes ppm*m/s
+         TYPE(hyperdual),    INTENT( IN )   :: flx_stom, flx_cut, flx_grnd, flx_wat, flx_hgII         ! fluxes ppm*m/s
          REAL,    INTENT( IN )   :: H_wat, H_soil                                          ! Soil and surface water H
          REAL,    INTENT( IN )   :: dt                                                     ! Intigration time step
          INTEGER, INTENT( IN )   :: c,r                                                    ! column and row
          INTEGER, INTENT( IN )   :: Jdate, Jtime                                           ! Time info
 
-         REAL    :: flux_st, flux_cut, flux_grnd, flux_wat, flux_hgII      ! fluxes ppm*m/s
-         REAL    :: Hg_st, Hg_cut, Hg_grnd, Hg_wat     ! compensation points     
-         REAL, SAVE :: HgII_grnd, HgII_wat    ! Soil and water Hg(II) concentrations
+         TYPE(hyperdual)    :: flux_st, flux_cut, flux_grnd, flux_wat, flux_hgII      ! fluxes ppm*m/s
+         TYPE(hyperdual)    :: Hg_st, Hg_cut, Hg_grnd, Hg_wat     ! compensation points     
+         REAL, SAVE :: HgII_grnd              ! Soil Hg(II) concentrations
+         TYPE(hyperdual), SAVE :: HgII_wat    ! Water Hg(II) concentrations
 !********* reduction and partioning terms *******************************
          REAL :: kr         ! soil divalent mercury reduction term
-         REAL :: Prod       ! Production umol/s
-         REAL :: K_loss     ! Loss Rate 1/s
-         REAL :: K_Prod, K_Prod_HgII     ! Relative Production Rate 1/s
+         TYPE(hyperdual) :: Prod       ! Production umol/s
+         TYPE(hyperdual) :: K_loss     ! Loss Rate 1/s
+         TYPE(hyperdual) :: K_Prod, K_Prod_HgII     ! Relative Production Rate 1/s
 !********* Unit conversions *********************
 !         REAL, Parameter :: M3MOLVOL = MOLVOL/1.0e3 ! molar volume of air at stp m3/mol      
 C*************************** Ocean box parameters ***********************
@@ -332,8 +335,8 @@ C Set floor to smallest terrestrial value
             flux_st  = flx_stom / MV_air / ZM
             flux_cut = flx_cut  / MV_air / ZM 
          Else
-            flux_st  = 0.0
-            flux_cut = 0.0
+            flux_st  = 0.0d0
+            flux_cut = 0.0d0
          End If
 ! ppm m/s to ppm/s
          flux_grnd  = flx_grnd / ZG 
@@ -359,23 +362,23 @@ C Find a simple one box solution for elemental Hg
                If( flux_wat .le. 0.0 ) Then ! Deposition
                   Prod   = -flux_wat/ ( f_wat( c,r ) )
                   K_Prod = log(1.0+Prod/CMEDIA( c,r, 1 ))
-                  K_loss = 0.0
+                  K_loss = 0.0d0
                Else
-                  Prod = 0.0
-                  K_Prod = 0.0
+                  Prod = 0.0d0
+                  K_Prod = 0.0d0
                   K_loss = min( flux_wat / ( CMEDIA( c,r, 1 ) * f_wat( c,r ) ), 0.99 ) 
                   K_loss = -log(1.0-K_loss)
                End If 
 
-               KO = 0.0 
+               KO = 0.0d0 
 
 C 240 w/m**2 is the 'typical light spectrum' from Whalin et al 2007 Marine Chem.
 C attenuation at 1 m = 1/K (1-exp(-K Z)) = 0.758 using a K of 0.58
 
 
                KO( 1,1 )   = -K_loss - kox * satten * Met_Data%RGRND(c,r)/( rref ) + K_prod
-               KO( 1,2 )   =  kphot * satten * Met_Data%RGRND(c,r)/( rref )
-               KO( 2,1 )   =  kox *   satten * Met_Data%RGRND(c,r)/( rref )
+               KO( 1,2 )   =  REAL ( kphot * satten * Met_Data%RGRND(c,r)/( rref ) , 8 )
+               KO( 2,1 )   =  REAL ( kox *   satten * Met_Data%RGRND(c,r)/( rref ) , 8 )
                KO( 2,2 )   = -kphot * satten * Met_Data%RGRND(c,r)/( rref ) + K_Prod_HgII
 
                NHS = 0.0
@@ -383,7 +386,7 @@ C attenuation at 1 m = 1/K (1-exp(-K Z)) = 0.758 using a K of 0.58
                NHS(1) = 0.0!-Prod
                NHS(2) = 0.0!flux_hgII/( f_wat( c,r ) )
 
-               B = 0.0
+               B = 0.0d0
 
                B( 1 ) = Hg_wat   
                B( 2 ) = HgII_wat
@@ -414,8 +417,8 @@ C*****************************************************************************
                   VR(2,i) = ev2/evmax
                END DO                  
 ! update the surface array
-               Hg_wat   = 0.0
-               HgII_wat = 0.0
+               Hg_wat   = 0.0d0
+               HgII_wat = 0.0d0
 
                DO i = 1, NC
                   Hg_wat   = Hg_wat   + B(i) * VR(1,i) * EXP( EIVAL(i) * dt )
@@ -477,7 +480,7 @@ C*****************************************************************************
      &                flux_grnd / max((1.0 - f_wat( c,r )),0.001 )
                Hg_grnd = Hg_grnd + Prod * dt
             Else 
-               Prod    = kr * Grid_Data%RHOB( c,r ) * HgII_grnd * ZG /( 1.0e3 * 200.59 )
+               Prod    = REAL ( kr * Grid_Data%RHOB( c,r ) * HgII_grnd * ZG /( 1.0e3 * 200.59 ) , 8 )
                K_loss  = min( flux_grnd / ( Hg_grnd * max((1.0 - f_wat( c,r )),0.001 ) ), 0.99 ) 
                K_loss  = -log(1.0 - K_loss)
                If( K_loss .eq. 0.0 ) Then ! due to numerical rounding

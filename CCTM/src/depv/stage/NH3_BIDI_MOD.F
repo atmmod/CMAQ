@@ -94,6 +94,7 @@ C-------------------------------------------------------------------------------
          Use LSM_MOD
          Use depv_data_module
          Use centralized_io_module
+         Use HDMod
 
          Implicit None 
 ! Includes
@@ -208,8 +209,8 @@ C-------------------------------------------------------------------------------
 ! time in the files is not the same
          If ( .Not. MEDC_AVAIL ) Then
             Write(Logdev,*) 'Estimating soil NHx from EPIC output'
-            gamma1  = 0.0
-            gamma2  = 0.0
+            gamma1  = 0.0d0
+            gamma2  = 0.0d0
 
             If ( .Not. E2C_CHEM_AVAIL ) Then
                xmsg = E2C_CHEM // ' file not available'
@@ -245,8 +246,20 @@ C-------------------------------------------------------------------------------
                   Knit2  = Knit2  + Beld_ag(:,:,l) * Nit2(:,:,l)
                   NH4_G1 = NH4_G1 + Beld_ag(:,:,l) * NH4ps1(:,:,l)
                   NH4_G2 = NH4_G2 + Beld_ag(:,:,l) * NH4ps2(:,:,l)
-                  gamma1 = gamma1 + convl1 * NH4ps1(:,:,l) / 10.0 ** (-pHs1(:,:,l) ) * Beld_ag(:,:,l)
-                  gamma2 = gamma2 + convl2 * NH4ps2(:,:,l) / 10.0 ** (-pHs2(:,:,l) ) * Beld_ag(:,:,l)
+                  
+                  ! J.E.L. It is safe to only add to the real component (%x) here, because all
+                  ! other variables are real. The addition will only affect the real component
+                  gamma1%x = gamma1%x + convl1 * NH4ps1(:,:,l) / 10.0 ** (-pHs1(:,:,l) ) * Beld_ag(:,:,l)
+                  gamma1%dx1 = 0.0d0
+                  gamma1%dx2 = 0.0d0
+                  gamma1%dx1x2 = 0.0d0
+                  
+                  
+                  gamma2%x = gamma2%x + convl2 * NH4ps2(:,:,l) / 10.0 ** (-pHs2(:,:,l) ) * Beld_ag(:,:,l)
+                  gamma2%dx1 = 0.0d0
+                  gamma2%dx2 = 0.0d0
+                  gamma2%dx1x2 = 0.0d0
+                                    
                   fagam1 = fagam1 + convl1 * F1_NH4(:,:,l) / 10.0 ** (-pHs1(:,:,l) ) * Beld_ag(:,:,l)
                   fagam2 = fagam2 + convl2 * F2_NH4(:,:,l) / 10.0 ** (-pHs2(:,:,l) ) * Beld_ag(:,:,l)
                End Where
@@ -257,8 +270,16 @@ C-------------------------------------------------------------------------------
             Where( frac_ag .gt. 0.0 )
                MHp1 = MHp1 / frac_ag
                MHp2 = MHp2 / frac_ag
-               gamma1 = max(( gamma1 + fagam1 ) / frac_ag, 630.0 )
-               gamma2 = max(( gamma2 + fagam2 ) / frac_ag, 630.0 )
+               gamma1%x = max(( gamma1%x + fagam1 ) / frac_ag, 630.0 )
+               gamma1%dx1 = 0.0d0
+               gamma1%dx2 = 0.0d0
+               gamma1%dx1x2 = 0.0d0
+               
+               gamma2%x = max(( gamma2%x + fagam2 ) / frac_ag, 630.0 )
+               gamma2%dx1 = 0.0d0
+               gamma2%dx2 = 0.0d0
+               gamma2%dx1x2 = 0.0d0
+               
                BDs1   = BDs1 / frac_ag
                BDs2   = BDs2 / frac_ag
                frac_ir = frac_ir / frac_ag
@@ -268,8 +289,16 @@ C-------------------------------------------------------------------------------
             Where( BDs2 .Lt. 1.0 ) BDs2 = 1.6
 ! prevent missmatched data between soil and daily files
             Where( MHp1 .Eq. 0.0 .Or. MHp2 .Eq. 0.0 )
-               gamma1 = 0.0
-               gamma2 = 0.0  
+               gamma1%x = 0.0d0
+               gamma1%dx1 = 0.0d0
+               gamma1%dx2 = 0.0d0
+               gamma1%dx1x2 = 0.0d0
+               
+               gamma2%x = 0.0d0
+               gamma2%dx1 = 0.0d0
+               gamma2%dx2 = 0.0d0
+               gamma2%dx1x2 = 0.0d0
+               
             End Where
 
             Where( NH4_G1 .Gt. 0.0 )
@@ -337,8 +366,16 @@ C-------------------------------------------------------------------------------
             Where( frac_ag .gt. 0.0 )
                MHp1 = MHp1 / frac_ag
                MHp2 = MHp2 / frac_ag
-               gamma1 = max( gamma1 + fagam1 / frac_ag, 630.0 )
-               gamma2 = max( gamma2 + fagam2 / frac_ag, 630.0 )
+               gamma1%x = max( gamma1%x + fagam1 / frac_ag, 630.0 )
+               gamma1%dx1 = 0.0d0
+               gamma1%dx2 = 0.0d0
+               gamma1%dx1x2 = 0.0d0
+               
+               gamma2%x = max( gamma2%x + fagam2 / frac_ag, 630.0 )
+               gamma2%dx1 = 0.0d0
+               gamma2%dx2 = 0.0d0
+               gamma2%dx1x2 = 0.0d0
+               
                BDs1   = BDs1 / frac_ag
                BDs2   = BDs2 / frac_ag
                frac_ir = frac_ir / frac_ag
@@ -349,8 +386,16 @@ C-------------------------------------------------------------------------------
             Where( BDs2 .Lt. 1.0 ) BDs2 = 1.6
 ! prevent missmatched data between soil and daily files
             Where( MHp1 .Eq. 0.0 .Or. MHp2 .Eq. 0.0 )
-               gamma1 = 0.0
-               gamma2 = 0.0  
+               gamma1%x = 0.0d0
+               gamma1%dx1 = 0.0d0
+               gamma1%dx2 = 0.0d0
+               gamma1%dx1x2 = 0.0d0
+               
+               gamma2%x = 0.0d0
+               gamma2%dx1 = 0.0d0
+               gamma2%dx2 = 0.0d0
+               gamma2%dx1x2 = 0.0d0
+               
             End Where
 
             Where( NH4_G1 .Gt. 0.0 )
@@ -392,6 +437,7 @@ C-------------------------------------------------------------------------------
          Use Bidi_Mod, Only: gamma1, gamma2, MHp1, MHp2
          Use ASX_DATA_MOD
          Use LSM_MOD
+         Use HDMod
          
          Implicit None
          
@@ -399,18 +445,18 @@ C-------------------------------------------------------------------------------
 
          Integer, Intent( IN )  :: r, c, l, s 
          Real,    Intent( IN )  :: diff     ! NH3 diffusion in air m2/s
-         Real,    Intent( OUT ) :: NH3_st   ! Stomatal Compensation point
-         Real,    Intent( OUT ) :: NH3_g    ! ground Compensation point
+         TYPE(hyperdual),    Intent( OUT ) :: NH3_st   ! Stomatal Compensation point
+         TYPE(hyperdual),    Intent( OUT ) :: NH3_g    ! ground Compensation point
          Real,    Intent( OUT ) :: Rg       ! Soil diffusive resistance to soil water
          
-         Real                   :: cnh3g1, cnh3g2   ! NH3 compensation concentration for ground [ppm]
-         Real                   :: mNH4         ! Soil total NH4+ mg N / Kg
+         TYPE(hyperdual)        :: cnh3g1, cnh3g2   ! NH3 compensation concentration for ground [ppm]
+         TYPE(hyperdual)        :: mNH4         ! Soil total NH4+ mg N / Kg
          Real                   :: Ka           ! NH4 acid dissociation constant
          Real                   :: coef_a       ! intermediate variable to solve for soil solution NHx
-         Real                   :: coef_b       ! intermediate variable to solve for soil solution NHx
-         Real                   :: coef_c       ! intermediate variable to solve for soil solution NHx
-         Real                   :: NH4_sol      ! NH4+ in soil water solution mg N / kg
-         Real                   :: NH3_sol      ! NH3 in soil water solution mg N / kg
+         TYPE(hyperdual)        :: coef_b       ! intermediate variable to solve for soil solution NHx
+         TYPE(hyperdual)        :: coef_c       ! intermediate variable to solve for soil solution NHx
+         TYPE(hyperdual)        :: NH4_sol      ! NH4+ in soil water solution mg N / kg
+         TYPE(hyperdual)        :: NH3_sol      ! NH3 in soil water solution mg N / kg
          Real                   :: frac_sol     ! Fraction of NHx in solution
          Real                   :: ldry1
          Real                   :: ldry2
@@ -479,7 +525,7 @@ C-------------------------------------------------------------------------------
          a1     = 161512.0d0 / real( MET_DATA%SoiT1( c,r ), 8 )
      &          * 10.0d0 ** ( -4507.11d0 / real( MET_DATA%SoiT1( c,r ), 8 ) )
          a1     = a1 * 24.5d0 * 1.0d6  ! ppm
-         NH3_st = a1 * luf_fac( l )       
+         NH3_st = REAL ( a1 * luf_fac( l ) , 8 )       
          
 !> Set a maximum [NH4]/[H+] ratio at 200,000 based on output from the AIM aerosol
 !> model any [NH4] in excess of this ratio is assumed to partition into the solid
@@ -487,13 +533,13 @@ C-------------------------------------------------------------------------------
 
          Select Case( cat_lu( l ) )
             Case( 'WATER','SNOWICE' ) ! water, ice or snow
-               cnh3g1 = 0.0
-               cnh3g2 = 0.0
-               NH3_st = 0.0
+               cnh3g1 = 0.0d0
+               cnh3g2 = 0.0d0
+               NH3_st = 0.0d0
             Case( 'AG','HAY' ) ! Ag
                if( gamma1( c,r ) .eq. 0.0 ) Then 
                   cg = wg_ir/1.6 ! L water / kg soil
-                  mNH4    = C_gam*1.0e-7/1.6*14.0*1.0e3 ! assume a bulk density of 1.6 kg/l untill Canadian data is available
+                  mNH4    = REAL ( C_gam*1.0e-7/1.6*14.0*1.0e3 , 8 ) ! assume a bulk density of 1.6 kg/l untill Canadian data is available
                   Ka      = 5.68853e-10*exp(-6248.151*(1.0/MET_DATA%SoiT1( c,r )-1.0/298.15))
                   coef_a  = cg * (1.0+Ka/1.0e-7) ! assume a pH of 7
                   coef_b  = max_sorp+cg * half_sol * (1.0+Ka/1.0e-7) - mNH4
@@ -514,7 +560,7 @@ C-------------------------------------------------------------------------------
                End If
                If( gamma2( c,r ) .eq. 0.0 ) Then 
                   cg = w5cm/1.6 ! L water / kg soil
-                  mNH4    = C_gam*1.0e-7/1.6*14.0*1.0e3 ! assume a bulk density of 1.6 kg/l untill Canadian data is available
+                  mNH4    = REAL ( C_gam*1.0e-7/1.6*14.0*1.0e3 , 8 ) ! assume a bulk density of 1.6 kg/l untill Canadian data is available
                   Ka      = 5.68853e-10*exp(-6248.151*(1.0/MET_DATA%SoiT1( c,r )-1.0/298.15))
                   coef_a  = cg*(1.0+Ka/1.0e-7)
                   coef_b  = max_sorp+cg*half_sol*(1.0+Ka/1.0e-7) - mNH4
@@ -540,7 +586,7 @@ C-------------------------------------------------------------------------------
             Case( 'AGMOS' ) ! Ag mosaic 67% ag 33% mosaic 
                If( gamma1( c,r ) .eq. 0.0 ) Then 
                   cg = wg_ir/1.6 ! L water / kg soil
-                  mNH4    = (C_gam*twothree+natgam*onethree)*1.0e-7/1.6*14.0*1.0e3 ! assume a bulk density of 1.6 kg/l untill Canadian data is available
+                  mNH4    = REAL ( (C_gam*twothree+natgam*onethree)*1.0e-7/1.6*14.0*1.0e3 , 8 ) ! assume a bulk density of 1.6 kg/l untill Canadian data is available
                   Ka      = 5.68853e-10*exp(-6248.151*(1.0/MET_DATA%SoiT1( c,r )-1.0/298.15))
                   coef_a  = cg*(1.0+Ka/1.0e-7)
                   coef_b  = max_sorp+cg*half_sol*(1.0+Ka/1.0e-7) - mNH4
@@ -561,7 +607,7 @@ C-------------------------------------------------------------------------------
                End If
                If( gamma2( c,r ) .eq. 0.0 ) Then 
                   cg = w5cm/1.6 ! L water / kg soil
-                  mNH4    = (C_gam*twothree + natgam*onethree)*1.0e-7/1.6*14.0*1.0e3 ! assume a bulk density of 1.6 kg/l untill Canadian data is available
+                  mNH4    = REAL ( (C_gam*twothree + natgam*onethree)*1.0e-7/1.6*14.0*1.0e3 , 8 ) ! assume a bulk density of 1.6 kg/l untill Canadian data is available
                   Ka      = 5.68853e-10*exp(-6248.151*(1.0/MET_DATA%SoiT1( c,r )-1.0/298.15))
                   coef_a  = cg*(1+Ka/1.0e-7)
                   coef_b  = max_sorp+cg*half_sol*(1.0+Ka/1.0e-7) - mNH4
@@ -587,8 +633,8 @@ C-------------------------------------------------------------------------------
      &                    * twothree + onethree * NH3_st
                End If     
             Case Default ! not ag
-               cnh3g1 = Min( natgam / wg_ir, maxgam )
-               cnh3g2 = Min( natgam / w5cm, maxgam )
+               cnh3g1 = REAL ( Min( natgam / wg_ir, maxgam ) , 8 )
+               cnh3g2 = REAL ( Min( natgam / w5cm, maxgam ) , 8 )
          End Select
          cnh3g1 = a1 * Max( cnh3g1, 0.01 )
          cnh3g2 = a1 * Max( cnh3g2, 0.01 )
@@ -617,25 +663,26 @@ C-------------------------------------------------------------------------------
          Use ASX_DATA_MOD
          Use Bidi_Mod, Only: gamma1, gamma2, MHp1, MHp2
          Use LSM_MOD
+         Use HDMod
          
          Implicit None                
          
          Real,      Intent( IN )    :: dt     ! time step in s
          Integer,   Intent( IN )    :: C      ! Column
          Integer,   Intent( IN )    :: R      ! Row
-         Real,      Intent( IN )    :: flux_ag ! ag emissions ppm*m/s
+         TYPE(hyperdual),      Intent( IN )    :: flux_ag ! ag emissions ppm*m/s
 
-         Real    :: Kn     ! nitrification rate 1/s
+         TYPE(hyperdual)    :: Kn     ! nitrification rate 1/s
          Real    :: Knit   ! EPIC combined nitrification rate
          Real    :: kn_max ! EPIC maximum nitrification rate
-         Real    :: Kvs    ! Air-soil exchange rate for aqueous NH4+
+         TYPE(hyperdual)    :: Kvs    ! Air-soil exchange rate for aqueous NH4+
          Real    :: kvg    ! Air-soil exchange rate for gas phase NH3
-         Real    :: MNHx   ! molar soil water NH4+ + NH3 conc.
+         TYPE(hyperdual)    :: MNHx   ! molar soil water NH4+ + NH3 conc.
          Real    :: pHsl   ! Soil pH
          Real    :: T_Soil ! Soil T
-         Real    :: NH3_flux  ! mol/l/s emissions are positive
+         TYPE(hyperdual)    :: NH3_flux  ! mol/l/s emissions are positive
          Real    :: MHp       ! molar H concentration
-         Real    :: gam       ! updated land use specific gamma
+         TYPE(hyperdual)    :: gam       ! updated land use specific gamma
          Real    :: MV_air    ! Molar volume of air L/mol
 
          CHARACTER( 96 )            :: xmsg = ' '
@@ -670,21 +717,21 @@ C-------------------------------------------------------------------------------
 ! Estimate the soil evasion rate assuming that the flux = MNHx*(1-exp(-kvs*dt)) where dt = 1 s and the flux is negative for deposition to the
 ! soil and positive for evasion from the soil. 
          If( NH3_flux .lt. 0.0 ) Then
-            Kvs    = 0.0
+            Kvs    = 0.0d0
 ! In epic the nitrification and evasion rates are added in a combined nitrification/evasion rate. 
 ! Then the emissions are assumed to be 5% of the total combined loss. Here we calcuate the nitrification/evasion rate as in EPIC and then the
 ! maximum rate is adjusted for the EPIC evasion because we will calculate the evasion seperately and add the rate to 
 ! EPIC nitrification. 
 ! EPIC estimates a combined evasion and nitrification rate with a maximum user specified rate. Here we subtract the CMAQ evasion rate from the 
 ! EPIC nitrification rate to ensure that the maximum rate is retained. 
-            Kn     =  Knit/24.0/3600.0    
+            Kn     =  REAL ( Knit/24.0/3600.0 , 8 )   
             If ( Frac_ag( c,r ) .Gt. 0.0 ) Then 
                If ( Kn .Gt. 0.0 ) Then
                   MNHx = -NH3_flux / Kn + ( MNHx + NH3_flux / Kn ) * exp( -Kn * dt )
                End If
                gam = MNHx / MHp 
             Else
-               gam = natgam
+               gam = REAL ( natgam , 8 )
             End If
           Else ! evasion
             Kvs    = -log(1.0-NH3_flux/MNHx)
@@ -699,7 +746,7 @@ C-------------------------------------------------------------------------------
                End If
                gam = MNHx / MHp 
             Else
-               gam = natgam
+               gam = REAL ( natgam , 8 )
             End If
           End If
 ! Update soil concentrations
@@ -709,7 +756,7 @@ C-------------------------------------------------------------------------------
             gamma2( C,R ) = gam
          End If
 
-         If ( IsNaN( gam ) ) Then
+         If ( IsNaN( REAL ( gam%x , 4 ) ) ) Then
             xmsg = 'NaN in Gamma Calculation'
             Write( logdev,* ) 'MNHx   :', MNHx
             Write( logdev,* ) 'gam    :', gam
