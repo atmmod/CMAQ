@@ -13,6 +13,7 @@ Module HDMod
       integer, parameter                 :: PRhyd = DP_hyd             ! Set the precision
       real(PRhyd), parameter, private    :: pi = ACOS(-1.0_PRhyd)  
       complex(PRhyd), parameter, private :: pi_c = (pi, 0.0_PRhyd)
+      real(SPRhyd), parameter             :: tolhyd = 1e-7              ! used for equivalance comparisons
   
       !--- DEFINITION OF HYPERDUAL TYPE
       TYPE hyperdual

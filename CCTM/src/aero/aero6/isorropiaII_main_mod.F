@@ -47180,9 +47180,13 @@ C
         DEL= zero
       ENDIF
       
-      IF (DEL%x .eq. zero) THEN
-      	DEL = 0.0D0
-      ENDIF
+      
+      ! e.l. 10/23: This shouldn't be used because even when DEL%x == 0, it could carry
+      ! sensitivity information of it with respect to perturbations
+      
+C     IF (DEL%x .eq. zero) THEN
+C     	DEL = 0.0D0
+C     ENDIF
       
       SO4I  = SO4I  - DEL
       HI    = HI    - DEL

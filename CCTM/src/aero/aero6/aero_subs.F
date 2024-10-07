@@ -1066,7 +1066,7 @@ C *** Determine if Hybrid
 #ifdef noiso
 	hybrid = .false.
 #else
-	  TEMP_CUTOFF = 260.d0
+	  TEMP_CUTOFF = 290.d0
       PRES_CUTOFF = 2.D4
       FWDISO = ( AIRTEMP .GE. TEMP_CUTOFF ) .AND. ( AIRPRES .GE. PRES_CUTOFF ) .AND. (AIRRH .GE. 0.18)
 C     FWDISO = .TRUE.
@@ -1384,25 +1384,25 @@ C              Also obtain the aqueous H+ concentration, AERLIQ(1) [mol/m3]
             END IF   ! TrustIso
 		 
 	 ! If there is a change in H+ concentration through rev iso, ignore the sensitivities		 		 
- 	 IF ( INT_TIME .GT. 90.0D0 ) THEN
- 	 	
- 	 	! Criteria 1: Significant Change of pH during the 4 steps of reverse ISORROPIA
- 	 	! Used to be 1.25, AERLIQ(1) is the H+ concentration from the new reverse ISORROPIA run, and 
- 	 	! HPLUS_PREV is the saved H+ concentration
- 	 	IF  ( ( ( AERLIQ(1) / HPLUS_PREV ) .GE. 1.25d0 ) .OR. ( HPLUS_PREV / AERLIQ(1) ) .GE. 1.25d0 ) THEN
- 	 		HybridSens = .false.
- 	 	ENDIF
- 	 	
- 	 	! Criteria 2: Close to Neutral but not corrected by the SQRT(AKW)
- 	 	IF ( AERLIQ( 1 ) /= 0.0D0 .AND. AERLIQ( 12 ) /= 0.0D0 ) THEN
- 	 		IF (AERLIQ( 1 ) /= AERLIQ( 12 ) .AND. ( (AERLIQ( 1 ) / AERLIQ( 12 ) .LE. 1.D3 ) .OR. (AERLIQ( 12 ) / AERLIQ( 1 ) ) .LE. 1.D3 ) ) THEN
- 	 			HybridSens = .false. 
- 	 		ENDIF
- 	 	ENDIF
- 	 
- 	 ELSE    ! INT_TIME .EQ. 90.0D0 for this case, only record down HPLUS here from first rev iso
- 	 	HPLUS_PREV = AERLIQ( 1 )
- 	 ENDIF
+C	 IF ( INT_TIME .GT. 90.0D0 ) THEN
+C	 	
+C	 	! Criteria 1: Significant Change of pH during the 4 steps of reverse ISORROPIA
+C	 	! Used to be 1.25, AERLIQ(1) is the H+ concentration from the new reverse ISORROPIA run, and 
+C	 	! HPLUS_PREV is the saved H+ concentration
+C	 	IF  ( ( ( AERLIQ(1) / HPLUS_PREV ) .GE. 1.25d0 ) .OR. ( HPLUS_PREV / AERLIQ(1) ) .GE. 1.25d0 ) THEN
+C	 		HybridSens = .false.
+C	 	ENDIF
+C	 	
+C	 	! Criteria 2: Close to Neutral but not corrected by the SQRT(AKW)
+C	 	IF ( AERLIQ( 1 ) /= 0.0D0 .AND. AERLIQ( 12 ) /= 0.0D0 ) THEN
+C	 		IF (AERLIQ( 1 ) /= AERLIQ( 12 ) .AND. ( (AERLIQ( 1 ) / AERLIQ( 12 ) .LE. 1.D3 ) .OR. (AERLIQ( 12 ) / AERLIQ( 1 ) ) .LE. 1.D3 ) ) THEN
+C	 			HybridSens = .false. 
+C	 		ENDIF
+C	 	ENDIF
+C	 
+C	 ELSE    ! INT_TIME .EQ. 90.0D0 for this case, only record down HPLUS here from first rev iso
+C	 	HPLUS_PREV = AERLIQ( 1 )
+C	 ENDIF
 		 
 		 
 		 
@@ -1455,7 +1455,7 @@ C *** Integrate mass transfer equation, convert flux from molar to mass
             DO ISP = 1, NVOLINORG
                CFINAL( ISP,IMODE ) = MAX( 0.0D0,
      &                                    CINORG( ISP,IMODE )
-     &                                    + J( ISP ) * TSTEP * DF( ISP ) )
+     &                                    + J( ISP )%x * TSTEP * DF( ISP ) )
             END DO 
             
 C *** Calculate updated H+ concentration 
@@ -1571,24 +1571,24 @@ C  soil_orig = 0.0d0
 C  cors_orig = 0.0d0
 	
 
-      IF ( HYBRID .AND. ( HybridSens .eq. .false.) ) THEN
-   	   ! Reset all moment related stuff
-   		call reset_hyd_sens( moment0_conc( 3 ), moment0_conc3_orig)
-   		call reset_hyd_sens( moment2_conc( 3 ), moment2_conc3_orig)
-   		call reset_hyd_sens( moment3_conc( 3 ), moment3_conc3_orig)
-   		call reset_hyd_sens( aeromode_dens( 3 ), aeromode_dens3_orig)
-   		call reset_hyd_sens( aeromode_lnsg( 3 ), aeromode_lnsg3_orig)
-   		call reset_hyd_sens( aeromode_diam( 3 ), aeromode_diam3_orig)
-   		call reset_hyd_sens( aeromode_mass( 3 ), aeromode_mass3_orig)
-   		call reset_hyd_sens( AEROSPC_CONC( ANH4_IDX, 3 ), anh4k_orig)
-   		call reset_hyd_sens( AEROSPC_CONC( ANO3_IDX, 3 ), ano3k_orig)
-   		call reset_hyd_sens( AEROSPC_CONC( ACL_IDX, 3 ), aclk_orig)
-   		call reset_hyd_sens( AEROSPC_CONC( ASO4_IDX, 3 ), aso4k_orig)
-   		call reset_hyd_sens( AEROSPC_CONC( AH2O_IDX, 3), ah2ok_orig)
-   		call reset_hyd_sens( PRECURSOR_CONC( NH3_IDX ), nh3_orig)	
-   		call reset_hyd_sens( PRECURSOR_CONC( HNO3_IDX ), hno3_orig)
-   		call reset_hyd_sens( PRECURSOR_CONC( HCL_IDX ), hcl_orig)  	
-      ENDIF
+C     IF ( HYBRID .AND. ( HybridSens .eq. .false.) ) THEN
+C  	   ! Reset all moment related stuff
+C  		call reset_hyd_sens( moment0_conc( 3 ), moment0_conc3_orig)
+C  		call reset_hyd_sens( moment2_conc( 3 ), moment2_conc3_orig)
+C  		call reset_hyd_sens( moment3_conc( 3 ), moment3_conc3_orig)
+C  		call reset_hyd_sens( aeromode_dens( 3 ), aeromode_dens3_orig)
+C  		call reset_hyd_sens( aeromode_lnsg( 3 ), aeromode_lnsg3_orig)
+C  		call reset_hyd_sens( aeromode_diam( 3 ), aeromode_diam3_orig)
+C  		call reset_hyd_sens( aeromode_mass( 3 ), aeromode_mass3_orig)
+C  		call reset_hyd_sens( AEROSPC_CONC( ANH4_IDX, 3 ), anh4k_orig)
+C  		call reset_hyd_sens( AEROSPC_CONC( ANO3_IDX, 3 ), ano3k_orig)
+C  		call reset_hyd_sens( AEROSPC_CONC( ACL_IDX, 3 ), aclk_orig)
+C  		call reset_hyd_sens( AEROSPC_CONC( ASO4_IDX, 3 ), aso4k_orig)
+C  		call reset_hyd_sens( AEROSPC_CONC( AH2O_IDX, 3), ah2ok_orig)
+C  		call reset_hyd_sens( PRECURSOR_CONC( NH3_IDX ), nh3_orig)	
+C  		call reset_hyd_sens( PRECURSOR_CONC( HNO3_IDX ), hno3_orig)
+C  		call reset_hyd_sens( PRECURSOR_CONC( HCL_IDX ), hcl_orig)  	
+C     ENDIF
       write1 = .false.
 C *** End of Coarse Mode dynamic mass transfer calculations
 
@@ -2000,25 +2000,25 @@ C.. Parameters
       CHARACTER( 16 ), PARAMETER :: PNAME = 'NEWPART'                 
 
 C.. Particle size parameters:
-      REAL, PARAMETER :: d20 = 2.0E-07                ! diameter of a new particle [cm]
-      REAL, PARAMETER :: d20sq = d20 * d20            ! new-particle diameter squared [cm**2]
-      REAL, PARAMETER :: m2_20 = 1.0E-4 * d20sq       ! new-particle diameter squared [m**2]
-      REAL, PARAMETER :: v20 = PI * d20 * d20sq /6.0  ! volume of a new particle [cm**3]
+      REAL( 8 ), PARAMETER :: d20 = 2.0d-07                ! diameter of a new particle [cm]
+      REAL( 8 ), PARAMETER :: d20sq = d20 * d20            ! new-particle diameter squared [cm**2]
+      REAL( 8 ), PARAMETER :: m2_20 = 1.0D-4 * d20sq       ! new-particle diameter squared [m**2]
+      REAL( 8 ), PARAMETER :: v20 = PI * d20 * d20sq /6.0d0  ! volume of a new particle [cm**3]
       
       TYPE(hyperdual)       :: sulfmass                     ! mass of a new particle [ug]
       TYPE(hyperdual)       :: sulfmass1                    ! inverse of sulfmass [ug**-1]
 
 C.. Set constants and local variables for Vehkamaki et al. (2002) scheme
-      REAL, PARAMETER :: C1 = 0.740997
-      REAL, PARAMETER :: C2 = -0.00266379
-      REAL, PARAMETER :: C3 = -0.00349998
-      REAL, PARAMETER :: C4 = 0.0000504022
-      REAL, PARAMETER :: C5 = 0.00201048
-      REAL, PARAMETER :: C6 = -0.000183289
-      REAL, PARAMETER :: C7 = 0.00157407
-      REAL, PARAMETER :: C8 = -0.0000179059
-      REAL, PARAMETER :: C9 = 0.000184403
-      REAL, PARAMETER :: C10 = -1.50345E-6
+      REAL( 8 ), PARAMETER :: C1 = 0.740997d0
+      REAL( 8 ), PARAMETER :: C2 = -0.00266379d0
+      REAL( 8 ), PARAMETER :: C3 = -0.00349998d0
+      REAL( 8 ), PARAMETER :: C4 = 0.0000504022d0
+      REAL( 8 ), PARAMETER :: C5 = 0.00201048d0
+      REAL( 8 ), PARAMETER :: C6 = -0.000183289d0
+      REAL( 8 ), PARAMETER :: C7 = 0.00157407d0
+      REAL( 8 ), PARAMETER :: C8 = -0.0000179059d0
+      REAL( 8 ), PARAMETER :: C9 = 0.000184403d0
+      REAL( 8 ), PARAMETER :: C10 = -1.50345d-6
 
       TYPE(hyperdual) :: XSTAR           ! mole fraction of sulfuric acid in the critical cluster
       TYPE(hyperdual) :: NA              ! total gas phase concentration of H2SO4  [ #/cm**3 ]
@@ -2031,11 +2031,11 @@ C.. Set constants and local variables for Vehkamaki et al. (2002) scheme
       
       TYPE(hyperdual) :: A, B, C, D, E, F, G, H, I, J
 
-      REAL :: MW_H2SO4        ! MW of H2SO4 in [ g / mole ]        
-      REAL :: DENSITY_H2SO4   ! DENSITY of H2SO4 in [ kg / m**3 ]
+      REAL( 8 ) :: MW_H2SO4        ! MW of H2SO4 in [ g / mole ]        
+      REAL( 8 ) :: DENSITY_H2SO4   ! DENSITY of H2SO4 in [ kg / m**3 ]
 
-      REAL, PARAMETER :: SCALEFAC = 1.0E-06           ! for [ 1 / m**3 ] ->  [ 1 / cm**3 ]
-      REAL, PARAMETER :: MUG2G = 1.0E-6               ! [ ug  ] -> [ g ]                 
+      REAL( 8 ), PARAMETER :: SCALEFAC = 1.0D-06           ! for [ 1 / m**3 ] ->  [ 1 / cm**3 ]
+      REAL( 8 ), PARAMETER :: MUG2G = 1.0D-6               ! [ ug  ] -> [ g ]                 
 
 C.. Initialize variables
       DNDT     = 0.0D0
