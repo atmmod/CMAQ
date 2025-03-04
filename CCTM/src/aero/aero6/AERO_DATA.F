@@ -269,7 +269,7 @@ C                     ---------- -------- ------- + +   + ------ --- +  --------
      & spcs_list_type('AMT2    ', cm_set, 1400.0d0, T,F,  0,  2.8, 6.1,T, 'DUST  ', 0.08), ! 
      & spcs_list_type('AMT3    ', cm_set, 1400.0d0, T,F,  0,  2.8, 6.1,T, 'DUST  ', 0.09), !
      & spcs_list_type('AMT4    ', cm_set, 1400.0d0, T,F,  0,  2.8, 6.1,T, 'DUST  ', 0.07), !
-     & spcs_list_type('AMT5    ', cm_set, 1400.0d0 T,F,  0,  2.8, 6.1,T, 'DUST  ', 0.07), !
+     & spcs_list_type('AMT5    ', cm_set, 1400.0d0, T,F,  0,  2.8, 6.1,T, 'DUST  ', 0.07), !
      & spcs_list_type('AMT6    ', cm_set, 1400.0d0, T,F,  0,  2.8, 6.1,T, 'DUST  ', 0.05), !                         #60
      & spcs_list_type('AMT7    ', cm_set, 1400.0d0, T,F,  0,  2.8, 6.1,T, 'DUST  ', 0.06), ! MT SOA Highest Volatility
                                                                                       
@@ -468,7 +468,7 @@ C                                                             fine    coarse
       ! for densities as well. Units are [kg/m3]. The appropriate calculation is:
       !    dust_dens = sum( frac_i ) / sum( frac_i / dens_i )
       ! Make sure to ignore any tracer species when performing this calculation.
-      Real, Parameter :: dust_dens( n_mode ) = (/ 2200.0d0, 2156.55, 2536.92 /)
+      Real, Parameter :: dust_dens( n_mode ) = (/ 2200.0, 2156.55, 2536.92 /)
 
       TYPE(hyperdual), ALLOCATABLE, SAVE    :: DUSTOUTM( :,:,: )   ! Wind-Blown Dust Mass Emiss Rate [ug/m3/s]
       TYPE(hyperdual), ALLOCATABLE, SAVE    :: DUSTOUTN( :,:,: )   ! Wind-Blown Dust Number Emiss Rate [1/m3/s]
@@ -1550,7 +1550,7 @@ C 11 May 16  B.Murphy  Program Written
 C
 C-----------------------------------------------------------------------
       Use AEROMET_DATA, only : pi, f6pi
-	  Use HDMod
+	Use HDMod
 	  
       Implicit None
 

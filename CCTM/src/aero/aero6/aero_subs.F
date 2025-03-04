@@ -209,6 +209,7 @@ C-----------------------------------------------------------------------
       USE AEROMET_DATA
       USE UTILIO_DEFN
       USE AERO_BUDGET
+      USE aero_counter
 
 #ifdef sens
       USE DDM3D_DEFN, ONLY : NP, NPMAX
@@ -299,6 +300,9 @@ C-----------------------------------------------------------------------
 
       if ( firstime ) then
          firstime = .false.
+         total_case(:,:) = 0
+         resetted_case(:,:) = 0
+         reset_ratio(:,:) = 0.0
 #ifdef nomm
          write( logdev,* ) 'aero_subs: nomm'
 #endif
@@ -358,7 +362,7 @@ C *** Update size parameters (distribution is wet from ORGAER)
 !     2.1 of Bhave et al. (2004) for further discussion.
 ! *** Initialize Budget Variables
       CBUDGET0_NUM  = MOMENT0_CONC
-      CBUDGET0_SRF  = MOMENT2_CONC
+      CBUDGET0_SRF  = MOMENT2_CONC * PI
       CBUDGET0_MASS = AEROSPC_CONC
  
 ! *** set atmospheric mean free path in double precision
@@ -376,8 +380,8 @@ C *** Update size parameters (distribution is wet from ORGAER)
 ! *** transfer of number to accumulation mode from Aitken mode is zero
        BACAT( 1 ) = 0.0d0
 
-       IF ( FASTCOAG_FLAG ) THEN ! Solve coagulation analytically
- 
+      IF ( FASTCOAG_FLAG ) THEN ! Solve coagulation analytically
+
 C *** set geometric mean diameters, geometric standard deviations, and
 C     ln(GSD) in double precision
          DO N = 1, N_MODE
@@ -506,9 +510,8 @@ C *** Aitken mode: initial value of M0
 
       Y0 = MOMENT0_CONC( 1 )
 
-C *** The rate of change for M0_Aitken is described in Equation 8a of
-C     Binkowski & Roselle (2003), with the c_i term equal to 0.
-
+      ! The rate of change for M0_Aitken is described in Equation 8a of
+      ! Binkowski & Roselle (2003), with the c_i term equal to 0.
       A = BATAT( 1 )                      ! intramodal coagulation
       B = BATAC( 1 ) * moment0_conc( 2 )  ! intermodal coagulation
 
@@ -612,7 +615,7 @@ C     renaming.
 
 ! *** Initialize Budget Variables
       CBUDGET0_NUM  = MOMENT0_CONC
-      CBUDGET0_SRF  = MOMENT2_CONC
+      CBUDGET0_SRF  = MOMENT2_CONC * PI
       CBUDGET0_MASS = AEROSPC_CONC
 
 #ifdef nomm
@@ -717,7 +720,7 @@ C     END DO
 	  
       DO MODE = 1, N_MODE
  	      GROWTH_BUDGET(AERONUM_MAP(MODE)) = MOMENT0_CONC(MODE) - CBUDGET0_NUM(MODE)
- 	      GROWTH_BUDGET(AEROSRF_MAP(MODE)) = MOMENT0_CONC(MODE) - CBUDGET0_NUM(MODE)
+ 	      GROWTH_BUDGET(AEROSRF_MAP(MODE)) = MOMENT0_CONC(MODE) * PI - CBUDGET0_SRF(MODE)
       ENDDO 
    
       DO SPC = 1,N_AEROSPC
@@ -782,7 +785,9 @@ C    aerosols. ATMOSPHERIC CHEMISTRY AND PHYSICS. 7, 4639-4659
       USE AEROMET_DATA
       USE UTILIO_DEFN
 	  USE HDMod 
-   	  USE ISORROPIAII_MAIN_MOD, ONLY : ISOROPIA
+      USE ISORROPIAII_MAIN_MOD, ONLY : ISOROPIA
+      USE mpi
+      use aero_counter
 	  
       IMPLICIT NONE
 
@@ -800,7 +805,6 @@ C *** Parameters:
       INTEGER, PARAMETER :: NVOLINORG = 3   ! number of volatile inorganic species
 
       ! indices for inorganic species
-!     INTEGER, PARAMETER :: KNH4 = 1, KNO3 = 2, KCL = 3, KSO4 = 4, KNA = 5, KHP = 6, KMG = 7, KK = 8, KCA = 9
       INTEGER, PARAMETER :: KNH4 = 1, KNO3 = 2, KCL = 3, KSO4 = 4, KNA = 5, KMG = 6, KK = 7, KCA = 8, KHP = 9
 
       REAL( 8 ), PARAMETER :: D_TWOTHIRDS = 2.0D0 / 3.0D0
@@ -946,6 +950,8 @@ C     mass partitioning between the modes
       LOGICAL FwdIso                      ! J.E.L. for not using ISORROPIA  
       LOGICAL HybridSens                  ! J.E.L. for not using rev ISORROPIA hyd parts
       LOGICAL FwdSens                     ! 
+      LOGICAL OutOfBounds                 ! J.E.L. for not using ISORROPIA
+      type(hyperdual) :: gas_bf_correction(3)
       
       ! Additional variables for resetting sensitivities for asymptotic steps
       TYPE(hyperdual)       :: HPLUS_PREV
@@ -1006,6 +1012,13 @@ C *** Local Saved Variables
 	  
       INTEGER         :: C_GAS      ! loop counter (E.L.)
       LOGICAL         :: SAME_ALL_AFTER = .false.
+      TYPE(hyperdual) :: aerospc_conc_bf_iso(8) ! el-debug
+      TYPE(hyperdual) :: gas_bf_iso(3)          ! el-debug
+      logical         :: sensflag               ! el-debug
+      integer         :: rank                   ! el-debug
+      integer         :: ierr                 ! el-debug
+      real(8), allocatable  :: reviso_gg(:)
+      integer         :: numsteps, isoiter
 	  
 	  
       logical, save :: write1 = .true.
@@ -1058,24 +1071,35 @@ C-----------------------------------------------------------------------
          NH3RAT  = PRECURSOR_MW( NH3_IDX )  / REAL( AEROSPC_MW( ANH4_IDX ), 8 )
          HNO3RAT = PRECURSOR_MW( HNO3_IDX ) / REAL( AEROSPC_MW( ANO3_IDX ), 8 )
          HCLRAT  = PRECURSOR_MW( HCL_IDX )  / REAL( AEROSPC_MW( ACL_IDX ), 8 )
+         
+         total_case(:,:) = 0
+         resetted_case(:,:) = 0
       END IF
 
 C *** Determine if Hybrid
       TMP = 0.0D0
       
+      ! initialize the array of 
+      aerospc_conc_bf_iso(5) = 0.0d0
+      gas_bf_iso(3) = 0.0d0
+      
 #ifdef noiso
-	hybrid = .false.
+      hybrid = .false.
 #else
-	  TEMP_CUTOFF = 290.d0
+	  TEMP_CUTOFF = 260.d0
       PRES_CUTOFF = 2.D4
-      FWDISO = ( AIRTEMP .GE. TEMP_CUTOFF ) .AND. ( AIRPRES .GE. PRES_CUTOFF ) .AND. (AIRRH .GE. 0.18)
+      OutOfBounds = (AIRTEMP .LE. 250.0d0) .OR. (AIRPRES .LE. 2.D4) .OR. (AIRRH .LE. 0.18)
+      
+      ! FWDISO = ( AIRTEMP .GE. TEMP_CUTOFF ) .AND. ( AIRPRES .GE. PRES_CUTOFF ) .AND. (AIRRH .GE. 0.18)
+      FWDISO = OutOfBounds
 C     FWDISO = .TRUE.
       
       DO I = 1, N_AEROSPC
          IF(  AEROSPC( I )%tracer )CYCLE
          IF ( AEROSPC( I )%CHARGE .NE. 0 ) TMP = TMP + AEROSPC_CONC( I,N_MODE )
       END DO
-      HYBRID = ( TMP .GE. CUTOFF ) .AND. ( AIRRH .GE. 0.18 ) .AND. FWDISO
+      HYBRID = ( TMP .GE. CUTOFF ) .AND. ( AIRRH .GE. 0.18 )
+      hybrid = .false.
 #endif
 
       DELT  = REAL( DT, 8 )
@@ -1146,11 +1170,14 @@ C *** Initialize Variables
       DM2DT     = 0.0D0
       SCONDRATE = 0.0D0
 
+
 C *** Produce new particles only during time steps when the gas-phase 
 C     production rate of H2SO4 is non-zero
-
+      
+      SO4RATE = 0.0D0
+      
       IF ( SO4RATE .NE. 0.0D0 ) THEN
-
+ 
 C *** Adjust sulfuric acid vapor concentration to a value in
 C     equilibrium with the production of new particles and the
 C     condensation of sulfuric acid vapor on existing particles, based 
@@ -1159,11 +1186,11 @@ C     on Equations A21 and A23 of Binkowski & Shankar (1995).
          DO I = 1, N_MODE
             TMP = TMP + FCONC_SO4( I,2 )
          END DO
-
+ 
          XH2SO4 = SO4RATE / TMP
-         XH2SO4 = MAX( XH2SO4, CONMIN )
-         PRECURSOR_CONC( SULF_IDX ) = XH2SO4 
-
+         XH2SO4 = MAX( XH2SO4, CONMIND )
+         ! PRECURSOR_CONC( SULF_IDX ) = XH2SO4 
+ 
 C *** Calculate new particle production rate for 0th, 2nd, & 3rd moments
          CALL NEWPART3 ( AIRRH, AIRTEMP, XH2SO4, SO4RATE,
      &                   DNDT, DMDT_SO4, DM2DT )
@@ -1172,15 +1199,22 @@ C *** Calculate sulfate condensation rate as the gas-phase production
 C     rate minus the new particle production rate, following Equation
 C     3.23 of Jiang & Roth (2003).
          SCONDRATE = MAX( SO4RATE - DMDT_SO4, 0.0D0 )
-
-! *** Propagate NPF Change to budget variables
+         
+         IF (SCONDRATE .EQ. 0.0D0) THEN
+            DMDT_SO4 = 0.0D0
+            DNDT = 0.0D0
+            DM2DT = 0.0D0
+         ENDIF
+         
+ 
+ ! *** Propagate NPF Change to budget variables
          NPF_BUDGET( PRECURSOR_MAP( SULF_IDX ) ) = -DMDT_SO4 
      &             * H2SO4RAT  * DELT ! ug m-3 of Sulfuric Acid
                                       ! (converted to ppmv in update_precursor)
          NPF_BUDGET( AEROSPC_MAP( ASO4_IDX,1 ) ) =  DMDT_SO4 * DELT ! ug m-3
          NPF_BUDGET( AERONUM_MAP( 1 ) ) =  DNDT * DELT  ! N m-3
          NPF_BUDGET( AEROSRF_MAP( 1 ) ) =  DM2DT * DELT ! m2 m-3
-
+ 
       END IF   ! SO4RATE .NE. 0
 
 C *** Sulfate Condensation (Size-resolved)
@@ -1191,9 +1225,7 @@ C     calculated using Equation A17 of Binkowski & Shankar (1995). The
 C     condensation rate for accumulation mode (fine-equilibrium scheme) or 
 C     coarse mode (hybrid and dynamic schemes) is computed by difference, 
 C     to avoid mass conservation violations arising from numerical error.
-      
-      TMP = 0.d0
-
+      TMP = 0.0D0
       DO I = 1, N_MODE
          TMP = TMP + FCONC_SO4( I,2 )
       END DO
@@ -1209,8 +1241,8 @@ C *** Growth values for mode merge condition
 ! *** Initialize Budget Counter Variables         
       CBUDGET0_NUM( : ) = MOMENT0_CONC( : )
       CBUDGET0_NUM( 1 ) = CBUDGET0_NUM( 1 ) + DNDT * DELT
-      CBUDGET0_SRF( : ) = MOMENT2_CONC( : )
-      CBUDGET0_SRF( 1 ) = CBUDGET0_SRF( 1 ) + DM2DT * DELT
+      CBUDGET0_SRF( : ) = MOMENT2_CONC( : ) * PI
+      CBUDGET0_SRF( 1 ) = CBUDGET0_SRF( 1 ) + DM2DT * DELT * PI
       CBUDGET0_SO4( : ) = AEROSPC_CONC( ASO4_IDX, : )
       CBUDGET0_SO4( 1 ) = CBUDGET0_SO4( 1 ) + DMDT_SO4 * DELT
       CBUDGET0_NO3( : ) = AEROSPC_CONC( ANO3_IDX, : )
@@ -1232,29 +1264,45 @@ C *** Growth values for mode merge condition
 
 C *** For Hybrid approach, calculate dynamic mass trasfer for
 C     semi-volatile components of coarse mode (NO3, CL, NH4)   
-      HybridSens = .TRUE. 
+      HybridSens = .TRUE.
+      flag_criteria1 = .false.
+      flag_criteria2 = .false.
+      
+      
       IF ( HYBRID ) THEN 
 
          CNTRL( 1 ) = 1.0D0 ! reverse problem
          CNTRL( 2 ) = 1.0D0 ! aerosol in metastable state
-		 
+
          INT_TIME = 0.0D0
          TSTEP    = 90.0D0
-         
          ISTEP    = 1
          IMODE    = 3
          TrustIso = .TRUE.
          
- 		 
+         isoiter = 0
+         
+         ! allocate the gg array with number of steps
+         
+         if (INT_TIME > 90.0D0) then
+            hplus_prev = AERLIQ(1)
+         endif
+         
+         if (mod(delt, tstep) /= 0) then
+            numsteps = FLOOR(DELT / TSTEP) + 1
+         else
+            numsteps = INT(DELT / TSTEP)
+         endif
+         
+         ! allocate the reviso_gg array based on the number of times reviso is run
+         allocate(reviso_gg(numsteps))
+         reviso_gg = 0.0d0
+ 
          DO WHILE ( INT_TIME .LT. DELT ) 
 
             IF ( INT_TIME + TSTEP .GT. DELT ) TSTEP = DELT - INT_TIME 
             INT_TIME = INT_TIME + TSTEP 
             ISTEP = ISTEP + 1   
-            		
- 			IF ( INT_TIME .GT. 90.0D0 ) THEN
- 				HPLUS_PREV = AERLIQ( 1 )
- 			ENDIF
 			
 C *** Calculate first moments using Equation 4 of Binkowski & Shankar
 C     (1995) or Equation 3 of Binkowski and Roselle (2003).
@@ -1341,7 +1389,7 @@ C *** Compute sulfate production rate [ug/m3 s] for coarse mode
 
             RATE = CONDSO4( IMODE )
             SO4  = CINORG( KSO4,IMODE ) + RATE * TSTEP * H2SO4RATM1
-			
+
             IF ( TrustIso ) THEN
 
 C *** Double Precision vars for ISORROPIA [mole/m3]
@@ -1350,13 +1398,14 @@ C              at the gas/particle interface of coarse mode aerosol.
 C                 GAS(1) = NH3, GAS(2) = HNO3, GAS(3) = HCl
                WI( 1 ) = CINORG( KNA, IMODE ) * CFAC_ANA
                WI( 2 ) =                  SO4 * CFAC_ASO4
-               WI( 3 ) = CINORG( KNH4,IMODE ) * CFAC_ANH4               
+               WI( 3 ) = CINORG( KNH4,IMODE ) * CFAC_ANH4
                WI( 4 ) = CINORG( KNO3,IMODE ) * CFAC_ANO3
                WI( 5 ) = CINORG( KCL, IMODE ) * CFAC_ACL
                WI( 6 ) = CINORG( KCA, IMODE ) * CFAC_ACA
                WI( 7 ) = CINORG( KK,  IMODE ) * CFAC_AK
                WI( 8 ) = CINORG( KMG, IMODE ) * CFAC_AMG
 C              Also obtain the aqueous H+ concentration, AERLIQ(1) [mol/m3]
+
 
 #ifdef verbose_aero
          if ( write1 ) then
@@ -1368,9 +1417,10 @@ C              Also obtain the aqueous H+ concentration, AERLIQ(1) [mol/m3]
 #endif
 
                CALL ISOROPIA( WI, RHI, TEMPI, CNTRL, WT, GAS, AERLIQ,  
-     &                        AERSLD, SCASI, OTHER, COL, ROW, LAYER, FwdSens )
+     &                        AERSLD, SCASI, OTHER, sensflag)
+     
+               gas_bf_correction = GAS
 
-			   	 
                IF ( GAS( 1 ) .LT. 0.0D0 .OR. GAS( 2 ) .LT. 0.0D0 .OR.
      &              GAS( 3 ) .LT. 0.0D0 ) THEN
                   IF ( FIRSTWRITE ) THEN
@@ -1383,15 +1433,47 @@ C              Also obtain the aqueous H+ concentration, AERLIQ(1) [mol/m3]
 
             END IF   ! TrustIso
 		 
-	 ! If there is a change in H+ concentration through rev iso, ignore the sensitivities		 		 
-C	 IF ( INT_TIME .GT. 90.0D0 ) THEN
+	 ! If there is a change in H+ concentration through rev iso, ignore the sensitivities		
 C	 	
 C	 	! Criteria 1: Significant Change of pH during the 4 steps of reverse ISORROPIA
 C	 	! Used to be 1.25, AERLIQ(1) is the H+ concentration from the new reverse ISORROPIA run, and 
 C	 	! HPLUS_PREV is the saved H+ concentration
-C	 	IF  ( ( ( AERLIQ(1) / HPLUS_PREV ) .GE. 1.25d0 ) .OR. ( HPLUS_PREV / AERLIQ(1) ) .GE. 1.25d0 ) THEN
-C	 		HybridSens = .false.
-C	 	ENDIF
+        
+        CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
+        
+        if (int_time > 90.0d0) then
+        if (AERLIQ(1) /= 0.0D0 .AND. HPLUS_PREV /= 0.0D0) THEN
+        
+        ! el 0122: test the relative ratio of hplus changes
+            if ( abs( (aerliq(1) - hplus_prev) / hplus_prev) > 0.001) then
+            flag_criteria1 = .true. 
+            endif
+
+	 	    IF  ( ( ( AERLIQ(1) / HPLUS_PREV ) .GE. 1.00001d0 ) .OR. ( HPLUS_PREV / AERLIQ(1) ) .GE. 1.00001d0 ) THEN
+            flag_criteria2 = .true.
+            hybridsens = .false.
+            ENDIF
+        endif
+        
+        else    ! int_time == 90.0: 
+           hplus_prev = aerliq( 1 )
+        endif
+               
+        reviso_gg( isoiter+1 ) = 2.0d0*max(WI(2)%x-WI(6)%x,0.D0)+WI(4)%x+WI(5)%x-WI(1)%x-WI(3)%x-WI(7)%x-2.d0*WI(8)%x
+        if (isoiter >= 1) then
+                  
+             if ( reviso_gg(isoiter + 1) > 0 .and. reviso_gg(isoiter) < 0 ) then
+                hybridsens = .false.
+             endif
+
+             if ( reviso_gg(isoiter + 1) < 0 .and. reviso_gg(isoiter) > 0 ) then
+                hybridsens = .false.
+             endif
+        endif
+        
+
+        
+        isoiter = isoiter + 1         
 C	 	
 C	 	! Criteria 2: Close to Neutral but not corrected by the SQRT(AKW)
 C	 	IF ( AERLIQ( 1 ) /= 0.0D0 .AND. AERLIQ( 12 ) /= 0.0D0 ) THEN
@@ -1433,6 +1515,44 @@ C     than the minimum aerosol conc.
                CALL COMPUTE_FLUX( NVOLINORG, GNH3R8, GNO3R8, GCLR8, KNH4,
      &                            KNO3, KCL, GAS( 1:3 ), GRFAC2( IMODE ),
      &                            AERLIQ( 1 ), RATE, J, COL, ROW, LAYER )
+               
+               ! gas concentrations here are already corrected
+               ! if the corrected gas phase species dx1x2 is much greater than GNH3R8 then
+               ! if (abs(gas(1)%dx1x2 / (GNH3R8 * 1.0D-6 / PRECURSOR_MW( NH3_IDX ))) > 1.d3) then
+               
+               
+                  if (rank == 26) then
+                        if (col == 3 .and. row == 13 .and. layer == 2) then
+                              write(*,*) 'WI(1):', WI(1)
+                              write(*,*) 'WI(2):', WI(2)
+                              write(*,*) 'WI(3):', WI(3)
+                              write(*,*) 'WI(4):', WI(4)
+                              write(*,*) 'WI(5):', WI(5)
+                              write(*,*) 'WI(6):', WI(6)
+                              write(*,*) 'WI(7):', WI(7)
+                              write(*,*) 'WI(8):', WI(8)
+                              write(*,*) 'corrected NH3', gas(1)
+                              write(*,*) 'corrected HNO3', gas(2)
+                              write(*,*) 'corrected HCl', gas(3)
+                              write(*,*) 'GG', 2.0d0*max(WI(2)%x-WI(6)%x,0.D0)+WI(4)%x+WI(5)%x-WI(1)%x-WI(3)%x-WI(7)%x-2.d0*WI(8)%x
+                              write(*,*) 'reviso_gg(1)', reviso_gg(1)
+                              write(*,*) 'reviso_gg(2)', reviso_gg(2)
+                              write(*,*) 'reviso_gg(3)', reviso_gg(3)
+                              write(*,*) 'isoiter', isoiter
+                              write(*,*) 'sensflag', sensflag
+                              write(*,*) 'RH', AIRRH
+                              write(*,*) 'T', AIRTEMP
+                              write(*,*) 'hybridsens', hybridsens
+                        endif
+                  endif 
+            
+                  if (sensflag .eq. .false.) then
+                        ! hybridsens = .false.
+                        J%dx1 = 0.0d0
+                        J%dx2 = 0.0d0
+                        J%dx1x2 = 0.0d0
+                  endif
+               
             ELSE
                J( : ) = 0.0D0
             END IF 
@@ -1455,9 +1575,9 @@ C *** Integrate mass transfer equation, convert flux from molar to mass
             DO ISP = 1, NVOLINORG
                CFINAL( ISP,IMODE ) = MAX( 0.0D0,
      &                                    CINORG( ISP,IMODE )
-     &                                    + J( ISP )%x * TSTEP * DF( ISP ) )
-            END DO 
-            
+     &                                    + J( ISP ) * TSTEP * DF( ISP ) )
+            END DO               
+
 C *** Calculate updated H+ concentration 
 
             HPLUS( IMODE ) = 0.0
@@ -1500,7 +1620,7 @@ C *** Update all Local Aerosol Mass and Vapor Concentrations
      &                                 -CFINAL( KNO3,IMODE) ) * HNO3RAT  
             PRECURSOR_CONC( HCL_IDX ) = GCLR8 + ( CINORG( KCL,IMODE )
      &                                 -CFINAL( KCL,IMODE) ) * HCLRAT 
-     		 			
+ 
 C *** Compute net change in 3rd moment due to dry inorganic mass transfer
 
             DDRYM3DT = ( ( CFINAL( KNH4,IMODE ) - CINORG( KNH4,IMODE ) ) * M3FAC_ANH4
@@ -1545,6 +1665,7 @@ C     accumulation modes but the coarse mode does need to be updated
 C     each sub-time step. This should be for the wet distribution
                
             CALL GETPAR( .TRUE. )
+
          END DO   ! end mass transfer time step loop
          
       END IF   ! for 'Hybrid' method
@@ -1552,44 +1673,66 @@ C     each sub-time step. This should be for the wet distribution
 	  ! If there are drastic changes in pH during rev iso, the sensitivities have asymptotic behaviors
 	  ! See Henningan et. al. 2015 ACP paper for details
 	
-C  moment0_conc3_orig = 0.0d0
-C  moment2_conc3_orig = 0.0d0
-C  moment3_conc3_orig = 0.0d0
-C  aeromode_dens3_orig = 0.0d0
-C  aeromode_lnsg3_orig = 0.0d0
-C  aeromode_diam3_orig = 0.0d0
-C  aeromode_mass3_orig = 0.0d0
-C  anh4k_orig = 0.0d0
-C  ano3k_orig = 0.0d0
-C  aso4k_orig = 0.0d0
-C  nh3_orig = 0.0d0
-C  hno3_orig = 0.0d0
-C  hcl_orig = 0.0d0
-C  hplus_orig = 0.0d0
-C  seacat_orig = 0.0d0
-C  soil_orig = 0.0d0
-C  cors_orig = 0.0d0
-	
 
-C     IF ( HYBRID .AND. ( HybridSens .eq. .false.) ) THEN
-C  	   ! Reset all moment related stuff
-C  		call reset_hyd_sens( moment0_conc( 3 ), moment0_conc3_orig)
-C  		call reset_hyd_sens( moment2_conc( 3 ), moment2_conc3_orig)
-C  		call reset_hyd_sens( moment3_conc( 3 ), moment3_conc3_orig)
-C  		call reset_hyd_sens( aeromode_dens( 3 ), aeromode_dens3_orig)
-C  		call reset_hyd_sens( aeromode_lnsg( 3 ), aeromode_lnsg3_orig)
-C  		call reset_hyd_sens( aeromode_diam( 3 ), aeromode_diam3_orig)
-C  		call reset_hyd_sens( aeromode_mass( 3 ), aeromode_mass3_orig)
-C  		call reset_hyd_sens( AEROSPC_CONC( ANH4_IDX, 3 ), anh4k_orig)
-C  		call reset_hyd_sens( AEROSPC_CONC( ANO3_IDX, 3 ), ano3k_orig)
-C  		call reset_hyd_sens( AEROSPC_CONC( ACL_IDX, 3 ), aclk_orig)
-C  		call reset_hyd_sens( AEROSPC_CONC( ASO4_IDX, 3 ), aso4k_orig)
-C  		call reset_hyd_sens( AEROSPC_CONC( AH2O_IDX, 3), ah2ok_orig)
-C  		call reset_hyd_sens( PRECURSOR_CONC( NH3_IDX ), nh3_orig)	
-C  		call reset_hyd_sens( PRECURSOR_CONC( HNO3_IDX ), hno3_orig)
-C  		call reset_hyd_sens( PRECURSOR_CONC( HCL_IDX ), hcl_orig)  	
-C     ENDIF
+      IF ( HYBRID .AND. ( HybridSens .eq. .false.) ) THEN
+   	   ! Reset the sensitivities of all variables changed: 
+   		call reset_hyd_sens( moment0_conc( 3 ), moment0_conc3_orig)
+   		call reset_hyd_sens( moment2_conc( 3 ), moment2_conc3_orig)
+   		call reset_hyd_sens( moment3_conc( 3 ), moment3_conc3_orig)
+   		call reset_hyd_sens( aeromode_dens( 3 ), aeromode_dens3_orig)
+   		call reset_hyd_sens( aeromode_lnsg( 3 ), aeromode_lnsg3_orig)
+   		call reset_hyd_sens( aeromode_diam( 3 ), aeromode_diam3_orig)
+   		call reset_hyd_sens( aeromode_mass( 3 ), aeromode_mass3_orig)
+   		call reset_hyd_sens( AEROSPC_CONC( ANH4_IDX, 3 ), anh4k_orig)
+   		call reset_hyd_sens( AEROSPC_CONC( ANO3_IDX, 3 ), ano3k_orig)
+   		call reset_hyd_sens( AEROSPC_CONC( ACL_IDX, 3 ), aclk_orig)
+   		call reset_hyd_sens( AEROSPC_CONC( ASO4_IDX, 3 ), aso4k_orig)
+   		call reset_hyd_sens( AEROSPC_CONC( AH2O_IDX, 3), ah2ok_orig)
+   		call reset_hyd_sens( PRECURSOR_CONC( NH3_IDX ), nh3_orig)	
+   		call reset_hyd_sens( PRECURSOR_CONC( HNO3_IDX ), hno3_orig)
+   		call reset_hyd_sens( PRECURSOR_CONC( HCL_IDX ), hcl_orig)  	
+   		
+   		! reset everything to the original value. 
+C  		MOMENT0_CONC(3) = moment0_conc3_orig
+C	    MOMENT2_CONC(3) = moment2_conc3_orig
+C	    MOMENT3_CONC(3) = moment3_conc3_orig
+C	    aeromode_dens(3) = aeromode_dens3_orig
+C	    aeromode_lnsg(3) = aeromode_lnsg3_orig
+C	    aeromode_diam(3) = aeromode_diam3_orig
+C	    aeromode_mass(3) = aeromode_mass3_orig
+C	    AEROSPC_CONC(ANH4_IDX,3) = anh4k_orig
+C	    AEROSPC_CONC(ANO3_IDX,3) = ano3k_orig
+C	    AEROSPC_CONC(ACL_IDX,3) = aclk_orig
+C	    AEROSPC_CONC(ASO4_IDX,3) = aso4k_orig
+C	    AEROSPC_CONC(AH2O_IDX,3) = ah2ok_orig
+C	    PRECURSOR_CONC(NH3_IDX) = nh3_orig
+C	    PRECURSOR_CONC(HNO3_IDX) = hno3_orig
+C 	    PRECURSOR_CONC(HCL_IDX) = hcl_orig
+      ENDIF
       write1 = .false.
+
+
+      if (hybrid) then
+            ! if reverse isorropia is called, add 1 to all the cases
+            total_case(:,layer) = total_case(:,layer) + 1
+            ! The newest criteria based on GG:
+            if (hybridsens .eq. .false.) then
+                  resetted_case(1, layer) = resetted_case(1, layer) + 1
+            endif
+            
+            !  1.001 times change
+            if (flag_criteria1) then
+                  resetted_case(2, layer) = resetted_case(2, layer) + 1
+            endif
+
+            ! 1.01 times change:
+            if (flag_criteria2) then
+                  resetted_case(3, layer) = resetted_case(3, layer) + 1
+            endif
+      endif 
+
+
+
 C *** End of Coarse Mode dynamic mass transfer calculations
 
 C *** Fine Aerosol Modes: Call ISORROPIA in forward mode to calculate gas-particle equilibrium
@@ -1629,7 +1772,7 @@ C *** Set flags to account for mass conservation violations in ISRP3F
       IF ( FWDISO ) THEN 
            
       CALL ISOROPIA( WI, RHI, TEMPI, CNTRL, WT, GAS, AERLIQ,
-     &               AERSLD, SCASI, OTHER, COL, ROW, LAYER, FwdSens)
+     &               AERSLD, SCASI, OTHER, sensflag)
      
 
 C *** Save H+ concentration information in microgram/m3 for consistency
@@ -1671,7 +1814,6 @@ C  ENDIF
       DVOLINORG( KNH4 ) = GNH3R8 * CFAC_GNH3  - GAS( 1 )   ! mol m-3
       DVOLINORG( KNO3 ) = GNO3R8 * CFAC_GHNO3 - GAS( 2 )   ! mol m-3
       DVOLINORG( KCL )  = GCLR8  * CFAC_GHCL  - GAS( 3 )   ! mol m-3
-      
 
       IF ( DVOLINORG( KNH4 ) .LT. 0.0D0 ) THEN
          DVOLMAX = -SUM(AEROSPC_CONC( ANH4_IDX,1:2 ) ) * CFAC_ANH4 + EVAPMIND
@@ -1834,7 +1976,7 @@ C     aerospc_conc variables. This should be for the wet distribution.
 ! *** Propagate Concentration Changes from Coarse-Mode Mass
 ! *** Transfer to Budget Vectors
       DELNUM( : )  = MOMENT0_CONC( : ) - CBUDGET0_NUM( : )
-      DELSRF( : )  = MOMENT2_CONC( : ) - CBUDGET0_SRF( : )
+      DELSRF( : )  = MOMENT2_CONC( : ) * PI - CBUDGET0_SRF( : )
       DELSO4( : )  = AEROSPC_CONC( ASO4_IDX, : ) - CBUDGET0_SO4( : )
       DELNH4( : )  = AEROSPC_CONC( ANH4_IDX, : ) - CBUDGET0_NH4( : )
       DELNO3( : )  = AEROSPC_CONC( ANO3_IDX, : ) - CBUDGET0_NO3( : )
@@ -1871,6 +2013,8 @@ C     COND_BUDGET( AEROSPC_MAP( AH3OP_IDX,:) ) = DELH3OP( : )
 
  
 C *** Update gas-phase concentrations from Aitken and Accumulation Mode Partitioning
+      PRECURSOR_CONC( SULF_IDX ) = PRECURSOR_CONC( SULF_IDX )
+     &                            +SUM( -DELSO4(:) * H2SO4RAT )
       PRECURSOR_CONC( NH3_IDX )  = GNH3R8 + sum( CINORG( KNH4,1:2 )
      &                            -CFINAL( KNH4,1:2 ) ) * NH3RAT 
       PRECURSOR_CONC( HNO3_IDX ) = GNO3R8 + sum( CINORG( KNO3,1:2 )
@@ -1878,7 +2022,88 @@ C *** Update gas-phase concentrations from Aitken and Accumulation Mode Partitio
       PRECURSOR_CONC( HCL_IDX )  = GCLR8 + sum( CINORG( KCL,1:2 )
      &                            -CFINAL( KCL,1:2) ) * HCLRAT 
      
-         
+        if ((abs(PRECURSOR_CONC( NH3_IDX )%dx1x2)) > 1.0d0 .and. gas_bf_iso(1)%dx1x2 /= 0.0d0) then
+        if  (abs(PRECURSOR_CONC( NH3_IDX )%dx1x2 / gas_bf_iso(1)%dx1x2) > 1d3) then
+     	write(*,*), 'nh3 exceeds limit'
+     	write(*,*), 'WI values:'
+     	write(*,*), aerospc_conc_bf_iso(1)
+     	write(*,*), aerospc_conc_bf_iso(2)
+     	write(*,*), aerospc_conc_bf_iso(3)
+     	write(*,*), aerospc_conc_bf_iso(4)
+     	write(*,*), aerospc_conc_bf_iso(5)
+     	write(*,*), aerospc_conc_bf_iso(6)
+     	write(*,*), aerospc_conc_bf_iso(7)
+     	write(*,*), aerospc_conc_bf_iso(8)
+     	write(*,*), 'gas before'
+     	write(*,*), gas_bf_iso(1)
+     	write(*,*), gas_bf_iso(2)
+     	write(*,*), gas_bf_iso(3)
+     	write(*,*), 'gas after'
+     	write(*,*), precursor_conc(NH3_IDX)
+     	write(*,*), precursor_conc(HNO3_IDX)
+     	write(*,*), precursor_conc(HCL_IDX)
+     	write(*,*), 'RHI and TEMPI'
+     	write(*,*), RHI
+     	write(*,*), TEMPI
+     	STOP
+        endif
+        endif
+
+        if ((abs(PRECURSOR_CONC( HNO3_IDX )%dx1x2)) > 1.0d0 .and. gas_bf_iso(2)%dx1x2 /= 0.0d0) then
+        if (abs(PRECURSOR_CONC( HNO3_IDX )%dx1x2 / gas_bf_iso(2)%dx1x2) > 1d3) then
+     	write(*,*), 'HNO3 exceeds limit'
+     	write(*,*), 'WI values:'
+     	write(*,*), aerospc_conc_bf_iso(1)
+     	write(*,*), aerospc_conc_bf_iso(2)
+     	write(*,*), aerospc_conc_bf_iso(3)
+     	write(*,*), aerospc_conc_bf_iso(4)
+     	write(*,*), aerospc_conc_bf_iso(5)
+     	write(*,*), aerospc_conc_bf_iso(6)
+     	write(*,*), aerospc_conc_bf_iso(7)
+     	write(*,*), aerospc_conc_bf_iso(8)
+     	write(*,*), 'gas before'
+     	write(*,*), gas_bf_iso(1)
+     	write(*,*), gas_bf_iso(2)
+     	write(*,*), gas_bf_iso(3)
+     	write(*,*), 'gas after'
+     	write(*,*), precursor_conc(NH3_IDX)
+     	write(*,*), precursor_conc(HNO3_IDX)
+     	write(*,*), precursor_conc(HCL_IDX)
+     	write(*,*), 'RHI and TEMPI'
+     	write(*,*), RHI
+     	write(*,*), TEMPI
+     	STOP
+        endif
+        endif
+    	
+
+         if ((abs(PRECURSOR_CONC( HCL_IDX )%dx1x2)) > 1.0d0 .and. gas_bf_iso(3)%dx1x2 /= 0.0d0) then
+         if (abs(PRECURSOR_CONC( HCL_IDX )%dx1x2 / gas_bf_iso(3)%dx1x2) > 1d3) then
+     	 write(*,*), 'HNO3 exceeds limit'
+     	 write(*,*), 'WI values:'
+     	 write(*,*), aerospc_conc_bf_iso(1)
+     	 write(*,*), aerospc_conc_bf_iso(2)
+     	 write(*,*), aerospc_conc_bf_iso(3)
+     	 write(*,*), aerospc_conc_bf_iso(4)
+     	 write(*,*), aerospc_conc_bf_iso(5)
+     	 write(*,*), aerospc_conc_bf_iso(6)
+     	 write(*,*), aerospc_conc_bf_iso(7)
+     	 write(*,*), aerospc_conc_bf_iso(8)
+     	 write(*,*), 'gas before'
+     	 write(*,*), gas_bf_iso(1)
+     	 write(*,*), gas_bf_iso(2)
+     	 write(*,*), gas_bf_iso(3)
+     	 write(*,*), 'gas after'
+     	 write(*,*), precursor_conc(NH3_IDX)
+     	 write(*,*), precursor_conc(HNO3_IDX)
+     	 write(*,*), precursor_conc(HCL_IDX)
+     	 write(*,*), 'RHI and TEMPI'
+     	 write(*,*), RHI
+     	 write(*,*), TEMPI
+     	 STOP
+         endif
+         endif
+
 2023  FORMAT( 1X, 'VOLINORG returning negative gas concentrations from ISOROPIA:'
      &       /10X, 'GAS(1) = NH3, GAS(2) = HNO3, GAS(3) = HCl' )
 2029  FORMAT( 1X, '[see VOLINORG msg]'
@@ -2005,8 +2230,8 @@ C.. Particle size parameters:
       REAL( 8 ), PARAMETER :: m2_20 = 1.0D-4 * d20sq       ! new-particle diameter squared [m**2]
       REAL( 8 ), PARAMETER :: v20 = PI * d20 * d20sq /6.0d0  ! volume of a new particle [cm**3]
       
-      TYPE(hyperdual)       :: sulfmass                     ! mass of a new particle [ug]
-      TYPE(hyperdual)       :: sulfmass1                    ! inverse of sulfmass [ug**-1]
+      REAL( 8 )            :: sulfmass                     ! mass of a new particle [ug]
+      REAL( 8 )            :: sulfmass1                    ! inverse of sulfmass [ug**-1]
 
 C.. Set constants and local variables for Vehkamaki et al. (2002) scheme
       REAL( 8 ), PARAMETER :: C1 = 0.740997d0
@@ -2173,7 +2398,7 @@ C     GNO3R8   : HNO3(g) concentration (ug/m3)
 C     GCLR8    : HCl(g) concentration (ug/m3)
 C     KNH4     : Index to NH4 species
 C     KNO3     : Index to NO3 species
-C     KCL      : Index to NO3 species 
+C     KCL      : Index to CL species 
 C     Ceq      : vapor concentration (mol/m3)
 C     CondRate : effective condensation rate (I) of 3rd moment to mode
 C              : [treat units as (1/s)]
@@ -2206,7 +2431,6 @@ C     Arguments:
 C     Local Variables:
       REAL( 8 ),  PARAMETER :: Afact = 1.0D-01  ! factor for H+ limiter
       REAL( 8 ),  PARAMETER :: small = 1.0D-25
-      REAL( 8 ),  PARAMETER :: small_prod = 2.0D-22
       TYPE(hyperdual) :: Cinf( nvolinorg ) ! gas concentration in mol/m3
       TYPE(hyperdual) :: Qk              ! factor for modifying vapor press. based on H+ limit
       TYPE(hyperdual) :: Hflux           ! flux of H+ to mode from cond/evap
@@ -2214,6 +2438,7 @@ C     Local Variables:
       TYPE(hyperdual) :: aa, bb, cc      ! terms in quadratic equation
       TYPE(hyperdual) :: JH2SO4          ! molar flux of H2SO4(g) [mol/m3/s]
       TYPE(hyperdual) :: CH2SO4          ! effective H2SO4(g) concentration [mol/m3]
+      type(hyperdual) :: q               ! an intermediate variable to compute the correct roots, el-1122
       INTEGER      isp             ! inorganic species index
       INTEGER         :: COL, ROW, LAYER
 
@@ -2244,30 +2469,47 @@ C     vapor pressures with Qk factor (Pilinis et al., 2000, AS&T).
          Hlim = SIGN( Hlim, Hflux )
 
 C        Solve quadratic for Qk: aa*Qk^2 + bb*Qk + cc = 0
-         aa = Ceq( KCL ) + Ceq( KNO3 )
-C
-         bb = Hlim / CondRate
-     &      + Cinf( KNH4) - Cinf( KNO3 ) - Cinf( KCL ) - 2.0D0 * CH2SO4
-         cc = -Ceq( KNH4 )
-C
-         Qk = 0.0D0 ! initialize Qk
+         aa = Ceq( KCL ) + Ceq( KNO3 )    ! aa > 0 
 
-         IF ( aa .LT. small .AND. 0.0D0 .LT. bb ) THEN ! bb*Qk + cc = 0
-            Qk = -cc / bb
-         ELSE IF (aa .LT. small .AND. bb .LE. 0.0D0 ) THEN
-            Qk = 0.0D0
-         ELSE IF (-cc .LT. small .AND. bb .LT. 0.0D0 ) THEN  ! aa*Qk^2 + bb*Qk = 0
-            Qk = -bb / aa
-         ELSE IF (-cc .LT. small .AND. 0.0D0 .LE. bb ) THEN
-            Qk = 0.0D0
-         ELSE
-            Qk = ( -bb + SQRT ( bb**2 - 4.0D0 * aa * cc ) ) / ( 2.0D0 * aa )
-            IF ( bb ** 2 - 4.0D0 * aa * cc .LT. 0.0D0 ) THEN
-               PRINT *, 'Compute_Flux, sqrt<0'
-               Qk = 0.0D0
-            END IF
-         END IF
-		 
+         bb = Hlim / CondRate
+     &      + Cinf( KNH4) - Cinf( KNO3 ) - Cinf( KCL ) - 2.0D0 * CH2SO4   ! bb? 
+         cc = -Ceq( KNH4 )                ! cc < 0
+
+         Qk = 0.0D0 ! initialize Qk
+         
+         ! need the discussion, and since everything is in double preicison
+         ! we don't really need to worry about cases where aa < small
+         ! we can use the correct way of solving quadratics for all scenarios
+         ! safely
+         
+         ! The original solution is "(1)", see supplement of Miller et al., 2024 
+         q = -0.5d0 * (bb + sign(1.0d0, bb) * sqrt(bb**2 - 4*aa*cc))
+         ! 
+         if (bb > 0.0d0) then
+            Qk = cc / q
+         else if (bb < 0.0d0) then
+            Qk = q / aa
+         else if (bb == 0.0d0) then
+            Qk = sqrt(-4.0d0 * aa * cc) / (2.0d0 * aa)
+         endif
+            
+            
+C        IF ( aa .LT. small .AND. 0.0D0 .LT. bb ) THEN ! bb*Qk + cc = 0
+C           Qk = -cc / bb
+C        ELSE IF (aa .LT. small .AND. bb .LE. 0.0D0 ) THEN
+C           Qk = 0.0D0
+C        ELSE IF (-cc .LT. small .AND. bb .LT. 0.0D0 ) THEN  ! aa*Qk^2 + bb*Qk = 0
+C           Qk = -bb / aa
+C        ELSE IF (-cc .LT. small .AND. 0.0D0 .LE. bb ) THEN
+C           Qk = 0.0D0
+C        ELSE
+C           Qk = ( -bb + SQRT ( bb**2 - 4.0D0 * aa * cc ) ) / ( 2.0D0 * aa )
+C           IF ( bb ** 2 - 4.0D0 * aa * cc .LT. 0.0D0 ) THEN
+C              write(*,*), 'Compute_Flux, sqrt<0'
+C              Qk = 0.0D0
+C           END IF
+C        END IF
+
 C     Modify vapor pressures and get new fluxes
          IF ( Qk .GT. small ) THEN
             Ceq( KNH4 ) = Ceq( KNH4 ) / Qk
@@ -2343,7 +2585,7 @@ C     Get the sub-case to use in determining salts
       CALL GETSC ( CONC, RH, T, SC )
 
 #ifdef verbose_aero
-!     write( logdev,* ) 'CALC_H2O -SC: ', sc
+      write( logdev,* ) 'CALC_H2O -SC: ', sc
 #endif
 
 C     Initialize ion "pairs" (i.e., salts) used in ZSR
@@ -2626,13 +2868,20 @@ C-----------------------------------------------------------------------
      
 
 	  use HDMod 
-      use ISORROPIAII_MAIN_MOD
 	  implicit none
     ! INCLUDE 'h_isrpia.inc'
 
 C Arguments
       INTEGER :: IZ
+      INTEGER, PARAMETER :: NZSR = 100
+      INTEGER, PARAMETER :: NPAIR = 23
       REAL( 8 ), INTENT( IN )  :: RHIN
+
+      Real(8) :: AWAS(NZSR), AWSS(NZSR), AWAC(NZSR), AWSC(NZSR)
+      Real(8) :: AWAN(NZSR), AWSN(NZSR), AWSB(NZSR), AWAB(NZSR)
+      Real(8) :: AWSA(NZSR), AWLC(NZSR), AWCS(NZSR), AWCN(NZSR)
+      Real(8) :: AWCC(NZSR), AWPS(NZSR), AWPB(NZSR), AWPN(NZSR)
+      Real(8) :: AWPC(NZSR), AWMS(NZSR), AWMN(NZSR), AWMC(NZSR)
 
     
       REAL( 8 ),       INTENT( OUT ) :: M0I( NPAIR )
@@ -3287,7 +3536,7 @@ C     the 2 modes.
 
       RETURN
       END FUNCTION GETAF
-
+ 
 C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       SUBROUTINE AERO_INLET ( DGN, XXLSG, RHOP, fPM1, fPM25, fPM10 )
 
@@ -3633,7 +3882,8 @@ C  Called by: Gas-Phase Chemistry Driver
       TYPE(hyperdual)               :: M2DRY_FINAL( N_MODE ) ! Dry 2nd Aerosol Moment
       TYPE(hyperdual)               :: M3DRY_FINAL( N_MODE ) ! Dry 3rd Aerosol Moment
       INTEGER            :: C, R, L, N
-      TYPE(hyperdual), INTENT(OUT) :: WET_M2( : ), WET_M3( : ), DE_WET( : )
+      ! el0128: revert the reaction rate to real( 8 )
+      REAL( 8 ), INTENT(OUT) :: WET_M2( : ), WET_M3( : ), DE_WET( : )
       LOGICAL, SAVE      :: FIRSTIME = .TRUE.
 
       IF ( FIRSTIME ) THEN
@@ -3667,14 +3917,14 @@ C *** set up variables needed for calculating KN2O5 and YIELD_CLNO2
                DO N = 1, N_MODE
 C *** estimate the "wet third moments" from moment3_conc
 C     Note: this is the H2O concentration from previous time step
-                  WET_M3( N ) = MOMENT3_CONC( N )
+                  WET_M3( N ) = MOMENT3_CONC( N )%x
 C *** calculate "wet second moment" assuming that H2O does not
 C     affect the geometric standard deviation
-                  WET_M2( N ) = MOMENT2_CONC( N )
+                  WET_M2( N ) = MOMENT2_CONC( N )%x
 C *** The "wet" geometric mean (same as median) diameter was updated in
 C     getpar. It is stored in aeromode_diam
 C *** calculate effective diameter (this is actually the mean) using Eq 3 of Pleim et al (1995)
-                  DE_WET( N ) = AEROMODE_DIAM( N ) * EXP( 1.5 * AEROMODE_LNSG( N ) ** 2 )
+                  DE_WET( N ) = AEROMODE_DIAM( N )%x * EXP( 1.5 * AEROMODE_LNSG( N )%x ** 2 )
                END DO
 
 C *** Retrieve and Save the Dry 3rd and 2nd Moments
@@ -3700,7 +3950,7 @@ C  Called by: Gas-Phase Chemistry Driver
       USE AERO_DATA
       USE AEROMET_DATA, ONLY: pi
       USE GRID_CONF, ONLY: NLAYS, NROWS, NCOLS
-	  use HDMod 
+      use HDMod
 	  
       IMPLICIT NONE
       

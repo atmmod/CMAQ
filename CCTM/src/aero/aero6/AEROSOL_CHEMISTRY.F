@@ -42,15 +42,15 @@
 	   use HDMod 
        IMPLICIT NONE
        
-       TYPE(hyperdual), ALLOCATABLE :: KHETERO( :,:,:,: ) ! heterogeneous rx rates, 
+       REAL( 8 ), ALLOCATABLE :: KHETERO( :,:,:,: ) ! heterogeneous rx rates, 
                                                     ! [ppm**(RXN Order-1)*min]**-1
-	   TYPE(hyperdual),      ALLOCATABLE :: GAMMA_N2O5IJ( :,:,:  ) ! Fine modes N2O5 rx effic.
-       TYPE(hyperdual),      ALLOCATABLE :: GAMMA_N2O5K(  :,:,:  ) ! Coarse mode N2O5 rx effic.
-       TYPE(hyperdual),      ALLOCATABLE :: KPARTIEPOX (  :,:,:  ) ! IEPOX particle-phase reaction rate constant (sec-1)
-       TYPE(hyperdual),      ALLOCATABLE :: GAMMA_IEPOX(  :,:,:  ) ! IEPOX uptake coeff
-       TYPE(hyperdual),      ALLOCATABLE :: GAMMA_IMAE (  :,:,:  ) ! IMAE uptake coeff
-       TYPE(hyperdual),      ALLOCATABLE :: YCLNO2IJ   (  :,:,:  ) ! Yield CLNO2 in Fine modes 
-       TYPE(hyperdual),      ALLOCATABLE :: YCLNO2K    (  :,:,:  ) ! Yield CLNO2 in coarse mode 
+	   REAL( 8 ) ,      ALLOCATABLE :: GAMMA_N2O5IJ( :,:,:  ) ! Fine modes N2O5 rx effic.
+       REAL( 8 ) ,      ALLOCATABLE :: GAMMA_N2O5K(  :,:,:  ) ! Coarse mode N2O5 rx effic.
+       REAL( 8 ) ,      ALLOCATABLE :: KPARTIEPOX (  :,:,:  ) ! IEPOX particle-phase reaction rate constant (sec-1)
+       REAL( 8 ) ,      ALLOCATABLE :: GAMMA_IEPOX(  :,:,:  ) ! IEPOX uptake coeff
+       REAL( 8 ) ,      ALLOCATABLE :: GAMMA_IMAE (  :,:,:  ) ! IMAE uptake coeff
+       REAL( 8 ) ,      ALLOCATABLE :: YCLNO2IJ   (  :,:,:  ) ! Yield CLNO2 in Fine modes 
+       REAL( 8 ) ,      ALLOCATABLE :: YCLNO2K    (  :,:,:  ) ! Yield CLNO2 in coarse mode 
 
        LOGICAL                :: AERO_CHEM_SET = .FALSE.
       
@@ -201,9 +201,10 @@ C *** Molecular weight
       REAL( 8 ), SAVE        :: CFACTOR_MGLY  ! factor used for the mean molecular speed of MGLY [m/(s^1*(deg K)^0.5)]
 
 C *** 2nd and 3rd moments with wet species
-      TYPE(hyperdual), ALLOCATABLE :: WET_M3( : ) ! WET_M3_I,  WET_M3_J, WET_M3_K   ! M3 w.H2O, svOA
-      TYPE(hyperdual), ALLOCATABLE :: WET_M2( : ) ! WET_M2_I,  WET_M2_J, WET_M2_K   ! M2 w.H2O, svOA
-      TYPE(hyperdual), ALLOCATABLE :: DE_WET( : ) ! DE_AT_WET, DE_AC_WET, DE_CO_WET ! Initial effective diameter w.H2O
+       
+      REAL( 8 ), ALLOCATABLE :: WET_M3( : ) ! WET_M3_I,  WET_M3_J, WET_M3_K   ! M3 w.H2O, svOA
+      REAL( 8 ), ALLOCATABLE :: WET_M2( : ) ! WET_M2_I,  WET_M2_J, WET_M2_K   ! M2 w.H2O, svOA
+      REAL( 8 ), ALLOCATABLE :: DE_WET( : ) ! DE_AT_WET, DE_AC_WET, DE_CO_WET ! Initial effective diameter w.H2O
 
 C Isoprene product particle phase reaction rates (Eddingsaas et al. 2010) [1/(M^2 s)]
       REAL ( 8 ), PARAMETER :: K_H_WATER    = 9.0D-4
@@ -467,39 +468,41 @@ C *** parameters for heterogeneous hydrolysis of NTR2
 C *** Local Variables
       REAL( 8 )    :: AIRTEMP          ! air temperature [K]
       REAL( 8 )    :: AIRPRES          ! air pressure [Pa] 
-      TYPE(hyperdual)    :: GAMMA            ! fine mode N2O5->NO3 rxn probability
-      TYPE(hyperdual)    :: GAMMAIEPOX       ! IEPOX uptake coefficient
-      TYPE(hyperdual)    :: GAMMAIMAE        ! IMAE uptake coefficient
-      TYPE(hyperdual)    :: KPIEPOX          ! IEPOX particle-phase reaction rate const (pseudo 1st order, sec-1)
-      TYPE(hyperdual)    :: KN2O5( N_MODE  ) ! pseudo-first order rate constant, sec-1
-      TYPE(hyperdual)    :: KNO3(  N_MODE  ) ! pseudo-first order rate constant, sec-1
-      TYPE(hyperdual)    :: KGLY(  N_MODE  ) ! pseudo-first order rate constant, sec-1
-      TYPE(hyperdual)    :: KMGLY( N_MODE  ) ! pseudo-first order rate constant, sec-1
-      TYPE(hyperdual)    :: KNO2             ! pseudo-first order rate constant, sec-1
-      TYPE(hyperdual)    :: KIEPOX           ! pseudo-first order rate constant for IEPOX uptake, sec-1
-      TYPE(hyperdual)    :: KIMAE            ! pseudo-first order rate constant for MAE uptake, sec-1
+      ! el0128: revert the reaction rate to real( 8 )
+      REAL( 8 )    :: GAMMA            ! fine mode N2O5->NO3 rxn probability
+      REAL( 8 )    :: GAMMAIEPOX       ! IEPOX uptake coefficient
+      REAL( 8 )    :: GAMMAIMAE        ! IMAE uptake coefficient
+      REAL( 8 )    :: KPIEPOX          ! IEPOX particle-phase reaction rate const (pseudo 1st order, sec-1)
+      REAL( 8 )    :: KN2O5( N_MODE  ) ! pseudo-first order rate constant, sec-1
+      REAL( 8 )    :: KNO3(  N_MODE  ) ! pseudo-first order rate constant, sec-1
+      REAL( 8 )    :: KGLY(  N_MODE  ) ! pseudo-first order rate constant, sec-1
+      REAL( 8 )    :: KMGLY( N_MODE  ) ! pseudo-first order rate constant, sec-1
+      REAL( 8 )    :: KNO2             ! pseudo-first order rate constant, sec-1
+      REAL( 8 )    :: KIEPOX           ! pseudo-first order rate constant for IEPOX uptake, sec-1
+      REAL( 8 )    :: KIMAE            ! pseudo-first order rate constant for MAE uptake, sec-1
 
-      TYPE(hyperdual)    :: K1               ! pseudo-first order rate constant, sec-1 
-      TYPE(hyperdual)    :: K2               ! pseudo-first order rate constant, sec-1 
+      REAL( 8 )    :: K1               ! pseudo-first order rate constant, sec-1 
+      REAL( 8 )    :: K2               ! pseudo-first order rate constant, sec-1 
       REAL( 8 ), PARAMETER :: MIN_VALUE = 1.0D-09      ! minimum concentration for activating chemistry
 
       REAL( 8 )    :: CBAR_COEFF       ! cell coefficient for mean molecular speed
       REAL( 8 )    :: ADJUST_DIFF      ! Cell temp and press correction to diffusivity
       REAL( 8 )    :: INV_DIFFUSIVITY  ! reciprocal molecular diffusivity [m2/sec] 
 
-      TYPE(hyperdual)    :: XXF( N_MODE )         ! XXF_AT,    XXF_AC,    XXF_CO    ! modal factors to calculate KN2O5
-      TYPE(hyperdual)    :: CL_PPM( N_MODE )      ! aerosol chlorine in ppm
-      TYPE(hyperdual)    :: BR_PPM( N_MODE )      ! aerosol bromine in ppm
-      TYPE(hyperdual)    :: YIELD_CLNO2( N_MODE ) ! model reactions yields of CLNO2      
+      REAL( 8 )    :: XXF( N_MODE )         ! XXF_AT,    XXF_AC,    XXF_CO    ! modal factors to calculate KN2O5
+      REAL( 8 )    :: CL_PPM( N_MODE )      ! aerosol chlorine in ppm
+      REAL( 8 )    :: BR_PPM( N_MODE )      ! aerosol bromine in ppm
+      REAL( 8 )    :: YIELD_CLNO2( N_MODE ) ! model reactions yields of CLNO2      
       
       REAL( 8 )    :: H2OVP    ! ambient water vapor pressure [Atm]
       REAL( 8 )    :: AIRRH    ! Relative Humidity            [Fractional]
-      TYPE(hyperdual)    :: YIELDIJ  ! fine mode reaction yield, dimensionaless
-      TYPE(hyperdual)    :: TOTSURFA ! aerosol surface area (m**2/m**3)
-      TYPE(hyperdual)    :: FACTOR   ! scratch multiplicative factor
-      TYPE(hyperdual)    :: RFACTOR  ! factor converting rate constant from cm3/molec/sec to 1/ppm/min
-      TYPE(hyperdual)    :: RADIUS   ! effective particle radius [m]
-      TYPE(hyperdual)    :: RADIUS_K ! effective particle radius [m] - coarse mode  
+      ! el0128: revert the reaction rate to real( 8 )
+      REAL( 8 )    :: YIELDIJ  ! fine mode reaction yield, dimensionaless
+      REAL( 8 )    :: TOTSURFA ! aerosol surface area (m**2/m**3)
+      REAL( 8 )    :: FACTOR   ! scratch multiplicative factor
+      REAL( 8 )    :: RFACTOR  ! factor converting rate constant from cm3/molec/sec to 1/ppm/min
+      REAL( 8 )    :: RADIUS   ! effective particle radius [m]
+      REAL( 8 )    :: RADIUS_K ! effective particle radius [m] - coarse mode  
       
       REAL( 8 )       :: CBAR             ! molecular velocity of N2O5 (m/s)
       REAL( 8 )       :: CBARIEPOX        ! molecular velocity of IEPOX (m/s)
@@ -507,15 +510,16 @@ C *** Local Variables
       REAL( 8 )       :: CBARNO3          ! molecular velocity of NO3 (m/s)
       REAL( 8 )       :: CBARGLY          ! molecular velocity of GLY (m/s)
       REAL( 8 )       :: CBARMGLY         ! molecular velocity of MGLY (m/s)
-      TYPE(hyperdual)       :: TETROL_PPM       ! accumulation mode aerosol tetrol in ppm
-      TYPE(hyperdual)       :: IEPOXOS_PPM      ! accumulation mode iepox organosulfate in ppm
-      TYPE(hyperdual)       :: ASO4J_PPM        ! accumulation mode inorganic sulfate in ppm
-      TYPE(hyperdual)       :: FH2O(2)          ! fraction of epoxide aerosol from  hydrolysis, index: IEPOX(1) and MAE(2)
-      TYPE(hyperdual)       :: FOS(2)           ! fraction of epoxide aerosol as organosulfate, index: IEPOX(1) and MAE(2)
-      TYPE(hyperdual)       :: FDIM1(2)         ! fraction of epoxide aerosol as dimer, index: IEPOX(1) and MAE(2)
-      TYPE(hyperdual)       :: FDIM2(2)         ! fraction of epoxide aerosol as organosulfate dimer, index: IEPOX(1) and MAE(2)
-      TYPE(hyperdual), SAVE :: INV_MWIETET, INV_MWIEOS  ! reciprocal of molecular weight for tetrol, iepoxos [mol/g]
-      TYPE(hyperdual), SAVE :: INV_MWASO4       ! reciprocal of molecular weight of particulate sulfate [mol/g]
+      ! el0128: revert the reaction rate to real( 8 )
+      REAL( 8 )        :: TETROL_PPM       ! accumulation mode aerosol tetrol in ppm
+      REAL( 8 )        :: IEPOXOS_PPM      ! accumulation mode iepox organosulfate in ppm
+      REAL( 8 )        :: ASO4J_PPM        ! accumulation mode inorganic sulfate in ppm
+      REAL( 8 )        :: FH2O(2)          ! fraction of epoxide aerosol from  hydrolysis, index: IEPOX(1) and MAE(2)
+      REAL( 8 )        :: FOS(2)           ! fraction of epoxide aerosol as organosulfate, index: IEPOX(1) and MAE(2)
+      REAL( 8 )        :: FDIM1(2)         ! fraction of epoxide aerosol as dimer, index: IEPOX(1) and MAE(2)
+      REAL( 8 )        :: FDIM2(2)         ! fraction of epoxide aerosol as organosulfate dimer, index: IEPOX(1) and MAE(2)
+      REAL( 8 ) , SAVE :: INV_MWIETET, INV_MWIEOS  ! reciprocal of molecular weight for tetrol, iepoxos [mol/g]
+      REAL( 8 ) , SAVE :: INV_MWASO4       ! reciprocal of molecular weight of particulate sulfate [mol/g]
 
       REAL( 8 )       :: CBAR_CLNO3        ! molecular velocity of CLNO3 (m/s)      
       REAL( 8 )       :: CBAR_HBR          ! molecular velocity of HOBR (m/s)        
@@ -563,20 +567,21 @@ C *** Local Variables
       INTEGER, SAVE   :: BR_IDX   
 
 C *** variables for parameterization by Bertram and Thornton 
-      TYPE(hyperdual)         :: ACL           ! i+j or k mode chloride, ug/m3 
-      TYPE(hyperdual)         :: ABR           ! i+j or k mode bromide, ug/m3   
-      TYPE(hyperdual)         :: AH2O          ! i+j or k mode water, ug/m3          
-      TYPE(hyperdual)         :: POC           ! i or j mode primary organic carbon, ug/m3 
-      TYPE(hyperdual)         :: PNCOM         ! i or j mode primary noncarbon organic matter, ug/m3          
+      ! el0128: revert the reaction rate to real( 8 )
+      REAL( 8 )         :: ACL           ! i+j or k mode chloride, ug/m3 
+      REAL( 8 )         :: ABR           ! i+j or k mode bromide, ug/m3   
+      REAL( 8 )         :: AH2O          ! i+j or k mode water, ug/m3          
+      REAL( 8 )         :: POC           ! i or j mode primary organic carbon, ug/m3 
+      REAL( 8 )         :: PNCOM         ! i or j mode primary noncarbon organic matter, ug/m3          
       REAL( 8 ),  SAVE        :: MWCLH2O       ! ratio of MWCL/MWH2O 
       REAL( 8 ),  SAVE        :: MWH2OCL       ! ratio of MWH20/MWCL 
       REAL( 8 ),  SAVE        :: MWCLCLNO2     ! ratio of MWCL/MWCLNO2
       REAL( 8 ),  SAVE        :: INV_MWCL      ! ratio of 1.0D0/MWCL 
       REAL( 8 ),  SAVE        :: INV_MWBR      ! ratio of 1.0D0/MWBR   
-      TYPE(hyperdual)         :: PPM_FACTOR    ! conversion factor to umoles/m3 to ppm
+      REAL( 8 )         :: PPM_FACTOR    ! conversion factor to umoles/m3 to ppm
 C *** variables for heterogeneous hydrolysis of NTR2
-      TYPE(hyperdual)            :: CON_TOA       ! Conc. of total OA [ug/m3]
-      TYPE(hyperdual)            :: F_PART_NTR2   ! NTR2 fraction in the particle phase
+      REAL( 8 )            :: CON_TOA       ! Conc. of total OA [ug/m3]
+      REAL( 8 )            :: F_PART_NTR2   ! NTR2 fraction in the particle phase
       
       
       LOGICAL, SAVE     :: FIRSTIME = .TRUE.
@@ -656,7 +661,7 @@ C                            pp 601-609, April, 1996.
 		   use HDMod 
            TYPE(hyperdual), Intent( In )    :: CONCVEC( : )
            Integer, Intent(In)   :: C, R, L
-           TYPE(hyperdual), Intent( Out ):: Wet_M2( : ), Wet_M3( : ), De_Wet( : )
+           REAL( 8 ), Intent( Out ):: Wet_M2( : ), Wet_M3( : ), De_Wet( : )
          End Subroutine Hetchem_Extract_Aero
       END INTERFACE 
   
@@ -945,12 +950,13 @@ C *** get KN2O5 rate constants YIELD_CLNO2 for each mode
 
 
 c *** get fine aerosol H2O and chlorine concentrations in
-                  AH2O = aerospc_conc( AH2O_IDX,N )
-                  ACL  = aerospc_conc( ACL_IDX, N )
+                  ! el0128: revert the reaction rate to real( 8 )
+                  AH2O = aerospc_conc( AH2O_IDX,N )%x
+                  ACL  = aerospc_conc( ACL_IDX, N )%x
                   CL_PPM( N ) = PPM_FACTOR * ( ACL * INV_MWCL )
 
       If ( Index( mechname, 'CB6R3M_AE7_KMTBR' ) .Gt. 0 ) Then
-         ABR  = aerospc_conc( ABR_IDX, N ) 
+         ABR  = aerospc_conc( ABR_IDX, N )%x 
          INV_MWBR  = REAL( 1.0 / aerospc_mw( ABR_IDX ), 8 )  
          BR_PPM( N ) = PPM_FACTOR * ( ABR * INV_MWBR ) 
       Else
@@ -968,8 +974,8 @@ C *** If only a small amount of water is present on aerosol, keep YIELD_CLNO2 ze
                END DO ! End each mode 
 
 c *** compute yield from lumped Aitken and Accumulations concentrations
-               AH2O = aerospc_conc( AH2O_IDX,1 ) + aerospc_conc( AH2O_IDX,2 )
-               ACL  = aerospc_conc( ACL_IDX,1 )  + aerospc_conc( ACL_IDX,2 )
+               AH2O = aerospc_conc( AH2O_IDX,1 )%x + aerospc_conc( AH2O_IDX,2 )%x
+               ACL  = aerospc_conc( ACL_IDX,1 )%x  + aerospc_conc( ACL_IDX,2 )%x
                IF ( AH2O .GT. 5.0E-01 .AND. ACL .GT. 1.0E-04 ) THEN
                   IF ( MWH2OCL * ACL .GT. 1.0E-4 * AH2O ) THEN 
                      YIELDIJ = 1.0D0 / ( 1.0D0 + ( 1.0D0 / 483.0D0 )
@@ -1014,19 +1020,19 @@ C *** set up variables needed for calculating K_BRONO2
      &                   / ( RADIUS * INV_DIFFUSIVITY +  4.0D0 / ( CBARIEPOX * GAMMAIEPOX) )
                   If ( AIETET_IDX .GT. 0 ) Then
                      TETROL_PPM  = PPM_FACTOR
-     &                       * aerospc_conc( AIETET_IDX,2 ) * INV_MWIETET
+     &                       * aerospc_conc( AIETET_IDX,2 )%x * INV_MWIETET
                   Else
                      TETROL_PPM = 0.0D0
                   End If 
                   If ( AIEOS_IDX .GT. 0 ) Then
                      IEPOXOS_PPM = PPM_FACTOR
-     &                     * aerospc_conc( AIEOS_IDX,2 )  * INV_MWIEOS
+     &                     * aerospc_conc( AIEOS_IDX,2 )%x  * INV_MWIEOS
                   Else
                      IEPOXOS_PPM = 0.0D0
                   End If
                   If ( ASO4_IDX .GT. 0 ) Then
                      ASO4J_PPM = PPM_FACTOR
-     &                     * aerospc_conc( ASO4_IDX,2 ) * INV_MWASO4
+     &                     * aerospc_conc( ASO4_IDX,2 )%x * INV_MWASO4
                   Else
                      ASO4J_PPM = 0.0D0
                   End If
@@ -1119,13 +1125,13 @@ C *** set up variables needed for calculating K_BRONO2
                      END IF 
                                 
                   CASE( IA_PNCOMLI )
-                     POC   = aerospc_conc( APOC_IDX,1 )
-                     PNCOM = aerospc_conc( APNCOM_IDX,1 )
+                     POC   = aerospc_conc( APOC_IDX,1 )%x
+                     PNCOM = aerospc_conc( APNCOM_IDX,1 )%x
                      KHETERO( IRATE, C,R,L ) = RFACTOR * PNCOM_LOSS( POC, PNCOM )
                       
                   CASE( IA_PNCOMLJ )
-                     POC   = aerospc_conc( APOC_IDX,2 )
-                     PNCOM = aerospc_conc( APNCOM_IDX,2 )
+                     POC   = aerospc_conc( APOC_IDX,2 )%x
+                     PNCOM = aerospc_conc( APNCOM_IDX,2 )%x
                      KHETERO( IRATE, C,R,L ) = RFACTOR * PNCOM_LOSS( POC, PNCOM )
 
                   CASE( IA_H2NO3PAK )
@@ -1204,14 +1210,15 @@ C ***            Isoprene epoxide uptake
 
                  CASE( IA_NTR2 )
 C *** calculate gas-particle partitioning of NTR2
-                    CON_TOA%x = SUM( SUM( AEROSPC_CONC( :,1:2 )%x,2 ), 
+                    ! el0128: revert the reaction rate to real( 8 )
+                    CON_TOA = SUM( SUM( AEROSPC_CONC( :,1:2 )%x,2 ), 
      &                        MASK = AEROSPC( : )%OM )
-                    CON_TOA%dx1 = SUM( SUM( AEROSPC_CONC( :,1:2 )%dx1,2 ), 
-     &                        MASK = AEROSPC( : )%OM )
-                    CON_TOA%dx2 = SUM( SUM( AEROSPC_CONC( :,1:2 )%dx2,2 ), 
-     &                        MASK = AEROSPC( : )%OM )
-                    CON_TOA%dx1x2 = SUM( SUM( AEROSPC_CONC( :,1:2 )%dx1x2,2 ), 
-     &                        MASK = AEROSPC( : )%OM )
+C                   CON_TOA%dx1 = SUM( SUM( AEROSPC_CONC( :,1:2 )%dx1,2 ), 
+C    &                        MASK = AEROSPC( : )%OM )
+C                   CON_TOA%dx2 = SUM( SUM( AEROSPC_CONC( :,1:2 )%dx2,2 ), 
+C    &                        MASK = AEROSPC( : )%OM )
+C                   CON_TOA%dx1x2 = SUM( SUM( AEROSPC_CONC( :,1:2 )%dx1x2,2 ), 
+C    &                        MASK = AEROSPC( : )%OM )
                     
                     F_PART_NTR2 = 0.0d0
                     IF ( CON_TOA .GE. MIN_TOA ) THEN
@@ -1589,8 +1596,8 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
        
 ! Arguments: Note specific units do not material as long as consistent
 !           between arguments, i.e., the same
-       TYPE(hyperdual), INTENT( IN ) :: POC    ! concentration of primary organic carbon
-       TYPE(hyperdual), INTENT( IN ) :: PNCOM  ! concentration of primart noncarbon organic matter
+       REAL( 8 ), INTENT( IN ) :: POC    ! concentration of primary organic carbon
+       REAL( 8 ), INTENT( IN ) :: PNCOM  ! concentration of primart noncarbon organic matter
        
 ! Parameter:
        REAL( 8 ), PARAMETER :: KOHEFF      =  2.5D-12  ! POC + OH rate constant, cm3 molec-1 sec-1
@@ -1598,8 +1605,8 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
        REAL,      PARAMETER :: UPPER_LIMIT = 11.0/3.0
        REAL( 8 ), PARAMETER :: MAX_RATE    = 15.0D0/16.0D0 * KOHEFF ! max rate constant for PNCOM loss
 ! Local    
-       TYPE(hyperdual)            :: RATIO   ! the hydrogen to oxygen ratio in organic matter
-       TYPE(hyperdual)            :: PNCOM_LOSS_RESULT
+       REAL( 8 )            :: RATIO   ! the hydrogen to oxygen ratio in organic matter
+       REAL( 8 )            :: PNCOM_LOSS_RESULT
        
         PNCOM_LOSS_RESULT = 0.0D0
 
@@ -1726,66 +1733,66 @@ C     APNDX = .FALSE. to use Eqs 4-5.
 C *** Local Variables
 
 C *** chemical species concentrations [ug/m3]
-      TYPE(hyperdual)      ANH4      ! i+j mode ammonium
-      TYPE(hyperdual)      ANO3      ! i+j mode nitrate
-      TYPE(hyperdual)      ASO4      ! i+j mode sulfate
+      REAL( 8 )      ANH4      ! i+j mode ammonium
+      REAL( 8 )      ANO3      ! i+j mode nitrate
+      REAL( 8 )      ASO4      ! i+j mode sulfate
 
 C *** variables for computing N2O5_GAMMA when GPARAM = 2 or 3
-      TYPE(hyperdual)      FRACSO4   ! aerosol mass ratio of SO4/(SO4+NO3)
-      TYPE(hyperdual)      GAMMA1    ! upper limit of rxn prob
-      TYPE(hyperdual)      GAMMA2    ! lower limit of rxn prob
-      TYPE(hyperdual)      ALPHA     ! RH-dependent parameter to compute GAMMA1
-      TYPE(hyperdual)      BETA      ! TEMP-dependent parameter to compute GAMMA1
+      REAL( 8 )      FRACSO4   ! aerosol mass ratio of SO4/(SO4+NO3)
+      REAL( 8 )      GAMMA1    ! upper limit of rxn prob
+      REAL( 8 )      GAMMA2    ! lower limit of rxn prob
+      REAL( 8 )      ALPHA     ! RH-dependent parameter to compute GAMMA1
+      REAL( 8 )      BETA      ! TEMP-dependent parameter to compute GAMMA1
 
 C *** variables for default parameterization of N2O5_GAMMA
 !     LOGICAL, EXTERNAL ::   CRYSTALIZED      ! function to determine if RH is below CRH
       LOGICAL   CRYSTAL   ! true if ambient RH < CRH, false otherwise
 !     LOGICAL, EXTERNAL ::   FREEZES   ! function to determine whether RH exceeds IRH
       LOGICAL   FROZEN    ! true if ambient RH > IRH, false otherwise
-      TYPE(hyperdual)      NNO3      ! particle-phase nitrate [micromoles/m3]
-      TYPE(hyperdual)      NSO4      ! particle-phase sulfate [micromoles/m3]
-      TYPE(hyperdual)      NNH4      ! particle-phase ammonium [micromoles/m3]
-      TYPE(hyperdual)      NANI      ! particle-phase anions [micromoles/m3]
-      TYPE(hyperdual)      X1        ! mole fraction of ammonium bisulfate
-      TYPE(hyperdual)      X2        ! mole fraction of ammonium sulfate
-      TYPE(hyperdual)      X3        ! mole fraction of ammonium nitrate
-      TYPE(hyperdual)      LAM1      ! logit transformation of N2O5_GAMMA on
-      TYPE(hyperdual)      LAM2      !   aqueous NH4HSO4 [LAM1], aqueous (NH4)2SO4
-      TYPE(hyperdual)      LAM3      !   [LAM2], aqueous NH4NO3 [LAM3], and dry
-      TYPE(hyperdual)      LAMD      !   sulfate-containing particles [LAMD]
-      TYPE(hyperdual)      GAM1      ! reaction probability on aqueous NH4HSO4
-      TYPE(hyperdual)      GAM2      !    "          "      "     "    (NH4)2SO4
-      TYPE(hyperdual)      GAM3      !    "          "      "     "    NH4NO3
-      TYPE(hyperdual)      GAMD      !    "          "      " dry sulfate particles
-      TYPE(hyperdual)      T293,T291 ! temperature threshold variables
-      TYPE(hyperdual)      RH46      ! RH threshold variable
+      REAL( 8 )      NNO3      ! particle-phase nitrate [micromoles/m3]
+      REAL( 8 )      NSO4      ! particle-phase sulfate [micromoles/m3]
+      REAL( 8 )      NNH4      ! particle-phase ammonium [micromoles/m3]
+      REAL( 8 )      NANI      ! particle-phase anions [micromoles/m3]
+      REAL( 8 )      X1        ! mole fraction of ammonium bisulfate
+      REAL( 8 )      X2        ! mole fraction of ammonium sulfate
+      REAL( 8 )      X3        ! mole fraction of ammonium nitrate
+      REAL( 8 )      LAM1      ! logit transformation of N2O5_GAMMA on
+      REAL( 8 )      LAM2      !   aqueous NH4HSO4 [LAM1], aqueous (NH4)2SO4
+      REAL( 8 )      LAM3      !   [LAM2], aqueous NH4NO3 [LAM3], and dry
+      REAL( 8 )      LAMD      !   sulfate-containing particles [LAMD]
+      REAL( 8 )      GAM1      ! reaction probability on aqueous NH4HSO4
+      REAL( 8 )      GAM2      !    "          "      "     "    (NH4)2SO4
+      REAL( 8 )      GAM3      !    "          "      "     "    NH4NO3
+      REAL( 8 )      GAMD      !    "          "      " dry sulfate particles
+      REAL( 8 )      T293,T291 ! temperature threshold variables
+      REAL( 8 )      RH46      ! RH threshold variable
 
 C *** variables for parameterization based on Bertram and Thornton (2009)
 
-      TYPE(hyperdual)      ACLF      ! I & J mode chloride, ug/m3 
-      TYPE(hyperdual)      AH2OF     ! I & J mode water, ug/m3    
-      TYPE(hyperdual)      ANO3F     ! I & J mode nitrate, ug/m3  
+      REAL( 8 )      ACLF      ! I & J mode chloride, ug/m3 
+      REAL( 8 )      AH2OF     ! I & J mode water, ug/m3    
+      REAL( 8 )      ANO3F     ! I & J mode nitrate, ug/m3  
 
-      TYPE(hyperdual)      ACLK      ! k mode chloride, ug/m3 
-      TYPE(hyperdual)      AH2OK     ! k mode water, ug/m3    
-      TYPE(hyperdual)      ANO3K     ! k mode nitrate, ug/m3  
+      REAL( 8 )      ACLK      ! k mode chloride, ug/m3 
+      REAL( 8 )      AH2OK     ! k mode water, ug/m3    
+      REAL( 8 )      ANO3K     ! k mode nitrate, ug/m3  
 
-      TYPE(hyperdual)      ACLM      ! chloride, [moles / liter of particles] 
-      TYPE(hyperdual)      AH2OM     ! water,    [moles / liter of particles] 
-      TYPE(hyperdual)      ANO3M     ! nitrate,  [moles / liter of particles] 
-   
-      TYPE(hyperdual) DEN1           ! local varible
-      TYPE(hyperdual) DEN2           ! local varible
-      TYPE(hyperdual) DEN            ! local varible
-      TYPE(hyperdual) INV_VOL        ! local variable 
+      REAL( 8 )      ACLM      ! chloride, [moles / liter of particles] 
+      REAL( 8 )      AH2OM     ! water,    [moles / liter of particles] 
+      REAL( 8 )      ANO3M     ! nitrate,  [moles / liter of particles] 
+      
+      REAL( 8 ) DEN1           ! local varible
+      REAL( 8 ) DEN2           ! local varible
+      REAL( 8 ) DEN            ! local varible
+      REAL( 8 ) INV_VOL        ! local variable 
       
       REAL( 8 ), PARAMETER :: A = 3.2D-08       ! Unit [s] - Table 2       
       REAL( 8 ), PARAMETER :: BETA_BT = 1.15D06 ! Unit [1/s] - Table 2  
       REAL( 8 ), PARAMETER :: DELTA = 1.3D-01   ! Unit [1/M] - Table 2  
       REAL( 8 ), PARAMETER :: K3OK2B = 6.0D-02  ! Unit [ ] - Table 2  
       REAL( 8 ), PARAMETER :: K4OK2B = 29.0D0     ! Unit [ ] - Table 2  
-      TYPE(hyperdual) K2FP                            ! varible in eqn 10
-      TYPE(hyperdual) :: N2O5_GAMMA_RESULT           
+      REAL( 8 ) K2FP                            ! varible in eqn 10
+      REAL( 8 ) :: N2O5_GAMMA_RESULT           
 C *** statement function for inverting the logit transformation given
 C     in Eq 7 by Davis et al (2008)
 C     TYPE(hyperdual)      LOGITINV  ! statement function
@@ -1795,19 +1802,19 @@ C     LOGITINV( XX ) = 1.0D0 / ( 1.0D0 + EXP( -XX ) )
 C-----------------------------------------------------------------------
 
 C *** retrieve fine-mode particle-phase ammonium, nitrate, and sulfate [ug/m3]
-      ANH4 = aerospc_conc( ANH4_IDX,1 ) + aerospc_conc( ANH4_IDX,2 )
-      ANO3 = aerospc_conc( ANO3_IDX,1 ) + aerospc_conc( ANO3_IDX,2 )
-      ASO4 = aerospc_conc( ASO4_IDX,1 ) + aerospc_conc( ASO4_IDX,2 )
+      ANH4 = aerospc_conc( ANH4_IDX,1 )%x + aerospc_conc( ANH4_IDX,2 )%x
+      ANO3 = aerospc_conc( ANO3_IDX,1 )%x + aerospc_conc( ANO3_IDX,2 )%x
+      ASO4 = aerospc_conc( ASO4_IDX,1 )%x + aerospc_conc( ASO4_IDX,2 )%x
 
 c *** Retrieve fine-mode particle-phase liquid water, chloride, nitrate [ug/m3]
-      AH2OF  = aerospc_conc( AH2O_IDX,1 ) + aerospc_conc( AH2O_IDX,2 ) 
-      ACLF   = aerospc_conc( ACL_IDX,1 )  + aerospc_conc( ACL_IDX,2 ) 
-      ANO3F  = aerospc_conc( ANO3_IDX,1 ) + aerospc_conc( ANO3_IDX,2 )
+      AH2OF  = aerospc_conc( AH2O_IDX,1 )%x + aerospc_conc( AH2O_IDX,2 )%x 
+      ACLF   = aerospc_conc( ACL_IDX,1 )%x  + aerospc_conc( ACL_IDX,2 )%x
+      ANO3F  = aerospc_conc( ANO3_IDX,1 )%x + aerospc_conc( ANO3_IDX,2 )%x
 
 c *** Retrieve coarse-mode particle-phase liquid water, chloride, nitrate [ug/m3]
-      AH2OK  = aerospc_conc( AH2O_IDX,3 )
-      ACLK   = aerospc_conc(  ACL_IDX,3 )
-      ANO3K  = aerospc_conc( ANO3_IDX,3 )      
+      AH2OK  = aerospc_conc( AH2O_IDX,3 )%x
+      ACLK   = aerospc_conc(  ACL_IDX,3 )%x
+      ANO3K  = aerospc_conc( ANO3_IDX,3 )%x     
 
       WHAT_OPTION: SELECT CASE( GPARAM )
 
@@ -2057,20 +2064,20 @@ C *** Arguments
 C *** Local Variables
 
 C *** chemical species concentrations [micromoles/m3]
-      TYPE(hyperdual)      NSO4     ! i+j mode sulfate
-      TYPE(hyperdual)      NNO3     ! i+j mode nitrate
-      TYPE(hyperdual)      NNH4     ! i+j mode ammonium
-      TYPE(hyperdual)      NCAT     ! i+j mode cations
-      TYPE(hyperdual)      NANI     ! i+j mode anions
+      REAL( 8 )      NSO4     ! i+j mode sulfate
+      REAL( 8 )      NNO3     ! i+j mode nitrate
+      REAL( 8 )      NNH4     ! i+j mode ammonium
+      REAL( 8 )      NCAT     ! i+j mode cations
+      REAL( 8 )      NANI     ! i+j mode anions
 
 C *** cation and anion mole fractions used in CRH equations
-      TYPE(hyperdual) X         ! ammonium/cation mole fraction: NH4/(NH4+H)
-      TYPE(hyperdual) Y         ! sulfate/anion mole fraction:  SO4/(SO4+NO3)
+      REAL( 8 ) X         ! ammonium/cation mole fraction: NH4/(NH4+H)
+      REAL( 8 ) Y         ! sulfate/anion mole fraction:  SO4/(SO4+NO3)
 
 C *** intermediate variables used in CRH equations
-      TYPE(hyperdual) X2, XY, Y2, X2Y, XY2, RDEN
+      REAL( 8 ) X2, XY, Y2, X2Y, XY2, RDEN
 
-      TYPE(hyperdual) CRH       ! crystallization RH (fractional units)
+      REAL( 8 ) CRH       ! crystallization RH (fractional units)
 
 C-----------------------------------------------------------------------
 
@@ -2090,11 +2097,11 @@ C     calculation can be avoided when RH > 35.1%.
       END IF
 
 C *** calculate total particle-phase composition [micromoles/m3]
-      NNO3 = ( aerospc_conc( ANO3_IDX,1 ) + aerospc_conc( ANO3_IDX,2 ) )
+      NNO3 = ( aerospc_conc( ANO3_IDX,1 )%x + aerospc_conc( ANO3_IDX,2 )%x )
      &     / aerospc_mw( ANO3_IDX )
-      NSO4 = ( aerospc_conc( ASO4_IDX,1 ) + aerospc_conc( ASO4_IDX,2 ) )
+      NSO4 = ( aerospc_conc( ASO4_IDX,1 )%x + aerospc_conc( ASO4_IDX,2 )%x )
      &     / aerospc_mw( ASO4_IDX )
-      NNH4 = ( aerospc_conc( ANH4_IDX,1 ) + aerospc_conc( ANH4_IDX,2 ) )
+      NNH4 = ( aerospc_conc( ANH4_IDX,1 )%x + aerospc_conc( ANH4_IDX,2 )%x )
      &     / aerospc_mw( ANH4_IDX )
 
 C *** calculate total anion and cation concentrations
@@ -2309,12 +2316,12 @@ C-----------------------------------------------------------------------
       Implicit None
 
 C *** Arguments
-      TYPE(hyperdual), Intent( IN )  :: RADIUS       ! Particle radius [m]
+      REAL( 8 ), Intent( IN )  :: RADIUS       ! Particle radius [m]
       REAL( 8 ), Intent( IN )  :: TEMPERATURE  ! air temperature [deg K]
-      TYPE(hyperdual), Intent( OUT ) :: GAMMAIEPOX ! Uptake coeff for IEPOX []
-      TYPE(hyperdual), Intent( OUT ) :: GAMMAIMAE  ! Uptake coeff for MAE []
-      TYPE(hyperdual), Intent( OUT ) :: KPIEPOX ! Particle phase reaction rate for IEPOX [1/s]
-      TYPE(hyperdual), Intent( OUT ) :: fTET(2), fOS(2), fdim1(2), fdim2(2)
+      REAL( 8 ), Intent( OUT ) :: GAMMAIEPOX ! Uptake coeff for IEPOX []
+      REAL( 8 ), Intent( OUT ) :: GAMMAIMAE  ! Uptake coeff for MAE []
+      REAL( 8 ), Intent( OUT ) :: KPIEPOX ! Particle phase reaction rate for IEPOX [1/s]
+      REAL( 8 ), Intent( OUT ) :: fTET(2), fOS(2), fdim1(2), fdim2(2)
                                   ! fraction of tetrol, organosulfate, tetroldimer, osdimer []
                                   ! first value for IEPOX-derived, second for IMAE-derived
 C *** Parameters
@@ -2339,18 +2346,18 @@ C     Diagnostic
 
 C *** Local Variables
       Integer   :: i                   ! counter and temporary indices
-      TYPE(hyperdual) :: eqlbh               ! Particle Phase H+ from isoropia [mol/m**3]
-      TYPE(hyperdual) :: q, denom            ! quantities in Hanson et al. 1994 equation for gamma []
-      TYPE(hyperdual) :: nu                  ! molecular speed [m/s], note this is the same as CBAR but we want to avoid excessive passing
-      TYPE(hyperdual) :: acidmolconc( n_acids ) ! concentration of acid in mol/m3
-      TYPE(hyperdual) :: acid                ! temporary concentration of acid in mol/m3
-      TYPE(hyperdual) :: nuc                 ! nucleophile concentration in mol/m3
-      TYPE(hyperdual) :: charge              ! temporary for charge balance calculation [umol/m3]
-      TYPE(hyperdual) :: inv_volume          ! reciprocal of particle volume [m3 air/Liters particles]
-      TYPE(hyperdual) :: kchem, kparticle(2) 
-      TYPE(hyperdual) :: kchemtet(2),kchemos(2), kchemdim1(2), kchemdim2(2) ! particle phase rxn rates [1/s] 
-      TYPE(hyperdual) :: gammaisop(2)        ! temporary value for IEPOX (1) and IMAE (2) gammas
-      TYPE(hyperdual) :: cfactor_isop(2)     ! cfactor for IEPOX(1) and MAE(2)
+      REAL( 8 ) :: eqlbh               ! Particle Phase H+ from isoropia [mol/m**3]
+      REAL( 8 ) :: q, denom            ! quantities in Hanson et al. 1994 equation for gamma []
+      REAL( 8 ) :: nu                  ! molecular speed [m/s], note this is the same as CBAR but we want to avoid excessive passing
+      REAL( 8 ) :: acidmolconc( n_acids ) ! concentration of acid in mol/m3
+      REAL( 8 ) :: acid                ! temporary concentration of acid in mol/m3
+      REAL( 8 ) :: nuc                 ! nucleophile concentration in mol/m3
+      REAL( 8 ) :: charge              ! temporary for charge balance calculation [umol/m3]
+      REAL( 8 ) :: inv_volume          ! reciprocal of particle volume [m3 air/Liters particles]
+      REAL( 8 ) :: kchem, kparticle(2) 
+      REAL( 8 ) :: kchemtet(2),kchemos(2), kchemdim1(2), kchemdim2(2) ! particle phase rxn rates [1/s] 
+      REAL( 8 ) :: gammaisop(2)        ! temporary value for IEPOX (1) and IMAE (2) gammas
+      REAL( 8 ) :: cfactor_isop(2)     ! cfactor for IEPOX(1) and MAE(2)
       Real( 4 ) :: temp                ! air temperature [deg K]
       Character ( 80 ) :: xmsg         ! error message
 
@@ -2369,7 +2376,7 @@ C *** External functions
 C-----------------------------------------------------------------------
 
 C *** Determine H+ acid concentration of j mode [mol/m3]
-      eqlbh = aerospc_conc( ah3op_idx, 2 ) / aerospc_mw( ah3op_idx ) * 1.0d-6
+      eqlbh = aerospc_conc( ah3op_idx, 2 )%x / aerospc_mw( ah3op_idx ) * 1.0d-6
       acidmolconc( hacid_idx ) = Max( eqlbh, 0.0d0 ) 
 
 C *** Calculate HSO4 by charge balance
@@ -2380,7 +2387,7 @@ C     in catalyzing the ring-opening)
       Do i = 1, n_aerospc
          If ( aerospc( i )%tracer ) Cycle
          If ( aero_missing( i,2 ) ) Cycle
-         charge = charge - aerospc( i )%charge * aerospc_conc( i,2 )
+         charge = charge - aerospc( i )%charge * aerospc_conc( i,2 )%x
      &          / aerospc_mw( i )
       End Do
       acidmolconc( hso4acid_idx ) = Max( ( charge*1.0d-6 - acidmolconc( hacid_idx ) ), 0.0d0 ) 
@@ -2391,7 +2398,7 @@ C *** J-mode particle volume [L/m**3 air]
          If ( aerospc( i )%tracer ) Cycle
          If ( aero_missing( i,2 ) ) Cycle
 !        If ( aerospc( i )%no_M2Wet ) Cycle
-         inv_volume = inv_volume + aerospc_conc( i, 2 ) / aerospc(i)%density !  * 1.0d-6
+         inv_volume = inv_volume + aerospc_conc( i, 2 )%x / aerospc(i)%density !  * 1.0d-6
       End Do
       inv_volume = 1.0d6 / inv_volume
 
@@ -2407,7 +2414,7 @@ C     and calculate rate of particle phase reaction
       Do i = 1, n_nucpairs
 
 C        Find J-mode nucleophile concentration in ug/m3 and convert to mol/m3
-         nuc = aerospc_conc( acid_nucmap_idx( i ), 2 ) 
+         nuc = aerospc_conc( acid_nucmap_idx( i ), 2 )%x 
      &       /  aerospc_mw( acid_nucmap_idx( i ) ) * 1.0d-6
 
          acid = acidmolconc( acid_nuc_pairs( i )%idx_acid ) ! mol/m3

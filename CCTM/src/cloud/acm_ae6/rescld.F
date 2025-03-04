@@ -201,8 +201,9 @@ C...........Local Variables:
 C Gridded meteorology data:
 C Latitude and longitude for zenith angle calculation: Golam Sarwar * July 1, 2011 
       REAL          COSZ                            ! local cosine of zenith angle
-      TYPE(hyperdual)          JH2O2                           ! H2O2 photolysis rate, 1/min 
-      TYPE(hyperdual)          JHNO3                           ! HNO3 photolysis rate, 1/min 
+      ! el0128: revert the reaction rate to real( 8 )
+      REAL( 8 )          JH2O2                           ! H2O2 photolysis rate, 1/min 
+      REAL( 8 )          JHNO3                           ! HNO3 photolysis rate, 1/min 
       LOGICAL       DARK                            ! DARK = TRUE is night,  DARK = FALSE is day
 
 #ifdef isam
@@ -647,8 +648,8 @@ C...  calculate cosine of zenith angle for the cell and determine day or night; 
                   COSZ = MET_DATA%COSZEN( COL, ROW )
                   IF ( COSZ .LE. 0.0 ) THEN 
                     DARK = .TRUE.   ! night
-                    JH2O2_HYDROMETEORS = 0.0D0
-                    JHNO3_HYDROMETEORS = 0.0D0
+                    JH2O2_HYDROMETEORS = 0.0
+                    JHNO3_HYDROMETEORS = 0.0
                   ELSE
                     DARK = .FALSE.  ! day
                     JH2O2 = RJ_RES( COL, ROW, LAY, LH2O2 )

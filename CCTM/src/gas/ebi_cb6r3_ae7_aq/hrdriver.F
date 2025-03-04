@@ -163,7 +163,7 @@ C..Scratch Local Variables:
            TYPE(hyperdual), INTENT( IN ) :: CBLK( : )       !  species concentration in cell
            REAL,      INTENT( IN ) :: TCELL           !  cell temperature  [ k ]
            REAL,      INTENT( IN ) :: DCELL           !  cell air density  [ kg/m^3 ]
-           TYPE(hyperdual), INTENT( IN ) :: PHOTO_CELL( : ) !  Photolysis table for cell [1/s]
+           REAL( 8 ), INTENT( IN ) :: PHOTO_CELL( : ) !  Photolysis table for cell [1/s]
            INTEGER,   INTENT( IN ) :: JDATE  ! current model date , coded YYYYDDD
            INTEGER,   INTENT( IN ) :: JTIME  ! current model time , coded HHMMSS
          END SUBROUTINE INIT_DEGRADE
@@ -439,25 +439,26 @@ c..Set physical quantities
 
 c..Get rate constants
                LSUNLIGHT = .FALSE.
-               FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH )%x = RJ( C,R,L,NPH )%x
-               FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH )%dx1 = RJ( C,R,L,NPH )%dx1
-               FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH )%dx2 = RJ( C,R,L,NPH )%dx2
-               FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH )%dx1x2 = RJ( C,R,L,NPH )%dx1x2
+               ! el0128: revert the reaction rate to real( 8 )
+               FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH ) = RJ( C,R,L,NPH )
+C              FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH )%dx1 = RJ( C,R,L,NPH )%dx1
+C              FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH )%dx2 = RJ( C,R,L,NPH )%dx2
+C              FORALL( NPH = 1:NPHOTAB ) RJIN( NCELL,NPH )%dx1x2 = RJ( C,R,L,NPH )%dx1x2
 
                
                IF( MAXVAL(RJIN) .GT. 0.0D0 ) LSUNLIGHT = .TRUE.
 			   
-               FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%x = KHETERO( NPH,C,R,L )%x
-               FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%dx1 = KHETERO( NPH,C,R,L )%dx1
-               FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%dx2 = KHETERO( NPH,C,R,L )%dx2
-               FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%dx1x2 = KHETERO( NPH,C,R,L )%dx1x2
+               FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH ) = KHETERO( NPH,C,R,L )
+C              FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%dx1 = KHETERO( NPH,C,R,L )%dx1
+C              FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%dx2 = KHETERO( NPH,C,R,L )%dx2
+C              FORALL ( NPH = 1:NHETERO )HET( NCELL,NPH )%dx1x2 = KHETERO( NPH,C,R,L )%dx1x2
                                              
                CALL CALC_RCONST( TEMP, ATMPRES, H2O, RJIN, HET, LSUNLIGHT, LAND, RKI_SAV, NCELL )
                
-               FORALL( NPH = 1:NRXNS )RKI( NPH )%x = RKI_SAV( NCELL, NPH )%x
-               FORALL( NPH = 1:NRXNS )RKI( NPH )%dx1 = RKI_SAV( NCELL, NPH )%dx1
-               FORALL( NPH = 1:NRXNS )RKI( NPH )%dx2 = RKI_SAV( NCELL, NPH )%dx2
-               FORALL( NPH = 1:NRXNS )RKI( NPH )%dx1x2 = RKI_SAV( NCELL, NPH )%dx1x2
+               FORALL( NPH = 1:NRXNS )RKI( NPH ) = RKI_SAV( NCELL, NPH )
+C              FORALL( NPH = 1:NRXNS )RKI( NPH )%dx1 = RKI_SAV( NCELL, NPH )%dx1
+C              FORALL( NPH = 1:NRXNS )RKI( NPH )%dx2 = RKI_SAV( NCELL, NPH )%dx2
+C              FORALL( NPH = 1:NRXNS )RKI( NPH )%dx1x2 = RKI_SAV( NCELL, NPH )%dx1x2
 #ifdef isam
 #if defined(isam) || defined(verbose_isam)
 C...For diagnosing IRR calculations in log files

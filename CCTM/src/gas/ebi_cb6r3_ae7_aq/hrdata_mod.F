@@ -73,9 +73,9 @@ c...Allocatable arrays
       INTEGER, ALLOCATABLE :: SSASP( : )         ! Index of ss species
       INTEGER, ALLOCATABLE :: ACTSP( : )         ! Index of active species
       INTEGER, ALLOCATABLE :: IOLD2NEW( :,: )    ! YC species map, used if NSPECIAL > 0
-
-      TYPE(hyperdual), ALLOCATABLE ::  RKI(  : )     ! Rate constants
-      TYPE(hyperdual), ALLOCATABLE ::  RKI_SAV(  :,  : )  ! Saved values of RKI for SS species calcs
+      ! el0128: revert the reaction rate to real( 8 )
+      REAL( 8 ), ALLOCATABLE ::  RKI(  : )          ! Rate constants
+      REAL( 8 ), ALLOCATABLE ::  RKI_SAV(  :,  : )  ! Saved values of RKI for SS species calcs
 
       TYPE(hyperdual), ALLOCATABLE ::  YC (  : )      ! Species concentrations
       TYPE(hyperdual), ALLOCATABLE ::  YC0(  : )      ! Species concentrations
@@ -87,7 +87,7 @@ c...Allocatable arrays
 
       TYPE(hyperdual), ALLOCATABLE ::  RXRAT( : )     ! Reaction rates
       REAL( 8 ), ALLOCATABLE ::  RTOL(  : )        ! Species tolerances
-      TYPE(hyperdual), ALLOCATABLE ::  YCCELL( : )       ! ALL Species in cgrid
+      TYPE(hyperdual), ALLOCATABLE ::  YCCELL( : )    ! ALL Species in cgrid
       TYPE(hyperdual), ALLOCATABLE ::  PROD(  : )     ! Prod of species
       TYPE(hyperdual), ALLOCATABLE ::  LOSS(  : )     ! Loss of species
       TYPE(hyperdual), ALLOCATABLE ::  PNEG(  : )! Negative production rates
@@ -107,8 +107,9 @@ c...Allocatable arrays
       REAL( 8 ), ALLOCATABLE ::  H2O     ( : )     ! Cell H2O mixing ratio (ppmV)
       REAL( 8 ), ALLOCATABLE ::  TEMP    ( : )     ! Cell Temperature
       REAL( 8 ), ALLOCATABLE ::  DENSITY ( : )     ! Cell mass density (Kg/m3)
-      TYPE(hyperdual), ALLOCATABLE :: HET( :, : )  ! cell heterogeneous reaction rates
-      TYPE(hyperdual), ALLOCATABLE ::  RJIN    ( :, : )  ! J-values for a cell
+      ! el0128: revert the reaction rate to real( 8 )
+      REAL( 8 ), ALLOCATABLE ::  HET( :, : )  ! cell heterogeneous reaction rates
+      REAL( 8 ), ALLOCATABLE ::  RJIN    ( :, : )  ! J-values for a cell
       LOGICAL, ALLOCATABLE   ::  LAND    ( : )     ! land_zone value for specific cell
 
 c..Species indices

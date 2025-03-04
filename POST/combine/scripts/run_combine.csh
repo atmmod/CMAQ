@@ -59,8 +59,8 @@
 # =====================================================================
 
 #> Set Start and End Days for looping
- set START_DATE = "2016-07-01"     #> beginning date (July 1, 2016)
- set END_DATE   = "2016-07-14"     #> ending date    (July 14, 2016)
+ set START_DATE = "2019-01-02"     #> beginning date (July 1, 2016)
+ set END_DATE   = "2019-01-03"     #> ending date    (July 14, 2016)
  
 #> Set location of species definition files for concentration and deposition species.
  setenv SPEC_CONC $REPO_HOME/POST/combine/scripts/spec_def_files/SpecDef_${MECH}.txt

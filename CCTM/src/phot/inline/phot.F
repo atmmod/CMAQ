@@ -232,9 +232,9 @@ C...modules
       REAL OWATER_FRAC     ! Open water fraction
       REAL SNOW_FRAC       ! Snow fractional coverage
       REAL SEAICE_FRAC     ! Sea Ice fraction
-      TYPE(hyperdual) RES_SKY_REFLECT ! reflection coefficient based on resolved sky
-      TYPE(hyperdual) RES_SKY_TRANS   ! diffuse transmission coefficient based on resolved sky
-      TYPE(hyperdual) RES_SKY_TRANSD  ! direct transmission coefficient based on resolved sky
+      REAL RES_SKY_REFLECT ! reflection coefficient based on resolved sky
+      REAL RES_SKY_TRANS   ! diffuse transmission coefficient based on resolved sky
+      REAL RES_SKY_TRANSD  ! direct transmission coefficient based on resolved sky
 
       REAL                    :: TOTAL_O3_COLUMN ! total ozone column density, DU
 
@@ -245,13 +245,13 @@ C...modules
       INTEGER, SAVE       :: IMONTH = 0
 
       REAL, ALLOCATABLE, SAVE :: ETOT_SFC ( : )      ! total downward irradiance at sfc [ Watts / m**2  ]
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TAUO3_TOP( : )      ! optical depth of ozone above model domain
+      REAL, ALLOCATABLE, SAVE :: TAUO3_TOP( : )      ! optical depth of ozone above model domain
       REAL, ALLOCATABLE, SAVE :: TAU_RAY  ( : )      ! Rayleigh optical depth above model domain
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TAUC_AERO( :,: )    ! aerosol optical depth at layer bottom
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TAU_TOT  ( :,: )    ! total optical depth at layer bottom
+      REAL, ALLOCATABLE, SAVE :: TAUC_AERO( :,: )    ! aerosol optical depth at layer bottom
+      REAL, ALLOCATABLE, SAVE :: TAU_TOT  ( :,: )    ! total optical depth at layer bottom
       REAL, ALLOCATABLE, SAVE :: TAU_CLOUD( :,: )    ! cloud optical depth at layer bottom
 
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: SSA      ( : ) ! aerosol single scattering albedo, column average
+      REAL, ALLOCATABLE, SAVE :: SSA      ( : ) ! aerosol single scattering albedo, column average
 
       REAL MSCALE          ! combined factor to scale ppm to Molecules / cm**3
                            ! and correct for ambient temperaure and pressure
@@ -268,12 +268,13 @@ C...modules
       REAL, ALLOCATABLE, SAVE :: BLKTA  ( : )      ! Air temperature [ K ]
       REAL, ALLOCATABLE, SAVE :: BLKDENS( : )      ! Air density  [ molecules / m**3 ]
       REAL, ALLOCATABLE, SAVE :: BLKZH  ( : )      ! layer half-height [ m ]
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: BLKO3  ( : )      ! O3 concentration [ molecules/cm**3 ]
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: BLKNO2 ( : )      ! NO2 concentration [ molecules/cm**3 ]
+      ! el0128: revert the reaction rate to real( 8 )
+      REAL, ALLOCATABLE, SAVE :: BLKO3  ( : )      ! O3 concentration [ molecules/cm**3 ]
+      REAL, ALLOCATABLE, SAVE :: BLKNO2 ( : )      ! NO2 concentration [ molecules/cm**3 ]
       REAL, ALLOCATABLE, SAVE :: BLKZF  ( : )      ! layer full-height [ m ]
 
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: BLKRJ_RES( :, : ) ! photolysis rates
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: BLKRJ_ACM( :, : ) ! photolysis rates
+      REAL, ALLOCATABLE, SAVE :: BLKRJ_RES( :, : ) ! photolysis rates
+      REAL, ALLOCATABLE, SAVE :: BLKRJ_ACM( :, : ) ! photolysis rates
 
       LOGICAL, ALLOCATABLE, SAVE :: CLOUDS( : )    ! Does layer have clouds?
       LOGICAL                    :: NEW_PROFILE    ! Has atmospheric temperature and density profile changed?
@@ -284,36 +285,36 @@ C...modules
       REAL, ALLOCATABLE, SAVE :: N_EXCEED_TROPO3( :,: )  ! Number of adjustments tropospheric ozone optical depth
 
       REAL, ALLOCATABLE, SAVE :: TOTAL_OC( :,: )         ! total ozone column [DU]
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TROPO_OC( :,: )         ! tropospheric ozone column [DU]
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: NO2_COLUMN ( :,: )      ! tropospheric NO2 column []
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: CO_COLUMN  ( :,: )      ! tropospheric CO column  []
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: HCHO_COLUMN( :,: )      ! tropospheric HCHO column [DU]
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: SO2_COLUMN ( :,: )      ! tropospheric SO2 column [DU]
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TROPO_O3_EXCEED( :,: )   ! Factor used to adjust tropospheric ozone optical depth
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TRANSMIS_DIFFUSE( :,: ) ! diffuse transmission coefficient at surface
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TRANSMIS_DIRECT( :,: )  ! direct transmission coefficient at surface
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: REFLECT_COEFF( :,: )    ! reflection coefficient at top of atmosphere
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TAU_AERO_WL ( :,:,: )   ! total aerosol optical depth
+      REAL, ALLOCATABLE, SAVE :: TROPO_OC( :,: )         ! tropospheric ozone column [DU]
+      REAL, ALLOCATABLE, SAVE :: NO2_COLUMN ( :,: )      ! tropospheric NO2 column []
+      REAL, ALLOCATABLE, SAVE :: CO_COLUMN  ( :,: )      ! tropospheric CO column  []
+      REAL, ALLOCATABLE, SAVE :: HCHO_COLUMN( :,: )      ! tropospheric HCHO column [DU]
+      REAL, ALLOCATABLE, SAVE :: SO2_COLUMN ( :,: )      ! tropospheric SO2 column [DU]
+      REAL, ALLOCATABLE, SAVE :: TROPO_O3_EXCEED( :,: )   ! Factor used to adjust tropospheric ozone optical depth
+      REAL, ALLOCATABLE, SAVE :: TRANSMIS_DIFFUSE( :,: ) ! diffuse transmission coefficient at surface
+      REAL, ALLOCATABLE, SAVE :: TRANSMIS_DIRECT( :,: )  ! direct transmission coefficient at surface
+      REAL, ALLOCATABLE, SAVE :: REFLECT_COEFF( :,: )    ! reflection coefficient at top of atmosphere
+      REAL, ALLOCATABLE, SAVE :: TAU_AERO_WL ( :,:,: )   ! total aerosol optical depth
       REAL, ALLOCATABLE, SAVE :: TAU_CLOUD_WL( :,:,: )   ! total cloud optical depth
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: CLR_TRANSMISSION( :,: ) ! diffuse transmission coefficient of clouds
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: CLR_REFLECTION  ( :,: ) ! reflection coefficient of cloud
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: CLR_TRANS_DIRECT( :,: ) ! direct transmission coefficient of clouds
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TAU_AERO_550    ( :,: ) ! total aerosol optical depth at 550 nm (Angstrom Interpolation)
+      REAL, ALLOCATABLE, SAVE :: CLR_TRANSMISSION( :,: ) ! diffuse transmission coefficient of clouds
+      REAL, ALLOCATABLE, SAVE :: CLR_REFLECTION  ( :,: ) ! reflection coefficient of cloud
+      REAL, ALLOCATABLE, SAVE :: CLR_TRANS_DIRECT( :,: ) ! direct transmission coefficient of clouds
+      REAL, ALLOCATABLE, SAVE :: TAU_AERO_550    ( :,: ) ! total aerosol optical depth at 550 nm (Angstrom Interpolation)
 #ifdef phot_debug
       REAL, ALLOCATABLE, SAVE :: ASY_CLOUD_WL( :,:,: ) ! columm average of cloud asymmetry factor
       REAL, ALLOCATABLE, SAVE :: SSA_CLOUD_WL( :,:,: ) ! columm average of cloud single scattering albedo
 #endif
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TAU_TOT_WL  ( :,:,: ) ! total optical depth
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TAUO3_TOP_WL( :,:,: ) ! optical depth of ozone above model domain
+      REAL, ALLOCATABLE, SAVE :: TAU_TOT_WL  ( :,:,: ) ! total optical depth
+      REAL, ALLOCATABLE, SAVE :: TAUO3_TOP_WL( :,:,: ) ! optical depth of ozone above model domain
 
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: AERO_SSA  ( :,:,:,: ) ! aerosol single scattering albedo
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: AERO_ASYM ( :,:,:,: ) ! aerosol asymmetry factor
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TOT_EXT   ( :,:,:,: ) ! total extinction for layer [1/m]
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: GAS_EXT   ( :,:,:,: ) ! clear sky extinction for layer [1/m]
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: AERO_EXT  ( :,:,:,: ) ! aerosol extinction for layer [1/m]
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: ACTINIC_FX( :,:,:,: ) ! net actinic flux [watts/m**2]
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: AERO_EXT_550( :,:,: ) ! aerosol extinction at 550 nm for layer [1/m]
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: OUTPUT_BUFF ( :,:,: ) ! output buffer for DIAG2 and DIAG3 files
+      REAL, ALLOCATABLE, SAVE :: AERO_SSA  ( :,:,:,: ) ! aerosol single scattering albedo
+      REAL, ALLOCATABLE, SAVE :: AERO_ASYM ( :,:,:,: ) ! aerosol asymmetry factor
+      REAL, ALLOCATABLE, SAVE :: TOT_EXT   ( :,:,:,: ) ! total extinction for layer [1/m]
+      REAL, ALLOCATABLE, SAVE :: GAS_EXT   ( :,:,:,: ) ! clear sky extinction for layer [1/m]
+      REAL, ALLOCATABLE, SAVE :: AERO_EXT  ( :,:,:,: ) ! aerosol extinction for layer [1/m]
+      REAL, ALLOCATABLE, SAVE :: ACTINIC_FX( :,:,:,: ) ! net actinic flux [watts/m**2]
+      REAL, ALLOCATABLE, SAVE :: AERO_EXT_550( :,:,: ) ! aerosol extinction at 550 nm for layer [1/m]
+      REAL, ALLOCATABLE, SAVE :: OUTPUT_BUFF ( :,:,: ) ! output buffer for DIAG2 and DIAG3 files
 
       INTERFACE
          SUBROUTINE O3TOTCOL ( LATITUDE, LONGITUDE, JDATE, JTIME, OZONE )
@@ -419,14 +420,14 @@ C...modules
             ALLOCATE( TAUO3_TOP_WL( NCOLS,NROWS,NWL ) )
 
             N_EXCEED_TROPO3 = 0.0
-            TROPO_O3_EXCEED = 0.0d0
+            TROPO_O3_EXCEED = 0.0
             TSTEP_COUNT     = 0
-            TAU_AERO_550    = 0.0d0
-            TROPO_OC        = 0.0d0
-            CO_COLUMN       = 0.0d0
-            SO2_COLUMN      = 0.0d0
-            NO2_COLUMN      = 0.0d0
-            HCHO_COLUMN     = 0.0d0
+            TAU_AERO_550    = 0.0
+            TROPO_OC        = 0.0
+            CO_COLUMN       = 0.0
+            SO2_COLUMN      = 0.0
+            NO2_COLUMN      = 0.0
+            HCHO_COLUMN     = 0.0
      
    
 !...write wavelength data to a character array
@@ -644,8 +645,8 @@ C...modules
 !...initialize variables tracking whether stratosphere ozone column satisfies
 !...climatological averages.
 
-      O3_TOGGLE_AVE     = 0.0D0
-      O3_TOGGLE_MIN     = 1.0D0
+      O3_TOGGLE_AVE     = 0.0
+      O3_TOGGLE_MIN     = 1.0
       N_TROPO_O3_TOGGLE = 0
       TSTEP_COUNT       = TSTEP_COUNT + 1
 
@@ -708,10 +709,10 @@ C...modules
 
       IF ( DARK ) THEN
 
-         RJ = 0.0D0
-         RJ_SUB = 0.0D0
-         RJ_RES = 0.0D0
-         ETOT_SFC_WL  = 0.0D0
+         RJ = 0.0
+         RJ_SUB = 0.0
+         RJ_RES = 0.0
+         ETOT_SFC_WL  = 0.0
 
 
 !...Initialize ETOT_SFC, TAU_AERO, TAU_TOT, TAUO3_TOP to 0.0
@@ -720,8 +721,8 @@ C...modules
 
          IF ( JTIME_CHK ) THEN
 
-            TAUO3_TOP_WL = 0.0d0
-            TAU_AERO_WL  = 0.0d0
+            TAUO3_TOP_WL = 0.0
+            TAU_AERO_WL  = 0.0
 ! commented out because TAU_AERO_550 is set to zero after allocation and after written to PHOTDIAG1
 !           TAU_AERO_550 = 0.0
             TAU_CLOUD_WL = 0.0
@@ -729,21 +730,21 @@ C...modules
             SSA_CLOUD_WL = 0.0
             ASY_CLOUD_WL = 0.0
 #endif
-            TAU_TOT_WL   = 0.0d0
-            TOT_EXT      = 0.0d0
-            GAS_EXT      = 0.0d0
-            AERO_EXT     = 0.0d0
-            AERO_EXT_550 = 0.0d0
-            AERO_SSA     = 0.0d0
-            AERO_ASYM    = 0.0d0
-            ACTINIC_FX   = 0.0d0
+            TAU_TOT_WL   = 0.0
+            TOT_EXT      = 0.0
+            GAS_EXT      = 0.0
+            AERO_EXT     = 0.0
+            AERO_EXT_550 = 0.0
+            AERO_SSA     = 0.0
+            AERO_ASYM    = 0.0
+            ACTINIC_FX   = 0.0
 
-            TRANSMIS_DIFFUSE  = 0.0D0
-            TRANSMIS_DIRECT   = 0.0D0
-            REFLECT_COEFF     = 0.0D0
-            CLR_TRANSMISSION  = 0.0D0
-            CLR_TRANS_DIRECT  = 0.0D0
-            CLR_REFLECTION    = 0.0D0
+            TRANSMIS_DIFFUSE  = 0.0
+            TRANSMIS_DIRECT   = 0.0
+            REFLECT_COEFF     = 0.0
+            CLR_TRANSMISSION  = 0.0
+            CLR_TRANS_DIRECT  = 0.0
+            CLR_REFLECTION    = 0.0
 
             DO ROW = 1, NROWS
                DO COL = 1, NCOLS
@@ -754,9 +755,9 @@ C...modules
                      BLKDZ  ( L ) = ZFULL( COL,ROW,L ) - ZFULL( COL,ROW,L-1 )
                   END DO
                   MSCALE = 1.0E-19 ! 100.0*10E-15*PPM_MCM3, so units are petamolecules/cm2
-                  CALL COLUMN_GAS( IGAS=LGC_CO,   UNIT_FACTOR=MSCALE, COLUMN_DENSITY=CO_COLUMN )
-                  CALL COLUMN_GAS( IGAS=LGC_SO2,  UNIT_FACTOR=MSCALE, COLUMN_DENSITY=SO2_COLUMN )
-                  CALL COLUMN_GAS( IGAS=LGC_NO2,  UNIT_FACTOR=MSCALE, COLUMN_DENSITY=NO2_COLUMN )
+                  CALL COLUMN_GAS( IGAS=LGC_CO,   UNIT_FACTOR=MSCALE, COLUMN_DENSITY=CO_COLUMN   )
+                  CALL COLUMN_GAS( IGAS=LGC_SO2,  UNIT_FACTOR=MSCALE, COLUMN_DENSITY=SO2_COLUMN  )
+                  CALL COLUMN_GAS( IGAS=LGC_NO2,  UNIT_FACTOR=MSCALE, COLUMN_DENSITY=NO2_COLUMN  )
                   CALL COLUMN_GAS( IGAS=LGC_HCHO, UNIT_FACTOR=MSCALE, COLUMN_DENSITY=HCHO_COLUMN )
                   MSCALE = 1.0E-4 * CONC_TO_DU ! so units are Dobsons
                   CALL COLUMN_GAS( IGAS=LGC_O3, UNIT_FACTOR=MSCALE, COLUMN_DENSITY=TROPO_OC )                     
@@ -780,35 +781,35 @@ C...modules
 
                IF ( COSZEN .LE. 0.0 ) THEN
 !...the cell is dark: set variables to zero and cycle
-                  RJ( COL,ROW, :,: ) = 0.0D0
-                  RJ_RES( COL,ROW, :,: ) = 0.0D0
-                  RJ_SUB( COL,ROW, :,: ) = 0.0D0
-                  ETOT_SFC_WL ( COL,ROW, : ) = 0.0D0
+                  RJ( COL,ROW, :,: ) = 0.0
+                  RJ_RES( COL,ROW, :,: ) = 0.0
+                  RJ_SUB( COL,ROW, :,: ) = 0.0
+                  ETOT_SFC_WL ( COL,ROW, : ) = 0.0
 
                   IF ( JTIME_CHK ) THEN
-                     TAUO3_TOP_WL( COL,ROW, : ) = 0.0d0
-                     TAU_AERO_WL ( COL,ROW, : ) = 0.0d0
+                     TAUO3_TOP_WL( COL,ROW, : ) = 0.0
+                     TAU_AERO_WL ( COL,ROW, : ) = 0.0
                      TAU_CLOUD_WL( COL,ROW, : ) = 0.0
 #ifdef phot_debug
                      SSA_CLOUD_WL( COL,ROW, : ) = 0.0
                      ASY_CLOUD_WL( COL,ROW, : ) = 0.0
 #endif
-                     TAU_TOT_WL  ( COL,ROW, : )   = 0.0d0
-                     TOT_EXT     ( COL,ROW, :,: ) = 0.0d0
-                     GAS_EXT     ( COL,ROW, :,: ) = 0.0d0
-                     AERO_EXT    ( COL,ROW, :,: ) = 0.0d0
-                     AERO_EXT_550( COL,ROW, : )   = 0.0d0
-                     AERO_SSA    ( COL,ROW, :,: ) = 0.0d0
-                     AERO_ASYM   ( COL,ROW, :,: ) = 0.0d0
-                     ACTINIC_FX  ( COL,ROW, :,: ) = 0.0d0
+                     TAU_TOT_WL  ( COL,ROW, : )   = 0.0
+                     TOT_EXT     ( COL,ROW, :,: ) = 0.0
+                     GAS_EXT     ( COL,ROW, :,: ) = 0.0
+                     AERO_EXT    ( COL,ROW, :,: ) = 0.0
+                     AERO_EXT_550( COL,ROW, : )   = 0.0
+                     AERO_SSA    ( COL,ROW, :,: ) = 0.0
+                     AERO_ASYM   ( COL,ROW, :,: ) = 0.0
+                     ACTINIC_FX  ( COL,ROW, :,: ) = 0.0
 
 !                     TROPO_O3_EXCEED( COL,ROW )  = 0.0
-                     TRANSMIS_DIFFUSE( COL,ROW ) = 0.0D0
-                     TRANSMIS_DIRECT ( COL,ROW ) = 0.0D0
-                     REFLECT_COEFF   ( COL,ROW ) = 0.0D0
-                     CLR_TRANSMISSION( COL,ROW ) = 0.0D0
-                     CLR_TRANS_DIRECT( COL,ROW ) = 0.0D0
-                     CLR_REFLECTION  ( COL,ROW ) = 0.0D0
+                     TRANSMIS_DIFFUSE( COL,ROW ) = 0.0
+                     TRANSMIS_DIRECT ( COL,ROW ) = 0.0
+                     REFLECT_COEFF   ( COL,ROW ) = 0.0
+                     CLR_TRANSMISSION( COL,ROW ) = 0.0
+                     CLR_TRANS_DIRECT( COL,ROW ) = 0.0
+                     CLR_REFLECTION  ( COL,ROW ) = 0.0
                      
                      BLKDENS( 1 ) = DENS ( COL,ROW,1 ) * DENS_CONV ! [molecules / cm**3]
                      BLKDZ  ( 1 ) = ZFULL( COL,ROW,1 )
@@ -833,8 +834,8 @@ C...modules
 
 !...initialize BLKRJ using F90 array operations.
 
-               BLKRJ_RES = 0.0D0
-               BLKRJ_ACM = 0.0D0
+               BLKRJ_RES = 0.0
+               BLKRJ_ACM = 0.0
 
 !...Set height of lowest level to zero
 
@@ -873,9 +874,9 @@ C...modules
 
 !...fetch ozone and no2 and convert to [ molecules / cm **3 ]
 !...  and adjust the volume for ambient temperature and pressure.
-
-                  BLKO3 ( L ) = CGRID( COL,ROW,L,LGC_O3  ) * MSCALE
-                  BLKNO2( L ) = CGRID( COL,ROW,L,LGC_NO2 ) * MSCALE
+                  ! el0128: revert the reaction rate to real( 8 )
+                  BLKO3 ( L ) = REAL ( CGRID( COL,ROW,L,LGC_O3  )%x * MSCALE , 4)
+                  BLKNO2( L ) = REAL ( CGRID( COL,ROW,L,LGC_NO2 )%x * MSCALE,  4)
                   ZLEV = BLKZF( L )
                END DO ! loop on layers ambient conditions and gases
 
@@ -955,10 +956,10 @@ C...modules
                END IF
 
                FORALL ( IWL = 1:NWL )
-                  ETOT_SFC_WL ( COL,ROW,IWL )%x = IRRADIANCE( 1,IWL )%x
-                  ETOT_SFC_WL ( COL,ROW,IWL )%dx1 = IRRADIANCE( 1,IWL )%dx1
-                  ETOT_SFC_WL ( COL,ROW,IWL )%dx2 = IRRADIANCE( 1,IWL )%dx2
-                  ETOT_SFC_WL ( COL,ROW,IWL )%dx1x2 = IRRADIANCE( 1,IWL )%dx1x2
+                  ETOT_SFC_WL ( COL,ROW,IWL ) = IRRADIANCE( 1,IWL )
+C                 ETOT_SFC_WL ( COL,ROW,IWL )%dx1 = IRRADIANCE( 1,IWL )%dx1
+C                 ETOT_SFC_WL ( COL,ROW,IWL )%dx2 = IRRADIANCE( 1,IWL )%dx2
+C                 ETOT_SFC_WL ( COL,ROW,IWL )%dx1x2 = IRRADIANCE( 1,IWL )%dx1x2
                END FORALL   
 
                IF ( JTIME_CHK  ) THEN
@@ -980,12 +981,11 @@ C...modules
                   END DO
 
                   FORALL ( L = 1:NLAYS_DIAG )
-                     AERO_EXT_550( COL,ROW,L )%x = 1000.0 * AERO_EXTI_550( L )%x
-                     AERO_EXT_550( COL,ROW,L )%dx1 = 1000.0 * AERO_EXTI_550( L )%dx1
-                     AERO_EXT_550( COL,ROW,L )%dx2 = 1000.0 * AERO_EXTI_550( L )%dx2
-                     AERO_EXT_550( COL,ROW,L )%dx1x2 = 1000.0 * AERO_EXTI_550( L )%dx1x2                                                               
+                     AERO_EXT_550( COL,ROW,L ) = 1000.0 * AERO_EXTI_550( L )
+C                    AERO_EXT_550( COL,ROW,L )%dx1 = 1000.0 * AERO_EXTI_550( L )%dx1
+C                    AERO_EXT_550( COL,ROW,L )%dx2 = 1000.0 * AERO_EXTI_550( L )%dx2
+C                    AERO_EXT_550( COL,ROW,L )%dx1x2 = 1000.0 * AERO_EXTI_550( L )%dx1x2                                                               
                   END FORALL
-                  
                   DO LEV = 1, NLAYS
                      TAU_AERO_550 ( COL,ROW ) = TAU_AERO_550 ( COL,ROW )
      &                                        + AERO_EXTI_550( LEV ) * BLKDZ( LEV )
@@ -994,37 +994,35 @@ C...modules
                   DO L = 1, N_DIAG_WVL
                      IWL = DIAG_WVL( L )
                      FORALL ( LEV = 1:NLAYS_DIAG )
-                        ACTINIC_FX( COL,ROW,LEV,L )%x  = ACTINIC_FLUX( LEV,IWL )%x
-                        ACTINIC_FX( COL,ROW,LEV,L )%dx1  = ACTINIC_FLUX( LEV,IWL )%dx1
-                        ACTINIC_FX( COL,ROW,LEV,L )%dx2  = ACTINIC_FLUX( LEV,IWL )%dx2
-                        ACTINIC_FX( COL,ROW,LEV,L )%dx1x2  = ACTINIC_FLUX( LEV,IWL )%dx1x2
+                        ACTINIC_FX( COL,ROW,LEV,L )  = ACTINIC_FLUX( LEV,IWL )
+C                       ACTINIC_FX( COL,ROW,LEV,L )%dx1  = ACTINIC_FLUX( LEV,IWL )%dx1
+C                       ACTINIC_FX( COL,ROW,LEV,L )%dx2  = ACTINIC_FLUX( LEV,IWL )%dx2
+C                       ACTINIC_FX( COL,ROW,LEV,L )%dx1x2  = ACTINIC_FLUX( LEV,IWL )%dx1x2
 
-                        TOT_EXT ( COL,ROW,LEV,L )%x    = 1000.0 * EXTINCTION( LEV,IWL )%x
-                        TOT_EXT ( COL,ROW,LEV,L )%dx1    = 1000.0 * EXTINCTION( LEV,IWL )%dx1
-                        TOT_EXT ( COL,ROW,LEV,L )%dx2    = 1000.0 * EXTINCTION( LEV,IWL )%dx2
-                        TOT_EXT ( COL,ROW,LEV,L )%dx1x2    = 1000.0 * EXTINCTION( LEV,IWL )%dx1x2
+                        TOT_EXT ( COL,ROW,LEV,L )    = 1000.0 * EXTINCTION( LEV,IWL )
+C                       TOT_EXT ( COL,ROW,LEV,L )%dx1    = 1000.0 * EXTINCTION( LEV,IWL )%dx1
+C                       TOT_EXT ( COL,ROW,LEV,L )%dx2    = 1000.0 * EXTINCTION( LEV,IWL )%dx2
+C                       TOT_EXT ( COL,ROW,LEV,L )%dx1x2    = 1000.0 * EXTINCTION( LEV,IWL )%dx1x2
 
-                        GAS_EXT ( COL,ROW,LEV,L )%x    = 1000.0 * GAS_EXTINCTION( LEV,IWL )%x
-                        GAS_EXT ( COL,ROW,LEV,L )%dx1    = 1000.0 * GAS_EXTINCTION( LEV,IWL )%dx1
-                        GAS_EXT ( COL,ROW,LEV,L )%dx2    = 1000.0 * GAS_EXTINCTION( LEV,IWL )%dx2
-                        GAS_EXT ( COL,ROW,LEV,L )%dx1x2    = 1000.0 * GAS_EXTINCTION( LEV,IWL )%dx1x2
+                        GAS_EXT ( COL,ROW,LEV,L )    = 1000.0 * GAS_EXTINCTION( LEV,IWL )
+C                       GAS_EXT ( COL,ROW,LEV,L )%dx1    = 1000.0 * GAS_EXTINCTION( LEV,IWL )%dx1
+C                       GAS_EXT ( COL,ROW,LEV,L )%dx2    = 1000.0 * GAS_EXTINCTION( LEV,IWL )%dx2
+C                       GAS_EXT ( COL,ROW,LEV,L )%dx1x2    = 1000.0 * GAS_EXTINCTION( LEV,IWL )%dx1x2
                         
                         
-                        AERO_EXT( COL,ROW,LEV,L )%x    = 1000.0 * AERO_EXTI_COEF( LEV,IWL )%x
-                        AERO_EXT( COL,ROW,LEV,L )%dx1    = 1000.0 * AERO_EXTI_COEF( LEV,IWL )%dx1
-                        AERO_EXT( COL,ROW,LEV,L )%dx2    = 1000.0 * AERO_EXTI_COEF( LEV,IWL )%dx2
-                        AERO_EXT( COL,ROW,LEV,L )%dx1x2    = 1000.0 * AERO_EXTI_COEF( LEV,IWL )%dx1x2                                                                        
+                        AERO_EXT( COL,ROW,LEV,L )    = 1000.0 * AERO_EXTI_COEF( LEV,IWL )
+C                       AERO_EXT( COL,ROW,LEV,L )%dx1    = 1000.0 * AERO_EXTI_COEF( LEV,IWL )%dx1
+C                       AERO_EXT( COL,ROW,LEV,L )%dx2    = 1000.0 * AERO_EXTI_COEF( LEV,IWL )%dx2
+C                       AERO_EXT( COL,ROW,LEV,L )%dx1x2    = 1000.0 * AERO_EXTI_COEF( LEV,IWL )%dx1x2                                                                        
                      END FORALL
-                     
-                     FORALL ( LEV = 1:NLAYS_DIAG, AERO_EXTI_COEF( LEV,IWL )%x .GT. EPSLON )
-                        AERO_SSA ( COL,ROW,LEV,L )%x = AERO_SCAT_COEF( LEV,IWL )%x
-     &                                             / AERO_EXTI_COEF( LEV,IWL )%x
-                        AERO_ASYM( COL,ROW,LEV,L )%x = AERO_ASYM_FAC( LEV,IWL )%x
+                     FORALL ( LEV = 1:NLAYS_DIAG, AERO_EXTI_COEF( LEV,IWL ) .GT. EPSLON )
+                        AERO_SSA ( COL,ROW,LEV,L ) = AERO_SCAT_COEF( LEV,IWL )
+     &                                             / AERO_EXTI_COEF( LEV,IWL )
+                        AERO_ASYM( COL,ROW,LEV,L ) = AERO_ASYM_FAC( LEV,IWL )
                      END FORALL
-                     
-                     FORALL ( LEV = 1:NLAYS_DIAG, AERO_EXTI_COEF( LEV,IWL )%x .LE. EPSLON )
-                        AERO_SSA ( COL,ROW,LEV,L )%x = 1.0d0
-                        AERO_ASYM( COL,ROW,LEV,L )%x = 0.0d0
+                     FORALL ( LEV = 1:NLAYS_DIAG, AERO_EXTI_COEF( LEV,IWL ) .LE. EPSLON )
+                        AERO_SSA ( COL,ROW,LEV,L ) = 1.0
+                        AERO_ASYM( COL,ROW,LEV,L ) = 0.0
                      END FORALL
                   END DO
                   IF ( COSZEN .LE. COS85 ) THEN 
@@ -1047,16 +1045,10 @@ C...modules
 
 !Set Photolysis rates to resolved sky values
                FORALL ( L = 1:NLAYS, IPHOT = 1:NPHOTAB )
-                  RJ( COL,ROW, L,IPHOT )%x = 60.0 * BLKRJ_RES( L,IPHOT )%x
-                  RJ( COL,ROW, L,IPHOT )%dx1 = 60.0 * BLKRJ_RES( L,IPHOT )%dx1
-                  RJ( COL,ROW, L,IPHOT )%dx2 = 60.0 * BLKRJ_RES( L,IPHOT )%dx2
-                  RJ( COL,ROW, L,IPHOT )%dx1x2 = 60.0 * BLKRJ_RES( L,IPHOT )%dx1x2
+                  RJ( COL,ROW, L,IPHOT ) = 60.0 * BLKRJ_RES( L,IPHOT )
                END FORALL ! Loop on layers and NPHOTAB
                FORALL ( L = 1:NLAYS, IPHOT = 1:NPHOTAB )
-                  RJ_RES( COL,ROW, L,IPHOT )%x = 60.0 * BLKRJ_RES( L,IPHOT )%x
-                  RJ_RES( COL,ROW, L,IPHOT )%dx1 = 60.0 * BLKRJ_RES( L,IPHOT )%dx1
-                  RJ_RES( COL,ROW, L,IPHOT )%dx2 = 60.0 * BLKRJ_RES( L,IPHOT )%dx2
-                  RJ_RES( COL,ROW, L,IPHOT )%dx1x2 = 60.0 * BLKRJ_RES( L,IPHOT )%dx1x2
+                  RJ_RES( COL,ROW, L,IPHOT ) = 60.0 * BLKRJ_RES( L,IPHOT )
                END FORALL  ! Loop on layers and NPHOTAB
 
                IF ( USE_ACM_CLOUD ) THEN
@@ -1149,19 +1141,9 @@ C...modules
                      END IF  ! photdiag
 !Photolysis rates become a weighted average of the values from resolved and ACM skies
                      FORALL ( L = 1:NLAYS, IPHOT = 1:NPHOTAB )
-                         RJ_SUB( COL,ROW, L, IPHOT )%x = 60.0 * BLKRJ_ACM( L,IPHOT )%x
-                         RJ_SUB( COL,ROW, L, IPHOT )%dx1 = 60.0 * BLKRJ_ACM( L,IPHOT )%dx1
-                         RJ_SUB( COL,ROW, L, IPHOT )%dx2 = 60.0 * BLKRJ_ACM( L,IPHOT )%dx2
-                         RJ_SUB( COL,ROW, L, IPHOT )%dx1x2 = 60.0 * BLKRJ_ACM( L,IPHOT )%dx1x2
-                         
-                         RJ( COL,ROW, L, IPHOT )%x     = ACM_CLOUDS( COL,ROW ) *  RJ_SUB( COL,ROW, L, IPHOT )%x
-     &                                               + MSCALE * RJ( COL,ROW,L,IPHOT )%x
-                         RJ( COL,ROW, L, IPHOT )%dx1     = ACM_CLOUDS( COL,ROW ) *  RJ_SUB( COL,ROW, L, IPHOT )%dx1
-     &                                               + MSCALE * RJ( COL,ROW,L,IPHOT )%dx1
-                         RJ( COL,ROW, L, IPHOT )%dx2     = ACM_CLOUDS( COL,ROW ) *  RJ_SUB( COL,ROW, L, IPHOT )%dx2
-     &                                               + MSCALE * RJ( COL,ROW,L,IPHOT )%dx2
-                         RJ( COL,ROW, L, IPHOT )%dx1x2     = ACM_CLOUDS( COL,ROW ) *  RJ_SUB( COL,ROW, L, IPHOT )%dx1x2
-     &                                               + MSCALE * RJ( COL,ROW,L,IPHOT )%dx1x2               
+                         RJ_SUB( COL,ROW, L, IPHOT ) = 60.0 * BLKRJ_ACM( L,IPHOT )
+                         RJ( COL,ROW, L, IPHOT )     = ACM_CLOUDS( COL,ROW ) *  RJ_SUB( COL,ROW, L, IPHOT )
+     &                                               + MSCALE * RJ( COL,ROW,L,IPHOT )
                      END FORALL ! Loop on layers and PHOT
                   END IF
                END IF ! not USE_ACM_CLOUD and  ACM_CLOUDS > 0
@@ -1226,76 +1208,76 @@ C...modules
          END IF
 
          VARNM = 'CO_COLUMN'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( CO_COLUMN%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, CO_COLUMN ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
          VARNM = 'SO2_COLUMN'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( SO2_COLUMN%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, SO2_COLUMN ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
          VARNM = 'NO2_COLUMN'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( NO2_COLUMN%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, NO2_COLUMN ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
          VARNM = 'HCHO_COLUMN'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( HCHO_COLUMN%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, HCHO_COLUMN ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'TROPO_O3_COLUMN'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( TROPO_OC%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, TROPO_OC ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
 
          VARNM = 'TRANS_DIFFUSE'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( TRANSMIS_DIFFUSE%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, TRANSMIS_DIFFUSE ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'TRANS_DIRECT'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( TRANSMIS_DIRECT%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, TRANSMIS_DIRECT ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'REFLECTION'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( REFLECT_COEFF%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REFLECT_COEFF ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'CLR_TRANS_DIF'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( CLR_TRANSMISSION%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, CLR_TRANSMISSION ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'CLR_TRANS_DIR'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( CLR_TRANS_DIRECT%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, CLR_TRANS_DIRECT ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'CLR_REFLECTION'
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( CLR_REFLECTION%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, CLR_REFLECTION ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
 
          VARNM = 'TROPO_O3_EXCEED'
          TROPO_O3_EXCEED = TROPO_O3_EXCEED / REAL( MAX(1, TSTEP_COUNT) )
-         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, REAL ( TROPO_O3_EXCEED%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE, OTIME, TROPO_O3_EXCEED ) ) THEN
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
-         TROPO_O3_EXCEED = 0.0d0 ! reset sum and counter
+         TROPO_O3_EXCEED = 0.0 ! reset sum and counter
          TSTEP_COUNT     = 0
 
          VARNM = 'N_EXCEED_TROPO3'
@@ -1383,14 +1365,14 @@ C...modules
 
             VARNM = 'TAU_TOT_W' // WLTXT( IWL )
             IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE,
-     &                         OTIME, REAL ( TAU_TOT_WL( :,:,IWL )%x , 4 ) ) ) THEN
+     &                         OTIME, TAU_TOT_WL( :,:,IWL ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
 
             VARNM = 'TAUO3_TOP_W' // WLTXT( IWL )
             IF ( .NOT. WRITE3( CTM_RJ_1, VARNM, ODATE,
-     &                         OTIME, REAL ( TAUO3_TOP_WL( :,:,IWL )%x , 4 ) ) ) THEN
+     &                         OTIME, TAUO3_TOP_WL( :,:,IWL ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
@@ -1409,7 +1391,7 @@ C...modules
             XMSG = 'Error writing variable ' // VARNM
             CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
-         TAU_AERO_550 = 0.0d0
+         TAU_AERO_550 = 0.0
 
          WRITE( LOGDEV, '( /5X, 3( A, :, 1X ), I8, ":", I6.6 )' )
      &          'Photolysis Surface Summary written to', CTM_RJ_1,
@@ -1418,7 +1400,7 @@ C...modules
          DO IPHOT = 1, NPHOTAB
             OUTPUT_BUFF( 1:NCOLS,1:NROWS,1:NLAYS_DIAG ) = RJ( 1:NCOLS,1:NROWS,1:NLAYS_DIAG,IPHOT )
             IF ( .NOT. WRITE3( CTM_RJ_2, PHOTAB( IPHOT ), ODATE,
-     &                         OTIME, REAL ( OUTPUT_BUFF%x , 4 ) ) ) THEN
+     &                         OTIME, OUTPUT_BUFF  ) ) THEN
                XMSG = 'Could not write ' // CTM_RJ_2 // ' file'
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
@@ -1429,8 +1411,8 @@ C...modules
      &          'for date and time', ODATE, OTIME
 
          VARNM = 'CFRAC_3D'
-         OUTPUT_BUFF( 1:NCOLS,1:NROWS,1:NLAYS_DIAG ) = REAL ( CFRAC_3D( 1:NCOLS,1:NROWS,1:NLAYS_DIAG ) , 8 )
-         IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( OUTPUT_BUFF%x , 4 ) ) ) THEN
+         OUTPUT_BUFF( 1:NCOLS,1:NROWS,1:NLAYS_DIAG ) = CFRAC_3D( 1:NCOLS,1:NROWS,1:NLAYS_DIAG )
+         IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, OUTPUT_BUFF ) ) THEN
               XMSG = 'Could not write ' // TRIM( VARNM ) // ' to ' // CTM_RJ_3 // ' file'
               CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
@@ -1439,44 +1421,44 @@ C...modules
             IWL = DIAG_WVL( L )
 
             VARNM = 'ACTINIC_FX_W' // WLTXT( IWL )
-            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( ACTINIC_FX( :,:,:,L )%x , 4 ) ) ) THEN
+            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, ACTINIC_FX( :,:,:,L ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
 
             VARNM = 'AERO_SSA_W' // WLTXT( IWL )
-            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( AERO_SSA( :,:,:,L )%x , 4 ) ) ) THEN
+            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, AERO_SSA( :,:,:,L ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
 
             VARNM = 'AERO_ASYM_W' // WLTXT( IWL )
-            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( AERO_ASYM( :,:,:,L )%x , 4 ) ) ) THEN
+            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, AERO_ASYM( :,:,:,L ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
 
             VARNM = 'EXT_AERO_W' // WLTXT( IWL )
-            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( AERO_EXT( :,:,:,L )%x , 4 ) ) ) THEN
+            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, AERO_EXT( :,:,:,L ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
 
             VARNM = 'EXT_W' // WLTXT( IWL )
-            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( TOT_EXT( :,:,:,L )%x , 4 ) ) ) THEN
+            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, TOT_EXT( :,:,:,L ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
 
             VARNM = 'GAS_EXT_W' // WLTXT( IWL )
-            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( GAS_EXT( :,:,:,L )%x , 4 ) ) ) THEN
+            IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, GAS_EXT( :,:,:,L ) ) ) THEN
                XMSG = 'Error writing variable ' // VARNM
                CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
             END IF
          END DO
 
          VARNM = 'EXT_AERO_W550'
-         IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, REAL ( AERO_EXT_550( :,:,: )%x , 4 ) ) ) THEN
+         IF ( .NOT. WRITE3( CTM_RJ_3, VARNM, ODATE, OTIME, AERO_EXT_550( :,:,: ) ) ) THEN
              XMSG = 'Error writing variable ' // VARNM
              CALL M3EXIT ( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
          END IF
@@ -1502,7 +1484,7 @@ C...modules
              IMPLICIT NONE
 ! argument:          
                INTEGER, INTENT( IN  ) :: IGAS                  ! species index in CGRID
-               TYPE(hyperdual),    INTENT( OUT ) :: COLUMN_DENSITY( :,: ) ! units determined by inputs
+               REAL,    INTENT( OUT ) :: COLUMN_DENSITY( :,: ) ! units determined by inputs
                REAL,    INTENT( IN  ) :: UNIT_FACTOR           ! converts from 10E6*molecules*cm-2
 ! local parameter:                
 !               REAL, PARAMETER :: UNIT_FACTOR = 1.0E-6 * CONC_TO_DU ! unit conversion factor
@@ -1511,9 +1493,9 @@ C...modules
                
                COLUMN_DENSITY( COL,ROW ) = 0.0D0
                DO LEV = 1, NLAYS
-                  COLUMN_DENSITY( COL,ROW ) = ( UNIT_FACTOR * BLKDENS( LEV ) )
-     &                                      * CGRID( COL,ROW,LEV,IGAS  ) * BLKDZ ( LEV )
-     &                                      + COLUMN_DENSITY( COL,ROW )                  
+                  COLUMN_DENSITY( COL,ROW ) = REAL ( ( UNIT_FACTOR * BLKDENS( LEV ) )
+     &                                      * CGRID( COL,ROW,LEV,IGAS  )%x * BLKDZ ( LEV )
+     &                                      + COLUMN_DENSITY( COL,ROW ) )             
                END DO
                
           END SUBROUTINE COLUMN_GAS              

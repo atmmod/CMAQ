@@ -105,8 +105,9 @@ C..looping data
 
       REAL(8), ALLOCATABLE :: A_PHOTO    ( :,: ) ! multiplier of photolysis rates
       REAL,    ALLOCATABLE :: PHOTO_YIELD( :,: ) ! production yield
-
-      TYPE(hyperdual), ALLOCATABLE :: RATE_CONST( :,: )
+      
+      ! el0128: revert the reaction rate to real( 8 )
+      REAL(8), ALLOCATABLE :: RATE_CONST( :,: )
       REAL(8), ALLOCATABLE :: RATE_YIELD( :,: )
 
       REAL(8)              :: EFFECTIVE_ZERO
@@ -123,8 +124,8 @@ C..saved cell concentrations
 
       TYPE(hyperdual), ALLOCATABLE :: PREV_CONC( : )
       TYPE(hyperdual), ALLOCATABLE :: CURR_CONC( : )
-      REAL( 8 )              :: TEMP                ! cell temperature [ K ]
-      REAL( 8 )               :: NUMB_DENS           ! cell air number density [ 1/CM^3 ]
+      REAL( 8 )                    :: TEMP                ! cell temperature [ K ]
+      REAL( 8 )                    :: NUMB_DENS           ! cell air number density [ 1/CM^3 ]
 
       TYPE(hyperdual), ALLOCATABLE :: DELT_CONC( : )   ! changes predicted by degrade routine
 

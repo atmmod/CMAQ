@@ -7,7 +7,7 @@
 !  including research institutions.  These groups give the Government    !
 !  permission to use, prepare derivative works of, and distribute copies !
 !  of their work in the CMAQ system to the public and to permit others   !
-!  to do so.  The United States Environmental Protection Agency          !
+!  to do snumo.  The United States Environmental Protection Agency          !
 !  therefore grants similar permission to use the CMAQ system software,  !
 !  but users are requested to provide copies of derivative works or      !
 !  products designed to operate in the CMAQ system to the United States  !
@@ -78,7 +78,10 @@ C     USE PA_DEFN, Only: LIPR   ! Process Analysis control and data variables
       USE STM_MODULE, ONLY: STM_WRAP_GAS, STM_WRAP_AE
       USE STD_CONC           ! Write conc in STD_CONC, edited by J.E.L.
       USE RUNTIME_VARS      ! CONC_BLEV, CONC_ELEV are here, J.E.L.
-      USE UTILIO_DEFN        ! J.E.L.       
+      USE UTILIO_DEFN        ! J.E.L.     
+      use GRID_CONF          ! el 12-30 debug
+      USE CGRID_SPCS, ONLY: NSPCSD   ! el 12-30 debug
+      use aero_counter
 
       IMPLICIT NONE   
 
@@ -120,6 +123,20 @@ c      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
       TYPE(hyperdual), parameter :: PERT_HYPERDUAL = hyperdual(0.0D0, 1.0d0, 1.0d0, 0.0D0)
       TYPE(hyperdual), parameter :: PERT_HYPERDUAL_1 = hyperdual(0.0D0, 1.D0, 0.0d0, 0.0D0)
       TYPE(hyperdual), parameter :: PERT_HYPERDUAL_2 = hyperdual(0.0d0, 0.0d0, 1.D0, 0.0d0)
+      
+      ! el 12-30: 
+      type(hyperdual), allocatable :: anh4k_before_aero(:,:,:)
+      type(hyperdual), allocatable :: anh4k_after_aero(:,:,:)
+      type(hyperdual), allocatable :: cgrid_before_process(:,:,:,:)
+      type(hyperdual), allocatable :: cgrid_after_process(:,:,:,:)
+      logical, save :: firstime = .true. 
+      logical       :: cond1 = .false.
+      logical       :: cond2 = .false.
+      logical       :: cond1_total = .false.
+      integer :: rank, ierr, l, c, r, snum
+      integer :: i, j
+      integer :: global_resetted_case(3,35), global_total_case(3,35)
+      
 
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: CGRID0( :,:,:,: )
@@ -226,10 +243,25 @@ C-----------------------------------------------------------------------
          ALLOCATE( CGRID0( NCOLS,NROWS,NLAYS,NSPCSD ) )               
       END IF
 #endif
+      
+      ! el testing 12-30
+      allocate(anh4k_before_aero(ncols, nrows, nlays))
+      allocate(anh4k_after_aero(ncols, nrows, nlays))
+      allocate(cgrid_before_process(ncols, nrows, nlays, nspcsd))
+      allocate(cgrid_after_process(ncols, nrows, nlays, nspcsd))
+      
+      ! initialize the values here again for all processors to make sure
+      anh4k_after_aero(:,:,:) = 0.0d0
+      anh4k_before_aero(:,:,:) = 0.0d0
+      cgrid_before_process(:,:,:,:) = 0.0d0
+      cgrid_after_process(:,:,:,:) = 0.0d0
+      
+      
 
 ! Write Time Step Information to Summary Logfile
       IF ( MYPE .EQ. 0 ) WRITE( OUTDEV, * ) 
       WRITE( LOGDEV, * )
+      
 
 #ifdef parallel
             CPU_TIME_START =  MPI_WTIME()
@@ -256,26 +288,27 @@ C-----------------------------------------------------------------------
 
 	! JDATE = 2016183 for july 1st
  	   IF ( JTIME .EQ. 0 ) THEN
- 	      DO V = 1, N_CSPCS
+            DO V = 1, N_CSPCS
          	      S = CONC_MAP( V )
          	      SGRID( :,:,:,V ) = REAL ( CGRID( :,:, CONC_BLEV:CONC_ELEV,S )%x , 4 )
-      	  END DO
-      	
+      	END DO
       	  CALL WR_CONC ( JDATE, JTIME, TSTEP( 1 ) )
-      	  
-      	  ! Perturb CGRID at the very beginning
-C     	  CGRID(:,:,1,66) = CGRID(:,:,1,66) + PERT_HYPERDUAL
-      	  
  	    END IF
 	  
 	  
 C Synchronization Step Physical Processes Sequence
-    
+
+      if (JTIME == 0) then
+         global_total_case = 0
+         global_resetted_case = 0
+      endif  
       
       CALL VDIFF ( CGRID, JDATE, JTIME, TSTEP)
       IF ( CKSUM ) CALL CKSUMMER ( 'VDIFF', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE ( 'VDIF', CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'VDIFF' )
+      
+      ! column_model = .true.
       
       IF ( .NOT. COLUMN_MODEL ) THEN
 C couple CGRID for advection and horizontal diffusion
@@ -288,20 +321,20 @@ C DECOUPLE routine converts it back to ug/m3.
 C        
 
          CALL SUBST_BARRIER()
-C        CALL HADV ( CGRID, JDATE, JTIME, TSTEP, ASTEP )
-C        IF ( CKSUM ) CALL CKSUMMER ( 'HADV', CGRID, JDATE, JTIME )
-C     ! IF ( LIPR ) CALL PA_UPDATE ( 'HADV', CGRID, JDATE, JTIME, TSTEP )
-C        IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'HADV' )
+         CALL HADV ( CGRID, JDATE, JTIME, TSTEP, ASTEP )
+         IF ( CKSUM ) CALL CKSUMMER ( 'HADV', CGRID, JDATE, JTIME )
+      ! IF ( LIPR ) CALL PA_UPDATE ( 'HADV', CGRID, JDATE, JTIME, TSTEP )
+         IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'HADV' )
                  
          CALL ZADV ( CGRID, JDATE, JTIME, TSTEP )
          IF ( CKSUM ) CALL CKSUMMER ( 'ADV', CGRID, JDATE, JTIME )
          ! IF ( LIPR ) CALL PA_UPDATE ( 'ZADV', CGRID, JDATE, JTIME, TSTEP )
          IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'ZADV' )
          
-C        CALL HDIFF ( CGRID, JDATE, JTIME, TSTEP )
-C        IF ( CKSUM ) CALL CKSUMMER ( 'HDIFF', CGRID, JDATE, JTIME )
-C        ! IF ( LIPR ) CALL PA_UPDATE ( 'HDIF', CGRID, JDATE, JTIME, TSTEP )
-C        IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'HDIFF' )
+         CALL HDIFF ( CGRID, JDATE, JTIME, TSTEP )
+         IF ( CKSUM ) CALL CKSUMMER ( 'HDIFF', CGRID, JDATE, JTIME )
+         ! IF ( LIPR ) CALL PA_UPDATE ( 'HDIF', CGRID, JDATE, JTIME, TSTEP )
+         IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'HDIFF' )
 
 C decouple CGRID for cloud and chemistry
 
@@ -314,18 +347,80 @@ C decouple CGRID for cloud and chemistry
          IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'DECOUPLE' )
       END IF
 C     
- 
+    
         
       CALL PHOT ( CGRID, JDATE, JTIME, TSTEP )
       IF ( CKSUM ) CALL CKSUMMER ( 'PHOT', CGRID, JDATE, JTIME )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'PHOT' )
-            
       
-      CALL CLDPROC ( CGRID, JDATE, JTIME, TSTEP )
-      IF ( CKSUM ) CALL CKSUMMER ( 'CLDPROC', CGRID, JDATE, JTIME )
+      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
+      cond1_total = .false.
+      
+      ! if (jtime .ge. 120000) then
+            if (rank == 140 .or. rank == 141 .or. rank == 26 .or. rank == 27) then
+                  !  save the CGRID dx1x2 values before AERO for this specific processor
+                  ! 171 is the index of ANH4K
+                  ! only get the values for processor #13 and #14
+                  cgrid_before_process(:,:,:,:) = CGRID(:,:,:,:)
+            endif
+      ! endif              
+      
+      ! CALL CLDPROC ( CGRID, JDATE, JTIME, TSTEP )
+      ! IF ( CKSUM ) CALL CKSUMMER ( 'CLDPROC', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE ( 'CLDS', CGRID, JDATE, JTIME, TSTEP )
-      IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CLDPROC' )
+      ! IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CLDPROC' )
       
+      
+      if (rank == 26) then
+         write(*,*) 'after cloud ANH4K', cgrid(3,13,2,171)
+         write(*,*) 'jtime', JTIME
+      endif
+
+      
+      ! if (jtime .ge. 120000) then
+      if (rank == 140 .or. rank == 141 .or. rank == 26 .or. rank == 27) then
+      ! save the CGRID dx1x2 values before AERO for this specific processor
+      ! 171 is the index of ANH4K 
+      cgrid_after_process(:,:,:,:) = CGRID(:,:,:,:) 
+      
+      do l = 1, nlays
+           do r = 1, nrows
+                do c = 1, ncols
+                    do snum = 1, nspcsd
+                       if (cgrid_before_process(c,r,l,snum)%dx1x2 /= 0.0d0) then
+                       ! only detect the ones with large increase
+                       cond1_total = abs(cgrid_after_process(c,r,l,snum)%dx1x2 / cgrid_before_process(c,r,l,snum)%dx1x2) >= 1.d2
+                              if (cond1_total .and. abs(cgrid_after_process(c,r,l,snum)%dx1x2) > 1.d-21) then
+                                  write(*,*) 'before:', cgrid_before_process(c,r,l,snum)
+                                  write(*,*) 'after:', cgrid_after_process(c,r,l,snum)
+                                  write(*,*) 'col:', c
+                                  write(*,*) 'row:', r
+                                  write(*,*) 'lay:', l
+                                  write(*,*) 'spc:', snum
+                                  write(*,*) 'time:', JTIME
+                                  write(*,*) 'rank:', rank
+                                  write(*,*) 'CLOUD!'
+                             endif 
+                       endif
+                     enddo
+                 enddo
+           enddo
+      enddo
+      endif
+      ! endif 
+      
+      cond1_total = .false.
+
+
+      
+      ! if (jtime .ge. 120000) then
+            if (rank == 140 .or. rank == 141 .or. rank == 26 .or. rank == 27) then
+                  !  save the CGRID dx1x2 values before AERO for this specific processor
+                  ! 171 is the index of ANH4K
+                  ! only get the values for processor #13 and #14
+                  cgrid_before_process(:,:,:,:) = CGRID(:,:,:,:)
+            endif
+      ! endif      
          
       IF ( STM ) CALL STM_WRAP_GAS ( CGRID, JDATE, JTIME, .TRUE. )
       CALL CHEM ( CGRID, JDATE, JTIME, TSTEP )
@@ -333,6 +428,41 @@ C
       ! IF ( LIPR ) CALL PA_UPDATE ( 'CHEM', CGRID, JDATE, JTIME, TSTEP ) 
       IF ( STM ) CALL STM_WRAP_GAS ( CGRID, JDATE, JTIME, .FALSE. )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CHEM' )
+      
+      if (rank == 26) then
+         write(*,*) 'after chem ANH4K', cgrid(3,13,2,171)
+      endif      
+      ! if (jtime .ge. 120000) then
+      if (rank == 140 .or. rank == 141 .or. rank == 26 .or. rank == 27) then
+      ! save the CGRID dx1x2 values before AERO for this specific processor
+      ! 171 is the index of ANH4K 
+      cgrid_after_process(:,:,:,:) = CGRID(:,:,:,:) 
+      
+      do l = 1, nlays
+           do r = 1, nrows
+                do c = 1, ncols
+                    do snum = 1, nspcsd
+                       if (cgrid_before_process(c,r,l,snum)%dx1x2 /= 0.0d0) then
+                       ! only detect the ones with large increase
+                       cond1_total = abs(cgrid_after_process(c,r,l,snum)%dx1x2 / cgrid_before_process(c,r,l,snum)%dx1x2) >= 1.d2
+                              if (cond1_total .and. abs(cgrid_after_process(c,r,l,snum)%dx1x2) > 1.d-21) then
+                                  write(*,*) 'before:', cgrid_before_process(c,r,l,snum)
+                                  write(*,*) 'after:', cgrid_after_process(c,r,l,snum)
+                                  write(*,*) 'col:', c
+                                  write(*,*) 'row:', r
+                                  write(*,*) 'lay:', l
+                                  write(*,*) 'spc:', snum
+                                  write(*,*) 'time:', JTIME
+                                  write(*,*) 'rank:', rank
+                                  write(*,*) 'CHEM!'
+                             endif 
+                       endif
+                      enddo
+                 enddo
+           enddo
+      enddo
+      endif
+      ! endif 
  
 C
 C#ifdef potvorto3
@@ -345,13 +475,110 @@ C#endif
 #ifdef isam
       CGRID0  = CGRID
 #endif
-	            
+      
+      ! CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
+
+      ! starting from the 10th hour: 
+      ! if (jtime .ge. 120000) then
+            if (rank == 140 .or. rank == 141 .or. rank == 26 .or. rank == 27) then
+                  !  save the CGRID dx1x2 values before AERO for this specific processor
+                  ! 171 is the index of ANH4K
+                  ! only get the values for processor #13 and #14
+                  anh4k_before_aero(:,:,:) = CGRID(:,:,:,171)
+                  cgrid_before_process(:,:,:,:) = CGRID(:,:,:,:)
+            endif
+      ! endif
+
+          
       CALL AERO ( CGRID, JDATE, JTIME, TSTEP )   
       IF ( CKSUM ) CALL CKSUMMER ( 'AERO', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE_AERO ( CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'AERO' )
       IF ( STM ) CALL STM_WRAP_AE ( CGRID, JDATE, JTIME )
       
+      if (rank == 26) then
+         write(*,*) 'after aero ANH4K', cgrid(3,13,2,171)
+      endif      
+      
+C      CALL MPI_REDUCE(resetted_case, global_resetted_case, 3*35, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+C      CALL MPI_REDUCE(total_case, global_total_case, 3*35, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+C      
+C      IF (MYPE .EQ. 0) THEN
+C      DO i = 1, 3
+C      DO j = 1, 35
+C           WRITE(XMSG, '(A,I2,A,I2,A,I8)') 'Scenario ', i, ': Layer ', j, ': Resetted Cases ', global_resetted_case(i, j)
+C           CALL LOG_MESSAGE(OUTDEV, XMSG)
+C           CALL LOG_MESSAGE(LOGDEV, XMSG)
+C           
+C           WRITE(XMSG, '(A,I2,A,I2,A,I8)') 'Scenario ', i, ': Layer ', j, ': Total Cases ', global_total_case(i, j)
+C           CALL LOG_MESSAGE(OUTDEV, XMSG)
+C           CALL LOG_MESSAGE(LOGDEV, XMSG)
+C       END DO
+C       END DO
+C       END IF
+        
+      
+C     if (jtime .ge. 120000) then
+C     if (rank == 140 .or. rank == 141 .or. rank == 108 .or. rank == 109) then
+C     ! save the CGRID dx1x2 values before AERO for this specific processor
+C     ! 171 is the index of ANH4K 
+C     anh4k_after_aero(:,:,:) = CGRID(:,:,:,171)
+C     cgrid_after_process(:,:,:,:) = CGRID(:,:,:,:)
+C     do l = 1, nlays
+C          do r = 1, nrows
+C               do c = 1, ncols
+C                      if (anh4k_before_aero(c,r,l)%dx1x2 /= 0.0d0) then
+C                      cond1 = abs(anh4k_after_aero(c,r,l)%dx1x2 / anh4k_before_aero(c,r,l)%dx1x2) >= 1.d2
+C                      cond2 = abs(anh4k_after_aero(c,r,l)%dx1x2) >= 0.1d0
+C                             if (cond1 .or. cond2) then
+C                                 write(*,*) 'before:', anh4k_before_aero(c,r,l)
+C                                 write(*,*) 'after:', anh4k_after_aero(c,r,l)
+C                                 write(*,*) 'col:', c
+C                                 write(*,*) 'row:', r
+C                                 write(*,*) 'lay:', l
+C                                 write(*,*) 'time:', JTIME
+C                                 write(*,*) 'rank:', rank
+C                            endif 
+C                      endif
+C                enddo
+C          enddo
+C     enddo
+C     endif
+C     endif 
+      ! if (jtime .ge. 120000) then
+      if (rank == 140 .or. rank == 141 .or. rank == 26 .or. rank == 27) then
+      do l = 1, nlays
+           do r = 1, nrows
+                do c = 1, ncols
+                    do snum = 1, nspcsd
+                       if (cgrid_before_process(c,r,l,snum)%dx1x2 /= 0.0d0) then
+                       ! only detect the ones with large increase
+                       cond1_total = abs(cgrid_after_process(c,r,l,snum)%dx1x2 / cgrid_before_process(c,r,l,snum)%dx1x2) >= 1.d2
+                              if (cond1_total .and. abs(cgrid_after_process(c,r,l,snum)%dx1x2) > 1.d-21) then
+                                  write(*,*) 'before:', cgrid_before_process(c,r,l,snum)
+                                  write(*,*) 'after:', cgrid_after_process(c,r,l,snum)
+                                  write(*,*) 'col:', c
+                                  write(*,*) 'row:', r
+                                  write(*,*) 'lay:', l
+                                  write(*,*) 'spc:', snum
+                                  write(*,*) 'time:', JTIME
+                                  write(*,*) 'rank:', rank
+                                  write(*,*) 'AERO!'
+                             endif 
+                        endif
+                      enddo
+                 enddo
+           enddo
+      enddo
+      endif
+      ! endif 
+      ! clear out the values at the end
+      deallocate(anh4k_before_aero)
+      deallocate(anh4k_after_aero)
+      deallocate(cgrid_after_process)
+      deallocate(cgrid_before_process)
+
+
 #ifdef isam
       CALL SA_WRAP_AE( CGRID0, CGRID, JDATE, JTIME, TSTEP )
 #endif

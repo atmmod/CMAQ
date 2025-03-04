@@ -4821,11 +4821,22 @@ Module HDMod
           implicit none
           TYPE(hyperdual), intent(in) :: qleft
           TYPE(hyperdual)             :: res
-           
-          res%x     = 1.d0 / qleft%x
-          res%dx1   = - qleft%dx1 / (qleft%x ** 2)
-          res%dx2   = - qleft%dx2 / (qleft%x ** 2)
-          res%dx1x2 = 2.d0 * qleft%dx1 * qleft%dx2 / (qleft%x ** 3 ) - qleft%dx1x2 / ( qleft%x ** 2 )
+          real(8)                     :: delta
+          real(8)                     :: x_reg, x_sq, x_cu
+          
+          ! regularization of real value since it is on the denominator
+          ! if (abs(qleft%x) < 1.d-25) then
+             ! x_reg = sign(1.d-25, qleft%x)  ! Ensure sign consistency
+          ! endif
+          x_reg = qleft%x
+          ! calculate the square and cubic for only once
+          x_sq = x_reg ** 2.d0
+          x_cu = x_sq * x_reg
+          
+          res%x     = 1.d0 / x_reg
+          res%dx1   = - qleft%dx1 / x_sq
+          res%dx2   = - qleft%dx2 / x_sq
+          res%dx1x2 = 2.d0 * qleft%dx1 * qleft%dx2 / x_cu - qleft%dx1x2 / x_sq
 
         end function inv_hdual
 
@@ -4836,11 +4847,26 @@ Module HDMod
           implicit none
           TYPE(hyperdual), intent(in), dimension(:) :: qleft
           TYPE(hyperdual), dimension(size(qleft))   :: res
-           
-          res%x     = 1.d0 / qleft%x
-          res%dx1   = - qleft%dx1 / (qleft%x ** 2)
-          res%dx2   = - qleft%dx2 / (qleft%x ** 2)
-          res%dx1x2 = 2.d0 * qleft%dx1 * qleft%dx2 / (qleft%x ** 3 ) - qleft%dx1x2 / ( qleft%x ** 2 )
+          integer                                   :: i
+          real(8)                                   :: delta, x_reg, x_sq, x_cu
+          
+          do i = 1, size(qleft)
+             ! if (abs(qleft(i)%x) < 1.d-25) then
+                ! write(*,*) 'qleft', qleft(i)
+                ! x_reg = sign(1.d-25, qleft(i)%x)  ! Ensure sign consistency
+             ! endif
+
+             ! Calculate square and cubic for efficiency
+             x_reg = qleft(i)%x
+             x_sq = x_reg ** 2.d0
+             x_cu = x_sq * x_reg
+
+             ! Compute the inverse hyperdual components
+             res(i)%x     = 1.d0 / x_reg
+             res(i)%dx1   = - qleft(i)%dx1 / x_sq
+             res(i)%dx2   = - qleft(i)%dx2 / x_sq
+             res(i)%dx1x2 = 2.d0 * qleft(i)%dx1 * qleft(i)%dx2 / x_cu - qleft(i)%dx1x2 / x_sq
+          end do
 
         end function inv_hdual_array
 
@@ -4851,11 +4877,28 @@ Module HDMod
           implicit none
           TYPE(hyperdual), intent(in), dimension(:,:)                   :: qleft
           TYPE(hyperdual), dimension(size(qleft, 1), size(qleft, 2))    :: res
-           
-          res%x     = 1.d0 / qleft%x
-          res%dx1   = - qleft%dx1 / (qleft%x ** 2)
-          res%dx2   = - qleft%dx2 / (qleft%x ** 2)
-          res%dx1x2 = 2.d0 * qleft%dx1 * qleft%dx2 / (qleft%x ** 3 ) - qleft%dx1x2 / ( qleft%x ** 2 )
+          integer                                   :: i,j
+          real(8)                                   :: delta, x_reg, x_sq, x_cu
+          
+          do i = 1, size(qleft, 1)
+          do j = 1, size(qleft, 2)
+             ! if (abs(qleft(i,j)%x) < 1.d-25) then
+                ! write(*,*) 'qleft', qleft(i,j)
+                ! x_reg = sign(1.d-25, qleft(i,j)%x)  ! Ensure sign consistency
+             ! endif
+
+             ! Calculate square and cubic for efficiency
+             x_reg = qleft(i,j)%x
+             x_sq = x_reg ** 2.d0
+             x_cu = x_sq * x_reg
+
+             ! Compute the inverse hyperdual components
+             res(i,j)%x     = 1.d0 / x_reg
+             res(i,j)%dx1   = - qleft(i,j)%dx1 / x_sq
+             res(i,j)%dx2   = - qleft(i,j)%dx2 / x_sq
+             res(i,j)%dx1x2 = 2.d0 * qleft(i,j)%dx1 * qleft(i,j)%dx2 / x_cu - qleft(i,j)%dx1x2 / x_sq
+          end do
+          end do
 
         end function inv_hdual_matrix
 
@@ -4866,13 +4909,73 @@ Module HDMod
           implicit none
           TYPE(hyperdual), intent(in), dimension(:,:,:) :: qleft
           TYPE(hyperdual), dimension(size(qleft, 1), size(qleft, 2), size(qleft, 3))  :: res
-           
-          res%x     = 1.d0 / qleft%x
-          res%dx1   = - qleft%dx1 / (qleft%x ** 2)
-          res%dx2   = - qleft%dx2 / (qleft%x ** 2)
-          res%dx1x2 = 2.d0 * qleft%dx1 * qleft%dx2 / (qleft%x ** 3 ) - qleft%dx1x2 / ( qleft%x ** 2 )
+          integer                                   :: i,j,k
+          real(8)                                   :: delta, x_reg, x_sq, x_cu
+          
+          do i = 1, size(qleft, 1)
+          do j = 1, size(qleft, 2)
+          do k = 1, size(qleft, 3)
+             ! if (abs(qleft(i,j,k)%x) < 1.d-25) then
+                ! write(*,*) 'qleft', qleft(i,j,k)
+                ! x_reg = sign(1.d-25, qleft(i,j,k)%x)  ! Ensure sign consistency
+             ! endif
+
+             ! Calculate square and cubic for efficiency
+             x_reg = qleft(i,j,k)%x
+             x_sq = x_reg ** 2.d0
+             x_cu = x_sq * x_reg
+
+             ! Compute the inverse hyperdual components
+             res(i,j,k)%x     = 1.d0 / x_reg
+             res(i,j,k)%dx1   = - qleft(i,j,k)%dx1 / x_sq
+             res(i,j,k)%dx2   = - qleft(i,j,k)%dx2 / x_sq
+             res(i,j,k)%dx1x2 = 2.d0 * qleft(i,j,k)%dx1 * qleft(i,j,k)%dx2 / x_cu - qleft(i,j,k)%dx1x2 / x_sq
+          end do
+          end do
+          end do
 
         end function inv_hdual_tens
+        
+		
+		function inv_hdual_tens_vectorized(qleft) result(res)
+			implicit none
+			TYPE(hyperdual), intent(in), dimension(:,:,:) :: qleft
+			TYPE(hyperdual), dimension(size(qleft, 1), size(qleft, 2), size(qleft, 3)) :: res
+		
+			! Extract member variables as arrays
+			real(8), dimension(size(qleft, 1), size(qleft, 2), size(qleft, 3)) :: x, dx1, dx2, dx1x2
+			real(8), dimension(size(qleft, 1), size(qleft, 2), size(qleft, 3)) :: delta, x_reg, x_sq, x_cu
+			real(8), dimension(size(qleft, 1), size(qleft, 2), size(qleft, 3)) :: res_x, res_dx1, res_dx2, res_dx1x2
+		
+			x     = qleft%x
+			dx1   = qleft%dx1
+			dx2   = qleft%dx2
+			dx1x2 = qleft%dx1x2
+		
+			! Regularization of real value to avoid division by zero
+			where (abs(x) < 1.d-25)
+				x_reg = sign(1.d-25, x)
+			elsewhere
+				delta = max(1.d-25, 1.d-10 * abs(x)) * sign(1.0d0, x)
+				x_reg = x + delta
+			end where
+		
+			! Calculate square and cubic for efficiency
+			x_sq = x_reg ** 2.d0
+			x_cu = x_sq * x_reg
+		
+			! Compute the inverse hyperdual components
+			res_x     = 1.d0 / x_reg
+			res_dx1   = - dx1 / x_sq
+			res_dx2   = - dx2 / x_sq
+			res_dx1x2 = 2.d0 * dx1 * dx2 / x_cu - dx1x2 / x_sq
+		
+			! Reassemble the result into hyperdual type
+			res%x     = res_x
+			res%dx1   = res_dx1
+			res%dx2   = res_dx2
+			res%dx1x2 = res_dx1x2
+		end function inv_hdual_tens_vectorized
 
 
         function hdual_div_hdual(qleft, qright) result(res)
@@ -4882,6 +4985,7 @@ Module HDMod
           TYPE(hyperdual)             :: res
 
           res = qleft * inv_hdual(qright)
+          
         
         end function hdual_div_hdual
         
@@ -4904,6 +5008,7 @@ Module HDMod
           res = qleft * hdexp( -1.0_PRhyd * hdlog(qright))
         
         end function hdual_div_hdual3        
+
 !       The calculation 
 !         function hdual_div_hdual(qleft, qright) result(res)
 !         
@@ -4983,7 +5088,7 @@ Module HDMod
         
           implicit none
           TYPE(hyperdual), dimension(:), intent(in) :: qleft
-          real(PRhyd), intent(in)                      :: iright
+          real(PRhyd), intent(in)                   :: iright
           TYPE(hyperdual), dimension(size(qleft))   :: res
         
           res%x = qleft%x / iright
@@ -5405,36 +5510,40 @@ Module HDMod
          end function hdual_array_div_hdual_array
   
         !----- POW operator (**)
-        function hdual_pow_hdual(qleft, qright) result(res)
-            
-            implicit none
-            TYPE(hyperdual), intent(in) :: qleft
-            TYPE(hyperdual), intent(in) :: qright
-            TYPE(hyperdual)             :: res
-            
-            ! Only works when qleft > 0
-            
-            ! Let's define this explicitly. 
-            res = hdexp(qright*hdlog(qleft))
-            
-!           	
-!             res%x = qleft%x ** qright%x
-!             
-!             res%dx1 = qright%x * qleft%x ** (qright%x - 1.0_PRhyd) * qleft%dx1 + qright%dx1 * qleft%x ** qright%x * log(qleft%x)
-!             res%dx2 = qright%x * qleft%x ** (qright%x - 1.0_PRhyd) * qleft%dx2 + qright%dx2 * qleft%x ** qright%x * log(qleft%x)
-!             
-!             res%dx1x2 = qright%x ** 2.0_PRhyd * qleft%x ** (qright%x - 2.0_PRhyd) * qleft%dx1 * qleft%dx2 + &
-!             		    qright%x * qright%dx2 * qleft%x ** (qright%x - 1.0_PRhyd) * qleft%dx1 * log(qleft%x) + &
-!             		    qright%x * qright%dx1 * qleft%x ** (qright%x - 1) * qleft%dx2 * log(qleft%x) + & 
-!             		    qright%dx1 * qright%dx2 * qleft%x ** qright%x * log(qleft%x) ** 2.0_PRhyd - & 
-!             		    qright%x * qleft%x ** (qright%x - 2.0_PRhyd) * qleft%dx1 * qleft%dx2 + & 
-!             		    qright%x * qleft%dx1x2 * qleft%x ** (qright%x - 1.0_PRhyd) + & 
-!             		    qright%dx2 * qleft%x ** (qright%x - 1.0_PRhyd) * qleft%dx1 + & 
-!             		    qright%dx1 * qleft%x ** (qright%x - 1.0_PRhyd) * qleft%dx2 + & 
-!             		    qright%dx1x2 * qleft%x ** qright%x * log(qleft%x)
-            
-  
-          end function hdual_pow_hdual
+		function hdual_pow_hdual(qleft, qright) result(res)
+			
+			implicit none
+			TYPE(hyperdual), intent(in) :: qleft
+			TYPE(hyperdual), intent(in) :: qright
+			TYPE(hyperdual)             :: res
+		
+			! Handle special cases where qleft <= 0
+			if (qleft%x == 0.0_PRhyd) then
+				if (qright%x < 1.0_PRhyd) then
+					stop "Error: 0^qright is undefined for qright < 1."
+				else
+					res%x = 0.0_PRhyd
+					res%dx1 = 0.0_PRhyd
+					res%dx2 = 0.0_PRhyd
+					res%dx1x2 = 0.0_PRhyd
+					return
+				endif
+			endif
+		
+			if (qleft%x < 0.0_PRhyd) then
+				if (ABS(qright%x - NINT(qright%x)) > 1.0e-10_PRhyd) then
+					stop "Error: qleft < 0 and qright is non-integer."
+				endif
+				! Compute (-qleft)^qright for integer qright
+				! The trick is to compute the absolute value and determine the sign
+				res = hdexp(qright * hdlog(abs(qleft))) * (-1) ** NINT(qright%x)
+				return
+			endif
+		
+			! Default case: exp-log trick (safe for positive qleft)
+			res = hdexp(qright * hdlog(qleft))
+		
+		end function hdual_pow_hdual
   
   
         function hdual_pow_dble(qleft, iright) result(res)
@@ -5443,37 +5552,35 @@ Module HDMod
           TYPE(hyperdual), intent(in)    :: qleft
           real(PRhyd), intent(in)        :: iright
           real(PRhyd)                    :: xval
-          real(PRhyd)                    :: tol
+          real(PRhyd)                    :: x_reg
           real(PRhyd)                    :: deriv
           TYPE(hyperdual)                :: res
   
           xval = qleft%x 
-          if ((xval .eq. 0) .AND. (iright .lt. 1.)) then
-            res%x = 0.d0
-            res%dx1 = 0.d0
-            res%dx2 = 0.d0
-            res%dx1x2 = 0.d0
-          else
-!           tol = 1.0e-15
-!           if (abs(xval) < tol) then
-!             
-!             if (xval >= 0) then 
-!               xval = tol
-!             endif 
-!   
-!             if (xval < 0) then
-!               xval = -tol
-!             endif
-!   
-!           endif 
+		  if ((xval == 0.0_PRhyd) .AND. (iright < 1.0_PRhyd)) then
+			res%x = 0.0_PRhyd
+			res%dx1 = 0.0_PRhyd
+			res%dx2 = 0.0_PRhyd
+			res%dx1x2 = 0.0_PRhyd
+			return
+		  endif
+		  
+		  if ((xval < 0.0_PRhyd) .AND. (ABS(iright - NINT(iright)) > 1.0e-10_PRhyd)) then
+			stop 'Error: Undefined behavior for x < 0 and non-integer i.'
+		  endif
+		  
+		  ! if (abs(xval) < 1.d-25) then
+			! xval = sign(1.d-25, xval)  ! Ensure sign consistency
+		  ! endif     
+
+
           deriv = iright * xval**(iright - 1.0_PRhyd)
           
-          res%x = qleft%x**iright
+          res%x = xval**iright
           res%dx1 = qleft%dx1 * deriv
           res%dx2 = qleft%dx2 * deriv
           res%dx1x2 = qleft%dx1x2 * deriv + iright * (iright - 1.0_PRhyd) * qleft%dx1 * qleft%dx2 * xval**(iright - 2.0_PRhyd)
           
-          endif
         
         end function hdual_pow_dble
         
@@ -5484,7 +5591,6 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: qleft
             real(SPRhyd), intent(in)    :: iright
             real(PRhyd)                 :: xval
-            real(PRhyd)                 :: tol
             real(PRhyd)                 :: deriv
             TYPE(hyperdual)             :: res
     
@@ -5495,22 +5601,22 @@ Module HDMod
             	res%dx2 = 0.d0
             	res%dx1x2 = 0.d0
             else
+		    
+		    if ((xval < 0.0_PRhyd) .AND. (ABS(iright - NINT(iright)) > 1.0e-10_PRhyd)) then
+			  print *, 'Warning: x^i, x < 0 and i is not an integer'
+			  print *, 'x:', xval
+			  print *, 'i:', iright
+			  stop 'Error: Undefined behavior for x < 0 and non-integer i.'
+		    endif
+		    
+		    ! if (abs(xval) < 1.d-25) then
+			  ! xval = sign(1.d-25, xval)  ! Ensure sign consistency
+			! endif
+		  
             
-!             tol = 1.0e-15
-!             if (abs(xval) < tol) then
-!               
-!               if (xval >= 0) then 
-!                 xval = tol
-!               endif 
-!     
-!               if (xval < 0) then
-!                 xval = -tol
-!               endif
-!     
-!             endif 
             deriv = REAL(iright,PRhyd) * xval**(REAL(iright,PRhyd) - 1.0_PRhyd)
             
-            res%x = qleft%x**REAL(iright,PRhyd)
+            res%x = xval**REAL(iright,PRhyd)
             res%dx1 = qleft%dx1 * deriv
             res%dx2 = qleft%dx2 * deriv
             res%dx1x2 = qleft%dx1x2 * deriv + REAL(iright,PRhyd) * (REAL(iright,PRhyd) - 1.0_PRhyd) * &
@@ -5526,32 +5632,24 @@ Module HDMod
           TYPE(hyperdual), intent(in) :: qleft
           integer, intent(in)         :: iright
           real(PRhyd)                 :: xval
-          real(PRhyd)                 :: tol
           real(PRhyd)                 :: deriv
           TYPE(hyperdual)             :: res
   
           xval = qleft%x 
-          if ((xval .eq. 0) .AND. (iright .lt. 1.)) then
-            res%x = 0.d0
-            res%dx1 = 0.d0
-            res%dx2 = 0.d0
-            res%dx1x2 = 0.d0
-        else
-!           tol = 1.0e-15
-!           if (abs(xval) < tol) then
-!             
-!             if (xval >= 0) then 
-!               xval = tol
-!             endif 
-!   
-!             if (xval < 0) then
-!               xval = -tol
-!             endif
-!   
-!           endif 
+		  if ((xval .eq. 0) .AND. (iright .lt. 1.)) then
+			res%x = 0.d0
+			res%dx1 = 0.d0
+			res%dx2 = 0.d0
+			res%dx1x2 = 0.d0
+		  else
+
+		  ! if (abs(xval) < 1.d-25) then
+			! xval = sign(1.d-25, xval)  ! Ensure sign consistency
+		  ! endif
+		  
           deriv = iright * xval**(iright - 1.0_PRhyd)
           
-          res%x = qleft%x**iright
+          res%x = xval**iright
           res%dx1 = qleft%dx1 * deriv
           res%dx2 = qleft%dx2 * deriv
           res%dx1x2 = qleft%dx1x2 * deriv + iright * (iright - 1.0_PRhyd) * qleft%dx1 * qleft%dx2 * xval**(iright - 2.0_PRhyd)
@@ -5568,38 +5666,27 @@ Module HDMod
             TYPE(hyperdual), intent(in)  :: qright
             TYPE(hyperdual)              :: res
             REAL(PRhyd)                  :: tol
-            REAL(PRhyd)                  :: xval
+            REAL(PRhyd)                  :: xval, log_xval
   
-!             res = hdexp(qright*log(xleft))
  			xval = xleft
- 		   if ((xval .eq. 0) .AND. (qright%x .lt. 1.)) then
+ 		    if ((xval .eq. 0) .AND. (qright%x .lt. 1.)) then
             	res%x = 0.d0
             	res%dx1 = 0.d0
             	res%dx2 = 0.d0
             	res%dx1x2 = 0.d0
-            else
-!           	tol = 1.0e-15
-!           	
-!           	if (abs(xval) < tol) then
-!             
-!             	if (xval >= 0) then 
-!               		xval = tol
-!             	endif 
-!   
-!             	if (xval < 0) then
-!               		xval = -tol
-!             	endif
-!   
-!           	endif 
-
+            	return
+            endif
+            
+            ! ensure safe log calculations to avoid small values of xval being used
+            log_xval = log(max(xval, 1.d-25))
+            
+            ! avoid repetitive calculations to save computation time
 		    res%x = xval ** qright%x
-		    res%dx1 = qright%dx1 * xval ** qright%x * log(xval)
-			res%dx2 = qright%dx2 * xval ** qright%x * log(xval)
-			res%dx1x2 = qright%dx1 * qright%dx2 * xval ** qright%x * log(xval) ** 2.0_PRhyd + & 
-						qright%dx1x2 * xval ** qright%x * log(xval)    
+		    res%dx1 = qright%dx1 * res%x * log(xval)
+			res%dx2 = qright%dx2 * res%x * log(xval)
+			res%dx1x2 = qright%dx1 * qright%dx2 * res%x * log_xval ** 2.0_PRhyd + & 
+						qright%dx1x2 * res%x * log_xval    
 			
-			endif
-		
   
         end function dble_pow_hdual
   
@@ -5647,8 +5734,7 @@ Module HDMod
             X_out = DBLE(X_in%x) 
           
           end function dble_hdual
-  
-
+   
         function dble_hdual_array(X_in) result(X_out)
             
           implicit none
@@ -5680,15 +5766,32 @@ Module HDMod
   
   
         !----- ABS (absolute value)
-        function abs_hdual(X_in) result(X_out)
-          
-          implicit none
-          TYPE(hyperdual), intent(in)   :: X_in
-          TYPE(hyperdual)               :: X_out
-
-          X_out = sign(1.0_PRhyd, REAL(X_in%x,PRhyd)) * X_in 
-        
-        end function abs_hdual
+		function abs_hdual(X_in) result(X_out)
+		  implicit none
+		  TYPE(hyperdual), intent(in) :: X_in
+		  TYPE(hyperdual)             :: X_out
+		
+		  ! Handle the absolute value of the base value
+		  ! avoid using multiplcation to save time
+		  if (X_in%x > 0.0_PRhyd) then
+			X_out%x = X_in%x
+			X_out%dx1 = X_in%dx1
+			X_out%dx2 = X_in%dx2
+			X_out%dx1x2 = X_in%dx1x2
+		  else if (X_in%x < 0.0_PRhyd) then
+			X_out%x = -X_in%x
+			X_out%dx1 = -X_in%dx1
+			X_out%dx2 = -X_in%dx2
+			X_out%dx1x2 = -X_in%dx1x2
+		  else
+			! Special case: x = 0, zero out the sensitivities for now 
+			! because they are undefined.
+			X_out%x = 0.0_PRhyd
+			X_out%dx1 = 0.0_PRhyd
+			X_out%dx2 = 0.0_PRhyd
+			X_out%dx1x2 = 0.0_PRhyd
+		  endif
+		end function abs_hdual
   
         
         function abs_hdual_array(X_in) result(X_out)
@@ -5826,7 +5929,7 @@ Module HDMod
             real(PRhyd), intent(in)     :: x2
             TYPE(hyperdual)             :: q_out
   
-            if (q1%x .GT. x2) then
+            if (q1%x .GE. x2) then
               q_out = q1
             else
               q_out%x = x2
@@ -5836,6 +5939,33 @@ Module HDMod
             endif
   
           end function max_hdual_dble
+          
+		
+		function max_hdual_dble_smooth(q1, x2, alpha) result(q_out)
+			implicit none
+			TYPE(hyperdual), intent(in) :: q1
+			real(PRhyd), intent(in)     :: x2
+			real(PRhyd), intent(in)     :: alpha
+			TYPE(hyperdual)             :: q_out
+			TYPE(hyperdual)             :: weight, exp_q1, exp_x2, sum_exp
+			TYPE(hyperdual)             :: q2
+		
+			! Convert x2 into a hyperdual type for smooth max calculation
+			q2%x = x2
+			q2%dx1 = 0.0_PRhyd
+			q2%dx2 = 0.0_PRhyd
+			q2%dx1x2 = 0.0_PRhyd
+		
+			! Compute smooth weighting using softmax trick
+			exp_q1 = hdexp(alpha * q1)
+			exp_x2 = hdexp(alpha * q2)
+			sum_exp = exp_q1 + exp_x2
+		
+			weight = exp_q1 / sum_exp  ! Smooth transition factor
+		
+			! Compute smooth max function
+			q_out = weight * q1 + (1.0_PRhyd - weight) * q2
+		end function max_hdual_dble_smooth
   
   
           function max_hdual_dble_SPRhyd(q1, x2) result(q_out)
@@ -5845,7 +5975,7 @@ Module HDMod
               real(SPRhyd), intent(in)    :: x2
               TYPE(hyperdual)             :: q_out
     
-              if (q1%x .GT. REAL(x2,PRhyd)) then
+              if (real(q1%x, SPRhyd) .GE. x2) then
                 q_out = q1
               else
                 q_out%x = REAL(x2,PRhyd)
@@ -5864,7 +5994,7 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: q2
             TYPE(hyperdual)             :: q_out
   
-            if (x1 .GE. q2%x) then
+            if (x1 .GT. q2%x) then
               q_out%x = x1
               q_out%dx1 = 0.0_PRhyd
               q_out%dx2 = 0.0_PRhyd
@@ -5883,7 +6013,7 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: q2
             TYPE(hyperdual)             :: q_out
   
-            if (REAL(x1,PRhyd) .GE. q2%x) then
+            if (x1 .GT. REAL(q2%x, SPRhyd)) then
               q_out%x = REAL(x1,PRhyd)
               q_out%dx1 = 0.0_PRhyd
               q_out%dx2 = 0.0_PRhyd
@@ -5904,7 +6034,7 @@ Module HDMod
             Integer                                            :: I
   
             do I = 1, size(q1)
-              if (q1(I)%x .GT. x1) then
+              if (q1(I)%x .GE. x1) then
                 q_out(I) = q1(I)
               else
                 q_out(I)%x = x1
@@ -5927,7 +6057,7 @@ Module HDMod
   
             do I = 1, size(q1,1)
               do J = 1, size(q1, 2)
-                if (q1(I,J)%x .GT. x1) then
+                if (q1(I,J)%x .GE. x1) then
                   q_out(I,J) = q1(I,J)
                 else
                   q_out(I,J)%x = x1
@@ -5951,7 +6081,7 @@ Module HDMod
   
             do I = 1, size(q1,1)
               do J = 1, size(q1, 2)
-                if (q1(I,J)%x .GT. REAL(x1,PRhyd)) then
+                if (REAL(q1(I,J)%x, SPRhyd) .GE. x1) then
                   q_out(I,J) = q1(I,J)
                 else
                   q_out(I,J)%x = REAL(x1,PRhyd)
@@ -5976,7 +6106,7 @@ Module HDMod
             do I = 1, size(q1,1)
               do J = 1, size(q1, 2)
                 do K = 1, size(q1, 3)
-                  if (q1(I,J,K)%x .GT. x1) then
+                  if (q1(I,J,K)%x .GE. x1) then
                     q_out(I,J,K) = q1(I,J,K)
                   else
                     q_out(I,J,K)%x = x1
@@ -6002,7 +6132,7 @@ Module HDMod
             do I = 1, size(q1,1)
               do J = 1, size(q1, 2)
                 do K = 1, size(q1, 3)
-                  if (q1(I,J,K)%x .GT. REAL(x1,PRhyd)) then
+                  if (REAL(q1(I,J,K)%x, SPRhyd) .GE. x1) then
                     q_out(I,J,K) = q1(I,J,K)
                   else
                     q_out(I,J,K)%x = REAL(x1,PRhyd)
@@ -6032,7 +6162,7 @@ Module HDMod
               do J = 1,size(q1, 2)
                 do K = 1,size(q1, 3)
                   do L = 1,size(q1, 4)
-                    if (q1(I,J,K,L)%x .GT. x1) then
+                    if (q1(I,J,K,L)%x .GE. x1) then
                       q_out(I,J,K,L) = q1(I,J,K,L)
                     else
                       q_out(I,J,K,L)%x = x1
@@ -6063,7 +6193,7 @@ Module HDMod
               do J = 1,size(q1, 2)
                 do K = 1,size(q1, 3)
                   do L = 1,size(q1, 4)
-                    if (q1(I,J,K,L)%x .GT. x1) then
+                    if (REAL(q1(I,J,K,L)%x, SPRhyd) .GE. x1) then
                       q_out(I,J,K,L) = q1(I,J,K,L)
                     else
                       q_out(I,J,K,L)%x = REAL(x1,PRhyd)
@@ -6107,11 +6237,11 @@ Module HDMod
             
             q_out = q1
             
-            if (q2%x .GE. q_out%x) then
+            if (q2%x .GT. q_out%x) then
               q_out = q2
             end if
             
-            if (q3%x .GE. q_out%x) then
+            if (q3%x .GT. q_out%x) then
               q_out = q3
             end if
               
@@ -6144,7 +6274,7 @@ Module HDMod
             real(PRhyd), intent(in)        :: x2
             TYPE(hyperdual)             :: q_out
   
-            if (q1%x .LT. x2) then
+            if (q1%x .LE. x2) then
               q_out = q1
             else
               q_out%x = x2
@@ -6163,7 +6293,7 @@ Module HDMod
             real(SPRhyd), intent(in)        :: x2
             TYPE(hyperdual)             :: q_out
   
-            if (q1%x .LT. REAL(x2,PRhyd)) then
+            if (REAL(q1%x, SPRhyd) .LE. x2) then
               q_out = q1
             else
               q_out%x = REAL(x2,PRhyd)
@@ -6182,7 +6312,7 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: q2
             TYPE(hyperdual)             :: q_out
   
-            if (x1 .LE. q2%x) then
+            if (x1 .LT. q2%x) then
               q_out%x = x1
               q_out%dx1 = 0.0_PRhyd
               q_out%dx2 = 0.0_PRhyd
@@ -6201,7 +6331,7 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: q2
             TYPE(hyperdual)             :: q_out
   
-            if (REAL(x1,PRhyd).LE.q2%x) then
+            if (REAL(x1,PRhyd) .LT. q2%x) then
               q_out%x = REAL(x1,PRhyd)
               q_out%dx1 = 0.0_PRhyd
               q_out%dx2 = 0.0_PRhyd
@@ -6221,11 +6351,11 @@ Module HDMod
           
           q_out = q1
 
-          if  (q2 .LT. q_out) then
+          if  (q2%x .LT. q_out%x) then
             q_out = q2
           endif
 
-          if (q3 .LT. q_out) then
+          if (q3%x .LT. q_out%x) then
             q_out = q3
           endif
           
@@ -6240,15 +6370,15 @@ Module HDMod
 
             q_out = q1
           
-            if  (q2 .LT. q_out) then
+            if  (q2%x .LT. q_out%x) then
               q_out = q2
             endif
   
-            if (q3 .LT. q_out) then
+            if (q3%x .LT. q_out%x) then
               q_out = q3
             endif
 
-            if (q4 .LT. q_out) then
+            if (q4%x .LT. q_out%x) then
               q_out = q4
             endif
             
@@ -6264,19 +6394,19 @@ Module HDMod
 
             q_out = q1
           
-            if  (q2 .LT. q_out) then
+            if  (q2%x .LT. q_out%x) then
               q_out = q2
             endif
   
-            if (q3 .LT. q_out) then
+            if (q3%x .LT. q_out%x) then
               q_out = q3
             endif
 
-            if (q4 .LT. q_out) then
+            if (q4%x .LT. q_out%x) then
               q_out = q4
             endif
 
-            if (q5 .LT. q_out) then
+            if (q5%x .LT. q_out%x) then
               q_out = q5
             endif
             
@@ -6701,8 +6831,9 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: q
             TYPE(hyperdual)             :: qexp
             real(PRhyd)                 :: deriv
+            real(PRhyd), parameter      :: exp_limit = 700.d0
             
-            deriv      = exp(q%x)
+            deriv      = exp(min(q%x, exp_limit))
             qexp%x     = deriv
             qexp%dx1   = deriv * q%dx1
             qexp%dx2   = deriv * q%dx2
@@ -6718,13 +6849,17 @@ Module HDMod
             TYPE(hyperdual)             :: qlog
             real(PRhyd)                 :: deriv1
             real(PRhyd)                 :: deriv2
+            real(PRhyd), parameter      :: log_eps = 1.d-15
+            real(PRhyd)                 :: safe_x
+            
+            safe_x = max(q%x, log_eps)
+            qlog%x = log(safe_x)
   
-            deriv1     = q%dx1 / q%x
-            deriv2     = q%dx2 / q%x
-            qlog%x     = log(q%x)
+            deriv1     = q%dx1 / safe_x
+            deriv2     = q%dx2 / safe_x
             qlog%dx1   = deriv1
             qlog%dx2   = deriv2
-            qlog%dx1x2 = q%dx1x2 / q%x - (deriv1 * deriv2)
+            qlog%dx1x2 = q%dx1x2 / safe_x - (deriv1 * deriv2)
   
           end function hdlog
   
@@ -6862,7 +6997,7 @@ Module HDMod
             ! 1st and 2nd derivative of acos   -1 <= x <= 1
             IF ( (q%x .gt. -1.0) .AND. (q%x .lt. 1.0) ) THEN
             	deriv1      = -1.0_PRhyd / sqrt(1.0_PRhyd - q%x**2) 
-            	deriv2      = q%x / (1.0_PRhyd - q%x**2)**(1.5_PRhyd) 
+            	deriv2      = - q%x / (1.0_PRhyd - q%x**2)**(1.5_PRhyd) 
   
             	qacos%x     = funval
             	qacos%dx1   = deriv1 * q%dx1
@@ -6979,7 +7114,15 @@ Module HDMod
             implicit none
             TYPE(hyperdual), dimension(:), intent(in) :: q
             TYPE(hyperdual)                           :: qsum
-  
+            
+            ! initialize the qsum to avoid garbage values
+            ! check for ill-defined q
+            if (size(q) == 0) then
+               qsum = hyperdual(0.0_PRhyd, 0.0_PRhyd, 0.0_PRhyd, 0.0_PRhyd)
+               return
+             endif
+            qsum = hyperdual(0.0d0, 0.0d0, 0.0d0, 0.0d0)
+            
             qsum%x = sum(q%x)
             qsum%dx1 = sum(q%dx1)
             qsum%dx2 = sum(q%dx2)
@@ -6992,7 +7135,15 @@ Module HDMod
             implicit none
             TYPE(hyperdual), dimension(:, :), intent(in) :: q
             TYPE(hyperdual)                              :: qsum
-  
+            
+            ! initialize the qsum to avoid garbage values
+            ! check for ill-defined q
+            if (size(q) == 0) then
+               qsum = hyperdual(0.0_PRhyd, 0.0_PRhyd, 0.0_PRhyd, 0.0_PRhyd)
+               return
+             endif
+            qsum = hyperdual(0.0d0, 0.0d0, 0.0d0, 0.0d0)
+            
             qsum%x = sum(q%x)
             qsum%dx1 = sum(q%dx1)
             qsum%dx2 = sum(q%dx2)
@@ -7006,7 +7157,14 @@ Module HDMod
             implicit none
             TYPE(hyperdual), dimension(:,:,:), intent(in) :: q
             TYPE(hyperdual)                                 :: qsum
-  
+            
+            ! initialize the qsum to avoid garbage values
+            ! check for ill-defined q
+            if (size(q) == 0) then
+               qsum = hyperdual(0.0_PRhyd, 0.0_PRhyd, 0.0_PRhyd, 0.0_PRhyd)
+               return
+             endif
+            qsum = hyperdual(0.0d0, 0.0d0, 0.0d0, 0.0d0)
             qsum%x = sum(q%x)
             qsum%dx1 = sum(q%dx1)
             qsum%dx2 = sum(q%dx2)
@@ -7021,6 +7179,14 @@ Module HDMod
             TYPE(hyperdual), dimension(:,:,:,:), intent(in) :: q
             TYPE(hyperdual)                                 :: qsum
   
+            ! initialize the qsum to avoid garbage values
+            ! check for ill-defined q
+            if (size(q) == 0) then
+               qsum = hyperdual(0.0_PRhyd, 0.0_PRhyd, 0.0_PRhyd, 0.0_PRhyd)
+               return
+             endif
+            
+            qsum = hyperdual(0.0d0, 0.0d0, 0.0d0, 0.0d0)
             qsum%x = sum(q%x)
             qsum%dx1 = sum(q%dx1)
             qsum%dx2 = sum(q%dx2)
@@ -7030,207 +7196,144 @@ Module HDMod
         
   
       
-          function hdsum_2d_dim(q, dim) result(qsum)
-  
-            ! 2d --> 1d, reduction along a dimension
-            
-            implicit none
-            TYPE(hyperdual), dimension(:,:), intent(in) :: q
-            Integer                                     :: dim
-            Integer                                     :: c_dim
-            TYPE(hyperdual), allocatable, dimension(:)  :: qsum
-      
-            c_dim = change_dim_2d(dim)
-            allocate(qsum(size(q, c_dim)))
-      
-            qsum%x = sum(q%x, dim)
-            qsum%dx1 = sum(q%dx1, dim)
-            qsum%dx2 = sum(q%dx2, dim)
-            qsum%dx1x2 = sum(q%dx1x2, dim)
-  
-          end function hdsum_2d_dim
-  
-  
-          function hdsum_3d_dim(q, dim) result(qsum)
-  
-            ! 3d --> 2d, reduction along a dimension
-            
-            implicit none
-            TYPE(hyperdual), dimension(:,:,:), intent(in) :: q
-            Integer                                       :: dim
-            Integer, dimension(2)                         :: c_dim
-            TYPE(hyperdual), allocatable, dimension(:, :) :: qsum
-            
-            c_dim = change_dim_3d(dim)
-            allocate(qsum(size(q, c_dim(1)), size(q, c_dim(2))))
-  
-            qsum%x = sum(q%x, dim)
-            qsum%dx1 = sum(q%dx1, dim)
-            qsum%dx2 = sum(q%dx2, dim)
-            qsum%dx1x2 = sum(q%dx1x2, dim)
-  
-          end function hdsum_3d_dim
+		function hdsum_2d_dim(q, dim) result(qsum)
+			! 2D --> 1D, reduction along a dimension
+			implicit none
+			TYPE(hyperdual), dimension(:,:), intent(in) :: q
+			integer, intent(in)                          :: dim
+			TYPE(hyperdual), allocatable, dimension(:)  :: qsum
+		
+			! Ensure dim is valid
+			if (dim < 1 .or. dim > 2) then
+				stop "Error: Invalid dimension for summation."
+			endif
+		
+			! Allocate qsum with correct shape
+			if (allocated(qsum)) deallocate(qsum)
+			allocate(qsum(size(q, mod(dim, 2) + 1)))
+		
+			! Compute sum along specified dimension
+			qsum%x     = sum(q%x, dim)
+			qsum%dx1   = sum(q%dx1, dim)
+			qsum%dx2   = sum(q%dx2, dim)
+			qsum%dx1x2 = sum(q%dx1x2, dim)
+		
+		end function hdsum_2d_dim
   
   
-          function hdsum_4d_dim(q, dim) result(qsum)
-  
-            ! 4d --> 3d, reduction along a dimension
-            
-            implicit none
-            TYPE(hyperdual), dimension(:,:,:,:), intent(in) :: q
-            Integer                                         :: dim
-            Integer, dimension(3)                           :: c_dim
-            TYPE(hyperdual), allocatable, dimension(:,:,:)  :: qsum
-            
-            c_dim = change_dim_4d(dim)
-            
-            allocate(qsum((size(q, c_dim(1))), size(q, c_dim(2)), size(q, c_dim(3))))
-  
-            qsum%x = sum(q%x, dim)
-            qsum%dx1 = sum(q%dx1, dim)
-            qsum%dx2 = sum(q%dx2, dim)
-            qsum%dx1x2 = sum(q%dx1x2, dim)
-  
-          end function hdsum_4d_dim
-  
-          function hdsum_5d_dim(q, dim) result(qsum)
-  
-            ! 5d --> 4d, reduction along a dimension
-            
-            implicit none
-            TYPE(hyperdual), dimension(:,:,:,:,:), intent(in) :: q
-            Integer                                         :: dim
-            Integer, dimension(4)                           :: c_dim
-            TYPE(hyperdual), allocatable, dimension(:,:,:,:)  :: qsum
-            
-            c_dim = change_dim_5d(dim)
-            
-            allocate(qsum((size(q, c_dim(1))), size(q, c_dim(2)), size(q, c_dim(3)), size(q, c_dim(4))))
-  
-            qsum%x = sum(q%x, dim)
-            qsum%dx1 = sum(q%dx1, dim)
-            qsum%dx2 = sum(q%dx2, dim)
-            qsum%dx1x2 = sum(q%dx1x2, dim)
-  
-          end function hdsum_5d_dim
+		function hdsum_3d_dim(q, dim) result(qsum)
+			! 3D --> 2D, reduction along a dimension
+			implicit none
+			TYPE(hyperdual), dimension(:,:,:), intent(in) :: q
+			integer, intent(in)                            :: dim
+			TYPE(hyperdual), allocatable, dimension(:, :) :: qsum
+		
+			! Ensure dim is valid
+			if (dim < 1 .or. dim > 3) then
+				stop "Error: Invalid dimension for summation."
+			endif
+		
+			! Allocate qsum with correct shape
+			if (allocated(qsum)) deallocate(qsum)
+			allocate(qsum(size(q, mod(dim, 3) + 1), size(q, mod(dim + 1, 3) + 1)))
+		
+			! Compute sum along specified dimension
+			qsum%x     = sum(q%x, dim)
+			qsum%dx1   = sum(q%dx1, dim)
+			qsum%dx2   = sum(q%dx2, dim)
+			qsum%dx1x2 = sum(q%dx1x2, dim)
+		
+		end function hdsum_3d_dim
   
   
-          function hdsum_mask(q, mask) result(qsum) 
-            ! take the sum of an hyperdual array --> one hyperdual
-            implicit none
-            TYPE(hyperdual), dimension(:), intent(in)     :: q
-            Logical, dimension(size(q)), intent(in)       :: mask
-            TYPE(hyperdual)                               :: qsum
-            integer                                       :: i
+		function hdsum_4d_dim(q, dim) result(qsum)
+			! 4D --> 3D, reduction along a dimension
+			implicit none
+			TYPE(hyperdual), dimension(:,:,:,:), intent(in) :: q
+			integer, intent(in)                             :: dim
+			TYPE(hyperdual), allocatable, dimension(:,:,:)  :: qsum
+		
+			! Ensure dim is valid
+			if (dim < 1 .or. dim > 4) then
+				stop "Error: Invalid dimension for summation."
+			endif
+		
+			! Allocate qsum with correct shape
+			if (allocated(qsum)) deallocate(qsum)
+			allocate(qsum(size(q, mod(dim, 4) + 1), size(q, mod(dim + 1, 4) + 1), size(q, mod(dim + 2, 4) + 1)))
+		
+			! Compute sum along specified dimension
+			qsum%x     = sum(q%x, dim)
+			qsum%dx1   = sum(q%dx1, dim)
+			qsum%dx2   = sum(q%dx2, dim)
+			qsum%dx1x2 = sum(q%dx1x2, dim)
+		
+		end function hdsum_4d_dim
   
-            do i = 1, size(q) 
-              if (mask(i) .eqv. .TRUE. ) then 
-                qsum%x = qsum%x + q(i)%x
-                qsum%dx1 = qsum%dx1 + q(i)%dx1
-                qsum%dx2 = qsum%dx2 + q(i)%dx2
-                qsum%dx1x2 = qsum%dx1x2 + q(i)%dx1x2
-              endif 
-            enddo 
-          end function hdsum_mask 
-  
-            function hdsum_mask_scalar(q, mask) result(qsum) 
-              ! take the sum of an hyperdual array --> one hyperdual
-              implicit none
-              TYPE(hyperdual), dimension(:), intent(in)     :: q
-              Logical, intent(in)                           :: mask
-              TYPE(hyperdual)                               :: qsum
-              integer                                       :: i
-  
-              if (mask .eqv. .TRUE.) then 
-                qsum = hdsum(q)
-              else
-                qsum = hyperdual(0.0d0, 0.0d0, 0.0d0, 0.0d0)
-              endif  
-          
-            end function hdsum_mask_scalar
-  
-  
-            ! function hdsum_2d_dim_mask(q, dim, mask) result(qsum) 
-            !   ! take the sum of an hyperdual array --> one hyperdual
-            !   implicit none
-            !   TYPE(hyperdual), dimension(:,:), intent(in)     :: q
-            !   Logical, dimension(size(q)), intent(in)         :: mask
-            !   TYPE(hyperdual)                                 :: qsum
-            !   integer                                         :: i
-  
-            !   do i = 1, size(q) 
-            !     if (mask(i) .eqv. .TRUE. ) then 
-            !       qsum%x = qsum%x + q(i)%x
-            !       qsum%dx1 = qsum%dx1 + q(i)%dx1
-            !       qsum%dx2 = qsum%dx2 + q(i)%dxÍ2
-            !       qsum%dx1x2 = qsum%dx1x2 + q(i)%dx1x2
-            !     endif 
-            !   enddo 
-            ! end function hdsum_2d_dim_mask 
-  
-          function change_dim_2d(dim) result(outdim) 
-            implicit none
-            Integer, INTENT(IN) :: dim
-            Integer             :: outdim
-  
-            if (dim == 1) then
-              outdim = 2
-            else
-              outdim = 1
-            endif 
-            
-          end function change_dim_2d
-  !
-  
-          function change_dim_3d(dim) result(outdim)
-            implicit none
-            Integer, INTENT(IN)   :: dim
-            Integer, dimension(2) :: outdim
-            if (dim == 1) then
-              outdim = (/ 2,3 /)
-            else if (dim == 2) then
-              outdim = (/ 1,3 /)
-            else
-              outdim = (/ 1,2 /)
-            endif 
-              
-          end function change_dim_3d
+		
+		function hdsum_5d_dim(q, dim) result(qsum)
+			! 5D --> 4D, reduction along a dimension
+			implicit none
+			TYPE(hyperdual), dimension(:,:,:,:,:), intent(in) :: q
+			integer, intent(in)                               :: dim
+			TYPE(hyperdual), allocatable, dimension(:,:,:,:)  :: qsum
+		
+			! Ensure dim is valid
+			if (dim < 1 .or. dim > 5) then
+				stop "Error: Invalid dimension for summation."
+			endif
+		
+			! Allocate qsum with correct shape
+			if (allocated(qsum)) deallocate(qsum)
+			allocate(qsum(size(q, mod(dim, 5) + 1), size(q, mod(dim + 1, 5) + 1), &
+						  size(q, mod(dim + 2, 5) + 1), size(q, mod(dim + 3, 5) + 1)))
+		
+			! Compute sum along specified dimension
+			qsum%x     = sum(q%x, dim)
+			qsum%dx1   = sum(q%dx1, dim)
+			qsum%dx2   = sum(q%dx2, dim)
+			qsum%dx1x2 = sum(q%dx1x2, dim)
+		
+		end function hdsum_5d_dim
   
   
-          function change_dim_4d(dim) result(outdim)
-            implicit none
-            Integer, INTENT(IN)   :: dim
-            Integer, dimension(3) :: outdim
-            if (dim == 1) then
-              outdim = (/ 2,3,4 /)
-            else if (dim == 2) then
-              outdim = (/ 1,3,4 /)
-            else if (dim == 3) then
-              outdim = (/ 1,2,4 /)
-            else
-              outdim = (/ 1,2,3 /)
-            endif 
-              
-          end function change_dim_4d
+		function hdsum_mask(q, mask) result(qsum) 
+			! take the sum of a hyperdual array with a boolean mask --> one hyperdual
+			implicit none
+			TYPE(hyperdual), dimension(:), intent(in)     :: q
+			Logical, dimension(size(q)), intent(in)       :: mask
+			TYPE(hyperdual)                               :: qsum
+			integer                                       :: i
+		
+			! Initialize qsum to zero
+			qsum = hyperdual(0.0_PRhyd, 0.0_PRhyd, 0.0_PRhyd, 0.0_PRhyd)
+		
+			do i = 1, size(q) 
+				if (mask(i)) then
+					qsum%x     = qsum%x + q(i)%x
+					qsum%dx1   = qsum%dx1 + q(i)%dx1
+					qsum%dx2   = qsum%dx2 + q(i)%dx2
+					qsum%dx1x2 = qsum%dx1x2 + q(i)%dx1x2
+				endif 
+			enddo 
+		end function hdsum_mask
+ 
   
-          function change_dim_5d(dim) result(outdim)
-            implicit none
-            Integer, INTENT(IN)   :: dim
-            Integer, dimension(4) :: outdim
-            if (dim == 1) then
-              outdim = (/ 2,3,4,5 /)
-            else if (dim == 2) then
-              outdim = (/ 1,3,4,5 /)
-            else if (dim == 3) then
-              outdim = (/ 1,2,4,5 /)
-            else if (dim == 4) then
-              outdim = (/ 1,2,3,5 /)
-            else
-              outdim = (/ 1,2,3,4 /)
-            endif 
-              
-          end function change_dim_5d
-  
+		function hdsum_mask_scalar(q, mask) result(qsum) 
+			! take the sum of an entire hyperdual array based on a single mask condition
+			implicit none
+			TYPE(hyperdual), dimension(:), intent(in)     :: q
+			Logical, intent(in)                           :: mask
+			TYPE(hyperdual)                               :: qsum
+		
+			if (mask) then 
+				qsum = hdsum(q)
+			else
+				qsum = hyperdual(0.0_PRhyd, 0.0_PRhyd, 0.0_PRhyd, 0.0_PRhyd)
+			endif  
+		
+		end function hdsum_mask_scalar
+		  
   
           function real_hdual(qleft) result(xright)
             ! convert hyperdual to real, throw away the sensitivity information
@@ -7316,27 +7419,62 @@ Module HDMod
           end function int_hdual
       
           
-          function hderf(q) result(res)
-  
-            ! Error Function overloading
-            implicit none
-            TYPE(hyperdual), intent(in) :: q
-            real(PRhyd)             :: deriv1
-            real(PRhyd)             :: deriv2
-            real(PRhyd)             :: funval
-            TYPE(hyperdual)         :: res
-  
-            ! First and second order derivative of erf function
-            deriv1 = 2.0_PRhyd / SQRT(pi) * exp( -q%x**2.0_PRhyd)
-            deriv2 = -4.0_PRhyd / SQRT(pi) * q%x * exp( -q%x**2.0_PRhyd)
-            funval =  SIGN(1.0_PRhyd, q%x) * SQRT(1.0-exp(-4.0_PRhyd * q%x * q%x / pi))
-            res%x = funval
-            res%dx1 = deriv1 * q%dx1
-            res%dx2 = deriv1 * q%dx2
-            res%dx1x2 = deriv2 * q%dx1 * q%dx2 + deriv1 * q%dx1x2
-  
-  
-          end function hderf
+!           function hderf(q) result(res)
+!   
+!             ! Error Function overloading
+!             implicit none
+!             TYPE(hyperdual), intent(in) :: q
+!             real(PRhyd)             :: deriv1
+!             real(PRhyd)             :: deriv2
+!             real(PRhyd)             :: funval
+!             TYPE(hyperdual)         :: res
+!   
+!             ! First and second order derivative of erf function
+!             deriv1 = 2.0_PRhyd / SQRT(pi) * exp( -q%x**2.0_PRhyd)
+!             deriv2 = -4.0_PRhyd / SQRT(pi) * q%x * exp( -q%x**2.0_PRhyd)
+!             funval =  SIGN(1.0_PRhyd, q%x) * SQRT(1.0-exp(-4.0_PRhyd * q%x * q%x / pi))
+!             
+!             res%x = funval
+!             res%dx1 = deriv1 * q%dx1
+!             res%dx2 = deriv1 * q%dx2
+!             res%dx1x2 = deriv2 * q%dx1 * q%dx2 + deriv1 * q%dx1x2
+!   
+!   
+!           end function hderf
+
+        ! A more accurate erf
+          
+		function hderf(q) result(res)
+		
+			! Hyperdual Overload for the Error Function (erf)
+			implicit none
+			TYPE(hyperdual), intent(in) :: q
+			TYPE(hyperdual)             :: res
+			real(PRhyd)                 :: deriv1
+			real(PRhyd)                 :: deriv2
+			real(PRhyd)                 :: funval
+			real(PRhyd)                 :: p, t, tau
+		
+			! Constants for numerical approximation of erf(x)
+			p = 0.3275911
+			t = 1.0_PRhyd / (1.0_PRhyd + p * abs(q%x))
+			tau = t * (0.254829592 - t * (0.284496736 - t * (1.421413741 - t * (1.453152027 - t * 1.061405429))))
+		
+			! Compute erf(x) using the approximation
+			funval = sign(1.0_PRhyd, q%x) * (1.0 - tau * exp(-q%x**2.0_PRhyd))
+		
+			! First and second order derivatives of erf(x)
+			deriv1 = 2.0_PRhyd / SQRT(pi) * exp(-q%x**2.0_PRhyd)
+			deriv2 = -4.0_PRhyd / SQRT(pi) * q%x * exp(-q%x**2.0_PRhyd)
+		
+			! Assign hyperdual results
+			res%x     = funval
+			res%dx1   = deriv1 * q%dx1
+			res%dx2   = deriv1 * q%dx2
+			res%dx1x2 = deriv2 * q%dx1 * q%dx2 + deriv1 * q%dx1x2
+		
+		end function hderf
+
           
         
           function hderfc(q) result(res)
@@ -7345,7 +7483,7 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: q
             TYPE(hyperdual)             :: res
   
-            res = 1 - hderf(q)
+            res = 1.0d0 - hderf(q)
   
           end function hderfc
 

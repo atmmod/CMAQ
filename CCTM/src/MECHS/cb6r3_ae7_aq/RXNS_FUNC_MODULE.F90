@@ -224,16 +224,16 @@
         IMPLICIT NONE  
 
 !  Arguements: None 
-
+        ! el0128: revert the reaction rate to real( 8 )
         REAL( 8 ),           INTENT( IN  ) :: BLKTEMP( : )      ! temperature, deg K 
         REAL( 8 ),           INTENT( IN  ) :: BLKPRES( : )      ! pressure, Atm
         REAL( 8 ),           INTENT( IN  ) :: BLKH2O ( : )      ! water mixing ratio, ppm 
-        TYPE(hyperdual),           INTENT( IN  ) :: RJBLK  ( :, : )   ! photolysis rates, 1/min 
-        TYPE(hyperdual),           INTENT( IN  ) :: BLKHET ( :, : )   ! heterogeneous rate constants, ???/min
+        REAL( 8 ),           INTENT( IN  ) :: RJBLK  ( :, : )   ! photolysis rates, 1/min 
+        REAL( 8 ),           INTENT( IN  ) :: BLKHET ( :, : )   ! heterogeneous rate constants, ???/min
         INTEGER,             INTENT( IN  ) :: NUMCELLS          ! Number of cells in block 
         LOGICAL,             INTENT( IN  ) :: LSUNLIGHT         ! Is there sunlight? 
         LOGICAL,             INTENT( IN  ) :: LAND( : )         ! Is the surface totally land? 
-        TYPE(hyperdual),           INTENT( OUT ) :: RKI ( :, : )      ! reaction rate constant, ppm/min 
+        REAL( 8 ),           INTENT( OUT ) :: RKI ( :, : )      ! reaction rate constant, ppm/min 
 !..Parameters: 
 
         REAL( 8 ), PARAMETER :: COEF1  = 7.33981D+15     ! Molec/cc to ppm conv factor 
@@ -1042,7 +1042,13 @@
 !  Reaction Label HG5             
              RKI( NCELL,  343) =  CFACT_SQU * ARRHENUIS_T03( INV_TEMP,  2.2500D-33,   6.8000D+02 )
 
-        END DO  
+        END DO
+        
+        ! el0121: manually remove the sensitivity componenet of RKIs
+!         RKI(:,:)%dx1 = 0.0d0
+!         RKI(:,:)%dx2 = 0.0d0
+!         RKI(:,:)%dx1x2 = 0.0d0
+          
 !  Multiply rate constants by [M], [O2], [N2], [H2O], [H2], or [CH4]
 !  where needed and return
        IF ( NWM .GT. 0 ) THEN
