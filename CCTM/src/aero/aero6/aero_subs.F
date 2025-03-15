@@ -1268,7 +1268,6 @@ C     semi-volatile components of coarse mode (NO3, CL, NH4)
       flag_criteria1 = .false.
       flag_criteria2 = .false.
       
-      
       IF ( HYBRID ) THEN 
 
          CNTRL( 1 ) = 1.0D0 ! reverse problem
@@ -1470,9 +1469,7 @@ C	 	! HPLUS_PREV is the saved H+ concentration
                 hybridsens = .false.
              endif
         endif
-        
-
-        
+              
         isoiter = isoiter + 1         
 C	 	
 C	 	! Criteria 2: Close to Neutral but not corrected by the SQRT(AKW)
@@ -1521,30 +1518,30 @@ C     than the minimum aerosol conc.
                ! if (abs(gas(1)%dx1x2 / (GNH3R8 * 1.0D-6 / PRECURSOR_MW( NH3_IDX ))) > 1.d3) then
                
                
-                  if (rank == 26) then
-                        if (col == 3 .and. row == 13 .and. layer == 2) then
-                              write(*,*) 'WI(1):', WI(1)
-                              write(*,*) 'WI(2):', WI(2)
-                              write(*,*) 'WI(3):', WI(3)
-                              write(*,*) 'WI(4):', WI(4)
-                              write(*,*) 'WI(5):', WI(5)
-                              write(*,*) 'WI(6):', WI(6)
-                              write(*,*) 'WI(7):', WI(7)
-                              write(*,*) 'WI(8):', WI(8)
-                              write(*,*) 'corrected NH3', gas(1)
-                              write(*,*) 'corrected HNO3', gas(2)
-                              write(*,*) 'corrected HCl', gas(3)
-                              write(*,*) 'GG', 2.0d0*max(WI(2)%x-WI(6)%x,0.D0)+WI(4)%x+WI(5)%x-WI(1)%x-WI(3)%x-WI(7)%x-2.d0*WI(8)%x
-                              write(*,*) 'reviso_gg(1)', reviso_gg(1)
-                              write(*,*) 'reviso_gg(2)', reviso_gg(2)
-                              write(*,*) 'reviso_gg(3)', reviso_gg(3)
-                              write(*,*) 'isoiter', isoiter
-                              write(*,*) 'sensflag', sensflag
-                              write(*,*) 'RH', AIRRH
-                              write(*,*) 'T', AIRTEMP
-                              write(*,*) 'hybridsens', hybridsens
-                        endif
-                  endif 
+C                 if (rank == 26) then
+C                       if (col == 3 .and. row == 13 .and. layer == 2) then
+C                             write(*,*) 'WI(1):', WI(1)
+C                             write(*,*) 'WI(2):', WI(2)
+C                             write(*,*) 'WI(3):', WI(3)
+C                             write(*,*) 'WI(4):', WI(4)
+C                             write(*,*) 'WI(5):', WI(5)
+C                             write(*,*) 'WI(6):', WI(6)
+C                             write(*,*) 'WI(7):', WI(7)
+C                             write(*,*) 'WI(8):', WI(8)
+C                             write(*,*) 'corrected NH3', gas(1)
+C                             write(*,*) 'corrected HNO3', gas(2)
+C                             write(*,*) 'corrected HCl', gas(3)
+C                             write(*,*) 'GG', 2.0d0*max(WI(2)%x-WI(6)%x,0.D0)+WI(4)%x+WI(5)%x-WI(1)%x-WI(3)%x-WI(7)%x-2.d0*WI(8)%x
+C                             write(*,*) 'reviso_gg(1)', reviso_gg(1)
+C                             write(*,*) 'reviso_gg(2)', reviso_gg(2)
+C                             write(*,*) 'reviso_gg(3)', reviso_gg(3)
+C                             write(*,*) 'isoiter', isoiter
+C                             write(*,*) 'sensflag', sensflag
+C                             write(*,*) 'RH', AIRRH
+C                             write(*,*) 'T', AIRTEMP
+C                             write(*,*) 'hybridsens', hybridsens
+C                       endif
+C                 endif 
             
                   if (sensflag .eq. .false.) then
                         ! hybridsens = .false.

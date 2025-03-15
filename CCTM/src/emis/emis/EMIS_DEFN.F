@@ -520,8 +520,8 @@ C Retrieve Emissions from All Stream Types
           	   
           	   ! Try the multiplicative perturbation with the hyperdual components 
           	   IF (ISRM .EQ. 1) THEN
-          	   	 VDEMIS_READ(8, 1, :, :) = VDEMIS_READ(8, 1, :, :) * hyperdual(1.0d0, 1.0d-10, 1.0d-10, 0.0d0)
-          	   	 VDEMIS_READ(9, 1, :, :) = VDEMIS_READ(9, 1, :, :) * hyperdual(1.0d0, 1.0d-10, 1.0d-10, 0.0d0)
+          	   	 VDEMIS_READ(8, 1, :, :) = VDEMIS_READ(8, 1, :, :) * hyperdual(1.0d0, 1.0d0, 1.0d0, 0.0d0)
+          	   	 VDEMIS_READ(9, 1, :, :) = VDEMIS_READ(9, 1, :, :) * hyperdual(1.0d0, 1.0d0, 1.0d0, 0.0d0)
           	   ENDIF
           	   
 C         	   IF (ISRM .EQ. 3) THEN  
