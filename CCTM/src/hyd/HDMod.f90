@@ -5678,7 +5678,7 @@ Module HDMod
             endif
             
             ! ensure safe log calculations to avoid small values of xval being used
-            log_xval = log(max(xval, 1.d-25))
+            log_xval = log(xval)
             
             ! avoid repetitive calculations to save computation time
 		    res%x = xval ** qright%x
@@ -5929,7 +5929,7 @@ Module HDMod
             real(PRhyd), intent(in)     :: x2
             TYPE(hyperdual)             :: q_out
   
-            if (q1%x .GE. x2) then
+            if (q1%x .GT. x2) then
               q_out = q1
             else
               q_out%x = x2
@@ -5975,7 +5975,7 @@ Module HDMod
               real(SPRhyd), intent(in)    :: x2
               TYPE(hyperdual)             :: q_out
     
-              if (real(q1%x, SPRhyd) .GE. x2) then
+              if (q1%x .GT. REAL(x2,PRhyd)) then
                 q_out = q1
               else
                 q_out%x = REAL(x2,PRhyd)
@@ -5994,7 +5994,7 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: q2
             TYPE(hyperdual)             :: q_out
   
-            if (x1 .GT. q2%x) then
+            if (x1 .GE. q2%x) then
               q_out%x = x1
               q_out%dx1 = 0.0_PRhyd
               q_out%dx2 = 0.0_PRhyd
@@ -6013,7 +6013,7 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: q2
             TYPE(hyperdual)             :: q_out
   
-            if (x1 .GT. REAL(q2%x, SPRhyd)) then
+            if (REAL(x1,PRhyd) .GE. q2%x) then
               q_out%x = REAL(x1,PRhyd)
               q_out%dx1 = 0.0_PRhyd
               q_out%dx2 = 0.0_PRhyd
@@ -6034,7 +6034,7 @@ Module HDMod
             Integer                                            :: I
   
             do I = 1, size(q1)
-              if (q1(I)%x .GE. x1) then
+              if (q1(I)%x .GT. x1) then
                 q_out(I) = q1(I)
               else
                 q_out(I)%x = x1
@@ -6057,7 +6057,7 @@ Module HDMod
   
             do I = 1, size(q1,1)
               do J = 1, size(q1, 2)
-                if (q1(I,J)%x .GE. x1) then
+                if (q1(I,J)%x .GT. x1) then
                   q_out(I,J) = q1(I,J)
                 else
                   q_out(I,J)%x = x1
@@ -6081,7 +6081,7 @@ Module HDMod
   
             do I = 1, size(q1,1)
               do J = 1, size(q1, 2)
-                if (REAL(q1(I,J)%x, SPRhyd) .GE. x1) then
+                if (q1(I,J)%x .GT. REAL(x1,PRhyd)) then
                   q_out(I,J) = q1(I,J)
                 else
                   q_out(I,J)%x = REAL(x1,PRhyd)
@@ -6106,7 +6106,7 @@ Module HDMod
             do I = 1, size(q1,1)
               do J = 1, size(q1, 2)
                 do K = 1, size(q1, 3)
-                  if (q1(I,J,K)%x .GE. x1) then
+                  if (q1(I,J,K)%x .GT. x1) then
                     q_out(I,J,K) = q1(I,J,K)
                   else
                     q_out(I,J,K)%x = x1
@@ -6132,7 +6132,7 @@ Module HDMod
             do I = 1, size(q1,1)
               do J = 1, size(q1, 2)
                 do K = 1, size(q1, 3)
-                  if (REAL(q1(I,J,K)%x, SPRhyd) .GE. x1) then
+                  if (q1(I,J,K)%x .GT. REAL(x1,PRhyd)) then
                     q_out(I,J,K) = q1(I,J,K)
                   else
                     q_out(I,J,K)%x = REAL(x1,PRhyd)
@@ -6162,7 +6162,7 @@ Module HDMod
               do J = 1,size(q1, 2)
                 do K = 1,size(q1, 3)
                   do L = 1,size(q1, 4)
-                    if (q1(I,J,K,L)%x .GE. x1) then
+                    if (q1(I,J,K,L)%x .GT. x1) then
                       q_out(I,J,K,L) = q1(I,J,K,L)
                     else
                       q_out(I,J,K,L)%x = x1
@@ -6193,7 +6193,7 @@ Module HDMod
               do J = 1,size(q1, 2)
                 do K = 1,size(q1, 3)
                   do L = 1,size(q1, 4)
-                    if (REAL(q1(I,J,K,L)%x, SPRhyd) .GE. x1) then
+                    if (q1(I,J,K,L)%x .GT. x1) then
                       q_out(I,J,K,L) = q1(I,J,K,L)
                     else
                       q_out(I,J,K,L)%x = REAL(x1,PRhyd)
@@ -6237,11 +6237,11 @@ Module HDMod
             
             q_out = q1
             
-            if (q2%x .GT. q_out%x) then
+            if (q2%x .GE. q_out%x) then
               q_out = q2
             end if
             
-            if (q3%x .GT. q_out%x) then
+            if (q3%x .GE. q_out%x) then
               q_out = q3
             end if
               
@@ -6274,7 +6274,7 @@ Module HDMod
             real(PRhyd), intent(in)        :: x2
             TYPE(hyperdual)             :: q_out
   
-            if (q1%x .LE. x2) then
+            if (q1%x .LT. x2) then
               q_out = q1
             else
               q_out%x = x2
@@ -6293,7 +6293,7 @@ Module HDMod
             real(SPRhyd), intent(in)        :: x2
             TYPE(hyperdual)             :: q_out
   
-            if (REAL(q1%x, SPRhyd) .LE. x2) then
+            if (q1%x .LT. REAL(x2,PRhyd)) then
               q_out = q1
             else
               q_out%x = REAL(x2,PRhyd)
@@ -6312,7 +6312,7 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: q2
             TYPE(hyperdual)             :: q_out
   
-            if (x1 .LT. q2%x) then
+            if (x1 .LE. q2%x) then
               q_out%x = x1
               q_out%dx1 = 0.0_PRhyd
               q_out%dx2 = 0.0_PRhyd
@@ -6331,7 +6331,7 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: q2
             TYPE(hyperdual)             :: q_out
   
-            if (REAL(x1,PRhyd) .LT. q2%x) then
+            if (REAL(x1,PRhyd).LE.q2%x) then
               q_out%x = REAL(x1,PRhyd)
               q_out%dx1 = 0.0_PRhyd
               q_out%dx2 = 0.0_PRhyd
@@ -6831,9 +6831,8 @@ Module HDMod
             TYPE(hyperdual), intent(in) :: q
             TYPE(hyperdual)             :: qexp
             real(PRhyd)                 :: deriv
-            real(PRhyd), parameter      :: exp_limit = 700.d0
             
-            deriv      = exp(min(q%x, exp_limit))
+            deriv      = exp(q%x)
             qexp%x     = deriv
             qexp%dx1   = deriv * q%dx1
             qexp%dx2   = deriv * q%dx2
@@ -6849,17 +6848,13 @@ Module HDMod
             TYPE(hyperdual)             :: qlog
             real(PRhyd)                 :: deriv1
             real(PRhyd)                 :: deriv2
-            real(PRhyd), parameter      :: log_eps = 1.d-15
-            real(PRhyd)                 :: safe_x
-            
-            safe_x = max(q%x, log_eps)
-            qlog%x = log(safe_x)
   
-            deriv1     = q%dx1 / safe_x
-            deriv2     = q%dx2 / safe_x
+            deriv1     = q%dx1 / q%x
+            deriv2     = q%dx2 / q%x
+            qlog%x     = log(q%x)
             qlog%dx1   = deriv1
             qlog%dx2   = deriv2
-            qlog%dx1x2 = q%dx1x2 / safe_x - (deriv1 * deriv2)
+            qlog%dx1x2 = q%dx1x2 / q%x - (deriv1 * deriv2)
   
           end function hdlog
   
@@ -7419,62 +7414,27 @@ Module HDMod
           end function int_hdual
       
           
-!           function hderf(q) result(res)
-!   
-!             ! Error Function overloading
-!             implicit none
-!             TYPE(hyperdual), intent(in) :: q
-!             real(PRhyd)             :: deriv1
-!             real(PRhyd)             :: deriv2
-!             real(PRhyd)             :: funval
-!             TYPE(hyperdual)         :: res
-!   
-!             ! First and second order derivative of erf function
-!             deriv1 = 2.0_PRhyd / SQRT(pi) * exp( -q%x**2.0_PRhyd)
-!             deriv2 = -4.0_PRhyd / SQRT(pi) * q%x * exp( -q%x**2.0_PRhyd)
-!             funval =  SIGN(1.0_PRhyd, q%x) * SQRT(1.0-exp(-4.0_PRhyd * q%x * q%x / pi))
-!             
-!             res%x = funval
-!             res%dx1 = deriv1 * q%dx1
-!             res%dx2 = deriv1 * q%dx2
-!             res%dx1x2 = deriv2 * q%dx1 * q%dx2 + deriv1 * q%dx1x2
-!   
-!   
-!           end function hderf
-
-        ! A more accurate erf
-          
-		function hderf(q) result(res)
-		
-			! Hyperdual Overload for the Error Function (erf)
-			implicit none
-			TYPE(hyperdual), intent(in) :: q
-			TYPE(hyperdual)             :: res
-			real(PRhyd)                 :: deriv1
-			real(PRhyd)                 :: deriv2
-			real(PRhyd)                 :: funval
-			real(PRhyd)                 :: p, t, tau
-		
-			! Constants for numerical approximation of erf(x)
-			p = 0.3275911
-			t = 1.0_PRhyd / (1.0_PRhyd + p * abs(q%x))
-			tau = t * (0.254829592 - t * (0.284496736 - t * (1.421413741 - t * (1.453152027 - t * 1.061405429))))
-		
-			! Compute erf(x) using the approximation
-			funval = sign(1.0_PRhyd, q%x) * (1.0 - tau * exp(-q%x**2.0_PRhyd))
-		
-			! First and second order derivatives of erf(x)
-			deriv1 = 2.0_PRhyd / SQRT(pi) * exp(-q%x**2.0_PRhyd)
-			deriv2 = -4.0_PRhyd / SQRT(pi) * q%x * exp(-q%x**2.0_PRhyd)
-		
-			! Assign hyperdual results
-			res%x     = funval
-			res%dx1   = deriv1 * q%dx1
-			res%dx2   = deriv1 * q%dx2
-			res%dx1x2 = deriv2 * q%dx1 * q%dx2 + deriv1 * q%dx1x2
-		
-		end function hderf
-
+          function hderf(q) result(res)
+  
+            ! Error Function overloading
+            implicit none
+            TYPE(hyperdual), intent(in) :: q
+            real(PRhyd)             :: deriv1
+            real(PRhyd)             :: deriv2
+            real(PRhyd)             :: funval
+            TYPE(hyperdual)         :: res
+  
+            ! First and second order derivative of erf function
+            deriv1 = 2.0_PRhyd / SQRT(pi) * exp( -q%x**2.0_PRhyd)
+            deriv2 = -4.0_PRhyd / SQRT(pi) * q%x * exp( -q%x**2.0_PRhyd)
+            funval =  SIGN(1.0_PRhyd, q%x) * SQRT(1.0-exp(-4.0_PRhyd * q%x * q%x / pi))
+            res%x = funval
+            res%dx1 = deriv1 * q%dx1
+            res%dx2 = deriv1 * q%dx2
+            res%dx1x2 = deriv2 * q%dx1 * q%dx2 + deriv1 * q%dx1x2
+  
+  
+          end function hderf
           
         
           function hderfc(q) result(res)

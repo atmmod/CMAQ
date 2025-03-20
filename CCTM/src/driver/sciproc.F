@@ -303,12 +303,14 @@ C Synchronization Step Physical Processes Sequence
          global_resetted_case = 0
       endif  
       
+      
+      
       CALL VDIFF ( CGRID, JDATE, JTIME, TSTEP)
       IF ( CKSUM ) CALL CKSUMMER ( 'VDIFF', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE ( 'VDIF', CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'VDIFF' )
       
-      ! column_model = .true.
+      column_model = .true.
       
       IF ( .NOT. COLUMN_MODEL ) THEN
 C couple CGRID for advection and horizontal diffusion
@@ -353,11 +355,11 @@ C
       IF ( CKSUM ) CALL CKSUMMER ( 'PHOT', CGRID, JDATE, JTIME )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'PHOT' )
       
-C     CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
+      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
 C     cond1_total = .false.
       
       ! if (jtime .ge. 120000) then
-C           if (rank == 140 .or. rank == 141 .or. rank == 26 .or. rank == 27) then
+C           if (rank == 449 .or. rank == 481) then
 C                 !  save the CGRID dx1x2 values before AERO for this specific processor
 C                 ! 171 is the index of ANH4K
 C                 ! only get the values for processor #13 and #14
@@ -378,19 +380,20 @@ C     endif
 
       
       ! if (jtime .ge. 120000) then
-C     if (rank == 140 .or. rank == 141 .or. rank == 26 .or. rank == 27) then
-C     ! save the CGRID dx1x2 values before AERO for this specific processor
-C     ! 171 is the index of ANH4K 
+C     if (rank == 449 .or. rank == 481) then
+CC     ! save the CGRID dx1x2 values before AERO for this specific processor
+CC     ! 171 is the index of ANH4K 
 C     cgrid_after_process(:,:,:,:) = CGRID(:,:,:,:) 
-C     
+C    
 C     do l = 1, nlays
 C          do r = 1, nrows
 C               do c = 1, ncols
 C                   do snum = 1, nspcsd
 C                      if (cgrid_before_process(c,r,l,snum)%dx1x2 /= 0.0d0) then
 C                      ! only detect the ones with large increase
-C                      cond1_total = abs(cgrid_after_process(c,r,l,snum)%dx1x2 / cgrid_before_process(c,r,l,snum)%dx1x2) >= 1.d2
-C                             if (cond1_total .and. abs(cgrid_after_process(c,r,l,snum)%dx1x2) > 1.d-21) then
+C                       cond1_total = abs(cgrid_after_process(c,r,l,snum)%dx1x2 / cgrid_before_process(c,r,l,snum)%dx1x2) >= 5.d1
+C                       if (cond1_total) then
+CC                             if (cond1_total .and. abs(cgrid_after_process(c,r,l,snum)%dx1x2) > 1.d-21) then
 C                                 write(*,*) 'before:', cgrid_before_process(c,r,l,snum)
 C                                 write(*,*) 'after:', cgrid_after_process(c,r,l,snum)
 C                                 write(*,*) 'col:', c
@@ -400,7 +403,8 @@ C                                 write(*,*) 'spc:', snum
 C                                 write(*,*) 'time:', JTIME
 C                                 write(*,*) 'rank:', rank
 C                                 write(*,*) 'CLOUD!'
-C                            endif 
+C                       endif
+CC                            endif 
 C                      endif
 C                    enddo
 C                enddo
@@ -414,10 +418,10 @@ C     cond1_total = .false.
 
       
       ! if (jtime .ge. 120000) then
-C           if (rank == 140 .or. rank == 141 .or. rank == 26 .or. rank == 27) then
-                  !  save the CGRID dx1x2 values before AERO for this specific processor
-                  ! 171 is the index of ANH4K
-                  ! only get the values for processor #13 and #14
+C           if (rank == 449 .or. rank == 481) then
+C                 !  save the CGRID dx1x2 values before AERO for this specific processor
+C                 ! 171 is the index of ANH4K
+C                 ! only get the values for processor #13 and #14
 C                 cgrid_before_process(:,:,:,:) = CGRID(:,:,:,:)
 C           endif
       ! endif      
@@ -433,19 +437,20 @@ C     if (rank == 26) then
 C        write(*,*) 'after chem ANH4K', cgrid(3,13,2,171)
 C     endif      
       ! if (jtime .ge. 120000) then
-C     if (rank == 140 .or. rank == 141 .or. rank == 26 .or. rank == 27) then
-C     ! save the CGRID dx1x2 values before AERO for this specific processor
-C     ! 171 is the index of ANH4K 
-C     cgrid_after_process(:,:,:,:) = CGRID(:,:,:,:) 
-C     
+C     if (rank == 449 .or. rank == 481) then
+CC     ! save the CGRID dx1x2 values before AERO for this specific processor
+CC     ! 171 is the index of ANH4K 
+CC     cgrid_after_process(:,:,:,:) = CGRID(:,:,:,:) 
+CC     
 C     do l = 1, nlays
 C          do r = 1, nrows
 C               do c = 1, ncols
 C                   do snum = 1, nspcsd
 C                      if (cgrid_before_process(c,r,l,snum)%dx1x2 /= 0.0d0) then
 C                      ! only detect the ones with large increase
-C                      cond1_total = abs(cgrid_after_process(c,r,l,snum)%dx1x2 / cgrid_before_process(c,r,l,snum)%dx1x2) >= 1.d2
-C                             if (cond1_total .and. abs(cgrid_after_process(c,r,l,snum)%dx1x2) > 1.d-21) then
+C                      cond1_total = abs(cgrid_after_process(c,r,l,snum)%dx1x2 / cgrid_before_process(c,r,l,snum)%dx1x2) >= 5.d1
+C                            ! if (cond1_total .and. abs(cgrid_after_process(c,r,l,snum)%dx1x2) > 1.d-21) then
+C                            if (cond1_total) then
 C                                 write(*,*) 'before:', cgrid_before_process(c,r,l,snum)
 C                                 write(*,*) 'after:', cgrid_after_process(c,r,l,snum)
 C                                 write(*,*) 'col:', c
@@ -480,13 +485,13 @@ C#endif
 
       ! starting from the 10th hour: 
       ! if (jtime .ge. 120000) then
-            if (rank == 140 .or. rank == 141 .or. rank == 26 .or. rank == 27) then
-                  !  save the CGRID dx1x2 values before AERO for this specific processor
-                  ! 171 is the index of ANH4K
-                  ! only get the values for processor #13 and #14
-                  anh4k_before_aero(:,:,:) = CGRID(:,:,:,171)
-                  cgrid_before_process(:,:,:,:) = CGRID(:,:,:,:)
-            endif
+C           if (rank == 449 .or. rank == 481) then
+C                 !  save the CGRID dx1x2 values before AERO for this specific processor
+C                 ! 171 is the index of ANH4K
+C                 ! only get the values for processor #13 and #14
+CC                 anh4k_before_aero(:,:,:) = CGRID(:,:,:,171)
+C                 cgrid_before_process(:,:,:,:) = CGRID(:,:,:,:)
+C           endif
       ! endif
 
           
@@ -496,9 +501,9 @@ C#endif
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'AERO' )
       IF ( STM ) CALL STM_WRAP_AE ( CGRID, JDATE, JTIME )
       
-      if (rank == 26) then
-         write(*,*) 'after aero ANH4K', cgrid(3,13,2,171)
-      endif      
+C     if (rank == 26) then
+C        write(*,*) 'after aero ANH4K', cgrid(3,13,2,171)
+C     endif      
       
 C      CALL MPI_REDUCE(resetted_case, global_resetted_case, 3*35, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 C      CALL MPI_REDUCE(total_case, global_total_case, 3*35, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
@@ -546,31 +551,33 @@ C     enddo
 C     endif
 C     endif 
       ! if (jtime .ge. 120000) then
-      if (rank == 140 .or. rank == 141 .or. rank == 26 .or. rank == 27) then
-      do l = 1, nlays
-           do r = 1, nrows
-                do c = 1, ncols
-                    do snum = 1, nspcsd
-                       if (cgrid_before_process(c,r,l,snum)%dx1x2 /= 0.0d0) then
-                       ! only detect the ones with large increase
-                       cond1_total = abs(cgrid_after_process(c,r,l,snum)%dx1x2 / cgrid_before_process(c,r,l,snum)%dx1x2) >= 1.d2
-                              if (cond1_total .and. abs(cgrid_after_process(c,r,l,snum)%dx1x2) > 1.d-21) then
-                                  write(*,*) 'before:', cgrid_before_process(c,r,l,snum)
-                                  write(*,*) 'after:', cgrid_after_process(c,r,l,snum)
-                                  write(*,*) 'col:', c
-                                  write(*,*) 'row:', r
-                                  write(*,*) 'lay:', l
-                                  write(*,*) 'spc:', snum
-                                  write(*,*) 'time:', JTIME
-                                  write(*,*) 'rank:', rank
-                                  write(*,*) 'AERO!'
-                             endif 
-                        endif
-                      enddo
-                 enddo
-           enddo
-      enddo
-      endif
+C     if (rank == 449 .or. rank == 481) then
+C     do l = 1, nlays
+C          do r = 1, nrows
+C               do c = 1, ncols
+C                   do snum = 1, nspcsd
+C                      if (cgrid_before_process(c,r,l,snum)%dx1x2 /= 0.0d0) then
+C                      ! only detect the ones with large increase
+C                      cond1_total = abs(cgrid_after_process(c,r,l,snum)%dx1x2 / cgrid_before_process(c,r,l,snum)%dx1x2) >= 5.d1
+CC                             if (cond1_total .and. abs(cgrid_after_process(c,r,l,snum)%dx1x2) > 1.d-21) then
+C                      if (cond1_total) then
+C                                 write(*,*) 'before:', cgrid_before_process(c,r,l,snum)
+C                                 write(*,*) 'after:', cgrid_after_process(c,r,l,snum)
+C                                 write(*,*) 'col:', c
+C                                 write(*,*) 'row:', r
+C                                 write(*,*) 'lay:', l
+C                                 write(*,*) 'spc:', snum
+C                                 write(*,*) 'time:', JTIME
+C                                 write(*,*) 'rank:', rank
+C                                 write(*,*) 'AERO!'
+C                       endif
+CC                            endif 
+C                       endif
+C                     enddo
+C                enddo
+C          enddo
+C     enddo
+C     endif
       ! endif 
       ! clear out the values at the end
       deallocate(anh4k_before_aero)

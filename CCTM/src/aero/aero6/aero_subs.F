@@ -1088,7 +1088,7 @@ C *** Determine if Hybrid
 #else
 	  TEMP_CUTOFF = 260.d0
       PRES_CUTOFF = 2.D4
-      OutOfBounds = (AIRTEMP .LE. 250.0d0) .OR. (AIRPRES .LE. 2.D4) .OR. (AIRRH .LE. 0.18)
+      OutOfBounds = (AIRTEMP .LE. 260.0d0) .OR. (AIRPRES .LE. 2.D4) .OR. (AIRRH .LE. 0.18)
       
       ! FWDISO = ( AIRTEMP .GE. TEMP_CUTOFF ) .AND. ( AIRPRES .GE. PRES_CUTOFF ) .AND. (AIRRH .GE. 0.18)
       FWDISO = OutOfBounds
@@ -1099,7 +1099,7 @@ C     FWDISO = .TRUE.
          IF ( AEROSPC( I )%CHARGE .NE. 0 ) TMP = TMP + AEROSPC_CONC( I,N_MODE )
       END DO
       HYBRID = ( TMP .GE. CUTOFF ) .AND. ( AIRRH .GE. 0.18 )
-      hybrid = .false.
+      ! hybrid = .false.
 #endif
 
       DELT  = REAL( DT, 8 )

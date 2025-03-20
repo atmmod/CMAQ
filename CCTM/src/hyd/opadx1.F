@@ -93,7 +93,7 @@
          IF ( IO_PE_INCLUSIVE ) THEN
 
 ! Get default file header attibutes from DX1 file (assumes file already open)
-
+            
             IF ( .NOT. DESC3( CTM_CONC_1 ) ) THEN
                XMSG = 'Could not get '
      &              // TRIM( CTM_CONC_1 )
