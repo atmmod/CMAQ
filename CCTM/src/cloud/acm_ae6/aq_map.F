@@ -145,7 +145,8 @@ C Local Variables (scalars):
       real( 8 ), ALLOCATABLE, SAVE :: AEROSOL( :, :)  ! aerosol conc (mol/mol)
       real( 8 ), ALLOCATABLE, SAVE :: AERWDEP( :, :)  ! aerosol wet dep array (mm mol/liter)
       TYPE(hyperdual)  :: WSRGGAS( NGAS, MXSRG)             ! weights for surrogate
-      TYPE(hyperdual)  :: WSRGAER( MAX_NAER, NMODES, MXSRG) ! weights for surrogate
+      ! TYPE(hyperdual)  :: WSRGAER( MAX_NAER, NMODES, MXSRG) ! weights for surrogate
+      REAL( 8 )        :: WSRGAER( MAX_NAER, NMODES, MXSRG)
 
 C External Functions:
 
@@ -334,7 +335,7 @@ C...load aerosol concentrations
               DO ISRG = 1, NSRGAER( IAER, IMODE )
                 PNTR = CGRID2AQ_MAP( LSRGAER( IAER, IMODE, ISRG ) )
 
-     			WSRGAER( IAER, IMODE, ISRG ) = POLC( PNTR ) 
+     			WSRGAER( IAER, IMODE, ISRG ) = POLC( PNTR )%x
      &                                       / AEROSOL( IAER, IMODE )
 #ifdef sens
                DO NP = 1, NPMAX
@@ -491,6 +492,11 @@ C...Update aerosol number
       CEND( AERONUM_MAP( 2 ) ) = MAX( CEND( AERONUM_MAP( 2 ) ), aeromode_minNum( 2 )/ (AIRM/CTHK1) )
       CEND( AERONUM_MAP( 3 ) ) = MAX( CEND( AERONUM_MAP( 3 ) ), aeromode_minNum( 3 )/ (AIRM/CTHK1) )
 
+C... Remove the number sensitivity calculation for now to try      
+C     CEND( AERONUM_MAP( 1 ) )%dx1x2 = 0.0d0
+C     CEND( AERONUM_MAP( 2 ) )%dx1x2 = 0.0d0
+C     CEND( AERONUM_MAP( 3 ) )%dx1x2 = 0.0d0
+
 #ifdef sens
 C... Remove number sensitivity calculations for now
       S_CEND( :, AERONUM_MAP( 1 ) ) = 0.0
@@ -524,6 +530,11 @@ C...Update surface area
      &                         * ( M3NEW( 3 ) / M3OLD( 3 ) ) ** TWOTHIRDS
       CEND( AEROSRF_MAP( 3 ) ) = MAX( CEND( AEROSRF_MAP( 3 ) ), aeromode_minM2( 3 ) * DPI / (AIRM/CTHK1) )
 
+C... Remove the number sensitivity calculation for now to try      
+C     CEND( AERONUM_MAP( 1 ) )%dx1x2 = 0.0d0
+C     CEND( AERONUM_MAP( 2 ) )%dx1x2 = 0.0d0
+C     CEND( AERONUM_MAP( 3 ) )%dx1x2 = 0.0d0
+      
 #ifdef sens
 C... Remove surface area sensitivity calculations for now
       S_CEND( :, AEROSRF_MAP( 1 ) ) = 0.0

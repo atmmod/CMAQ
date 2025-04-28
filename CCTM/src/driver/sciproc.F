@@ -134,7 +134,7 @@ c      INTEGER         :: DX1_WRITE_TIME, DX2_WRITE_TIME, DX1X2_WRITE_TIME
       logical       :: cond2 = .false.
       logical       :: cond1_total = .false.
       integer :: rank, ierr, l, c, r, snum
-      integer :: i, j
+      integer :: i, j, k
       integer :: global_resetted_case(3,35), global_total_case(3,35)
       
 
@@ -303,14 +303,23 @@ C Synchronization Step Physical Processes Sequence
          global_resetted_case = 0
       endif  
       
+      ! get the rank number
       
+      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
       
       CALL VDIFF ( CGRID, JDATE, JTIME, TSTEP)
       IF ( CKSUM ) CALL CKSUMMER ( 'VDIFF', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE ( 'VDIF', CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'VDIFF' )
       
-      column_model = .true.
+      column_model = .false.
+      
+C     if (rank == 78) then
+C       write(*,*) 'after vdiff:', JTIME
+C         do k = 1, 35
+C            write(*,*) 'Layer ', k, ':', CGRID(5, 9, k, 129)
+C        end do
+C     endif
       
       IF ( .NOT. COLUMN_MODEL ) THEN
 C couple CGRID for advection and horizontal diffusion
@@ -355,10 +364,13 @@ C
       IF ( CKSUM ) CALL CKSUMMER ( 'PHOT', CGRID, JDATE, JTIME )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'PHOT' )
       
-      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
+C     if (rank == 78) then
+C       write(*,*) 'after phot:', JTIME
+C         do k = 1, 35
+C            write(*,*) 'Layer ', k, ':', CGRID(5, 9, k, 129)
+C        end do
+C     endif      
 C     cond1_total = .false.
-      
-      ! if (jtime .ge. 120000) then
 C           if (rank == 449 .or. rank == 481) then
 C                 !  save the CGRID dx1x2 values before AERO for this specific processor
 C                 ! 171 is the index of ANH4K
@@ -371,7 +383,13 @@ C           endif
       IF ( CKSUM ) CALL CKSUMMER ( 'CLDPROC', CGRID, JDATE, JTIME )
       ! IF ( LIPR ) CALL PA_UPDATE ( 'CLDS', CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CLDPROC' )
-      
+       
+C      if (rank == 78) then
+C       write(*,*) 'after cloud:', JTIME
+C         do k = 1, 35
+C            write(*,*) 'Layer ', k, ':', CGRID(5, 9, k, 129)
+C        end do
+C     endif      
       
 C     if (rank == 26) then
 C        write(*,*) 'after cloud ANH4K', cgrid(3,13,2,171)
@@ -432,7 +450,15 @@ C           endif
       ! IF ( LIPR ) CALL PA_UPDATE ( 'CHEM', CGRID, JDATE, JTIME, TSTEP ) 
       IF ( STM ) CALL STM_WRAP_GAS ( CGRID, JDATE, JTIME, .FALSE. )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'CHEM' )
-      
+       
+C      if (rank == 78) then
+C       write(*,*) 'after chem:', JTIME
+C         do k = 1, 35
+C            write(*,*) 'Layer ', k, ':', CGRID(5, 9, k, 129)
+C        end do
+C     endif   
+
+     
 C     if (rank == 26) then
 C        write(*,*) 'after chem ANH4K', cgrid(3,13,2,171)
 C     endif      
@@ -500,6 +526,13 @@ C           endif
       ! IF ( LIPR ) CALL PA_UPDATE_AERO ( CGRID, JDATE, JTIME, TSTEP )
       IF ( PRINT_PROC_TIME ) CALL TIMING_SPLIT ( CPU_TIME_START, 1, 'AERO' )
       IF ( STM ) CALL STM_WRAP_AE ( CGRID, JDATE, JTIME )
+
+C      if (rank == 78) then
+C       write(*,*) 'after aero:', JTIME
+C         do k = 1, 35
+C            write(*,*) 'Layer ', k, ':', CGRID(5, 9, k, 129)
+C        end do
+C     endif
       
 C     if (rank == 26) then
 C        write(*,*) 'after aero ANH4K', cgrid(3,13,2,171)
@@ -584,6 +617,13 @@ C     endif
       deallocate(anh4k_after_aero)
       deallocate(cgrid_after_process)
       deallocate(cgrid_before_process)
+      
+      do k = 10, 35
+      	 cgrid(:,:,k,:)%dx1 = 0.0d0
+      	 cgrid(:,:,k,:)%dx2 = 0.0d0
+      	 cgrid(:,:,k,:)%dx1x2 = 0.0d0
+      enddo
+      
 
 
 #ifdef isam

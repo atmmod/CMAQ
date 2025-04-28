@@ -150,6 +150,7 @@ C-----------------------------------------------------------------------
      &                   LHNO3_PHOTOLYSIS => LHNO3
       USE CENTRALIZED_IO_MODULE
       USE HDMod
+      USE mpi
 C#ifdef isam
 C     USE SA_DEFN, ONLY: ISAM, NSPC_SA, NTAG_SA, SPC_INDEX, OTHRTAG,
 C    &                   SPC_NAME, DEPSUM_SAVE, DS4_SAVE, REMOV_SAVE,
@@ -428,6 +429,8 @@ C Latitude and longitude for zenith angle calculation:
       LOGICAL          DARK                        ! DARK = TRUE is night,  DARK = FALSE is day
 
       CHARACTER( 120 ) :: XMSG = ' '   ! Exit status message
+      
+      integer  :: rank, ierr
 
 
 C...........Statement Functions
@@ -777,6 +780,8 @@ C#endif
 #endif
 
       END IF   ! Firstime
+      
+      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)   ! check for the processor number
 
       IF ( .NOT. CONVECTIVE_SCHEME) RETURN
 
@@ -2236,6 +2241,17 @@ C...   include raining region below cld base
                   OUTCLOUD = PCLD( SPC,LAY )
                   CGRID( COL,ROW,LAY,SPC ) = FRAC * INCLOUD
      &                                     + ( 1.0 - FRAC ) * OUTCLOUD
+     
+C               if (rank == 78 .and. LAY == 10 .and. SPC == 129) then
+C                   write(*,*) 'BELOW'
+C                   write(*,*) 'FRAC', FRAC
+C                   write(*,*) 'PCLD', PCLD(129, 10)
+C                   write(*,*) 'CEND', CEND(129)
+C                   write(*,*) 'POLC', POLC(129)
+C                   write(*,*) 'OUTCLOUD', OUTCLOUD
+C                   write(*,*) 'INCLOUD', INCLOUD
+C                   write(*,*) 'CGRID', CGRID(5,9,10,129)
+C               endif
 #ifdef sens
                   DO NP = 1, NPMAX
                     IF( ABS( S_POLC( NP, SPC ) ) .LT. DDM3D_CONCMINL ) THEN
@@ -2308,6 +2324,12 @@ C#endif
             DO LAY = 1, CLBASE - 1
               DO SPC = 1, NSPCSD
                 CGRID( COL,ROW,LAY,SPC ) = PCLD( SPC,LAY )
+                
+C               if (rank == 78 .and. LAY == 10 .and. SPC == 129) then
+C                   write(*,*) 'no raining cloud'
+C                   write(*,*) 'PCLD', PCLD(129, 10)
+C               endif
+                
 #ifdef sens
                 DO NP = 1, NPMAX
                   SENGRID( COL, ROW, LAY, NP, SPC ) = REAL ( S_PCLD( NP, SPC, LAY ), 4 )
@@ -2350,8 +2372,20 @@ C...Now do changes in cloudy layers:
                 OUTCLOUD = ( CCR( SPC,LAY ) - FRAC * PCLD( SPC,LAY ) )
      &                   / ( 1.0 - FRAC )
                 OUTCLOUD = MAX( OUTCLOUD, CONCMINL( SPC,LAY ) )
-                CGRID( COL,ROW,LAY,SPC ) = FRAC * INCLOUD 
+                CGRID( COL,ROW,LAY,SPC ) = FRAC * INCLOUD
      &                                   + ( 1.0 - FRAC ) * OUTCLOUD
+     
+C               if (rank == 78 .and. LAY == 10 .and. SPC == 129) then
+C                   WRITE(*,*) 'cloudy'
+C                   write(*,*) 'CCR', CCR(129, 10)
+C                   write(*,*) 'FRAC', FRAC
+C                   write(*,*) 'PCLD', PCLD(129, 10)
+C                   write(*,*) 'CEND', CEND(129)
+C                   write(*,*) 'POLC', POLC(129)
+C                   write(*,*) 'OUTCLOUD', OUTCLOUD
+C                   write(*,*) 'INCLOUD', INCLOUD
+C                   write(*,*) 'CGRID', CGRID(5,9,10,129)
+C               endif
 #ifdef sens
                 DO NP = 1, NPMAX
                   IF( ABS( S_POLC( NP, SPC ) ) .LT. DDM3D_CONCMINL ) THEN

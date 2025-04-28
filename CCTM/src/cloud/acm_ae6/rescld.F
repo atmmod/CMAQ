@@ -91,6 +91,7 @@ C-----------------------------------------------------------------------
       USE PHOT_MOD,      ONLY: RJ, RJ_RES, RJ_SUB, LH2O2, LHNO3
       USE CENTRALIZED_IO_MODULE
       USE HDMod
+      USE mpi
 #ifdef isam
       USE SA_DEFN, ONLY: ISAM, NSPC_SA, NTAG_SA, SPC_INDEX, OTHRTAG, 
      &                   SPC_NAME, DEPSUM_SAVE, DS4_SAVE, REMOV_SAVE,
@@ -205,6 +206,7 @@ C Latitude and longitude for zenith angle calculation: Golam Sarwar * July 1, 20
       REAL( 8 )          JH2O2                           ! H2O2 photolysis rate, 1/min 
       REAL( 8 )          JHNO3                           ! HNO3 photolysis rate, 1/min 
       LOGICAL       DARK                            ! DARK = TRUE is night,  DARK = FALSE is day
+      integer :: rank, ierr
 
 #ifdef isam
       INTEGER, SAVE           :: S_SO2, S_SO4J, S_SULF
@@ -362,6 +364,8 @@ C...  the met timestep in hours
 #endif
 
       END IF  ! FIRSTIME
+      
+      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)   ! check for the processor number
 
       MDATE = JDATE
       MTIME = JTIME
@@ -608,11 +612,24 @@ C...  per mole air
 C...perform scavenging and aqueous chemistry within the cloud
 C...  and re-adjust the ending and removed amounts for those species
 C...  that were scavenged or that participated in cloud chemistry
-
+                if (rank == 78 .and. lay == 9 .and. col == 5 .and. row == 9) then
+                  write(*,*) 'CEND before scavwdep 9th:', CEND(129)
+                endif
+                if (rank == 78 .and. lay == 10 .and. col == 5 .and. row == 9) then
+                  write(*,*) 'CEND before scavwdep 10th:', CEND(129)
+                endif 
+                                  
                 CALL SCAVWDEP ( JDATE, JTIME, WTBAR, WCBAR, TBARC,
      &                          PBARC, CTHK1, AIRM, PRATE1, TAUCLD,
      &                          POLC, CEND, REMOV, REMOVAC, ALFA0,
      &                          ALFA2, ALFA3 )
+
+                if (rank == 78 .and. lay == 9 .and. col == 5 .and. row == 9) then
+                  write(*,*) 'CEND after scavwdep 9th:', CEND(129)
+                endif
+                if (rank == 78 .and. lay == 10 .and. col == 5 .and. row == 9) then
+                  write(*,*) 'CEND after scavwdep 10th:', CEND(129)
+                endif
 
 #ifdef isam
                 DO SPC = 1, NSPC_SA
@@ -670,6 +687,15 @@ C...  mimic this for the ASO4GASJ tracking species
      &                          PBARC, CTHK1, AIRM, PRATE1, TAUCLD,
      &                          POLC, CEND, REMOV, REMOVAC, ALFA0,
      &                          ALFA2, ALFA3, DARK )
+                 
+                if (rank == 78 .and. lay == 9 .and. col == 5 .and. row == 9) then
+                  write(*,*) 'CEND after aq_map 9th:', CEND(129)
+                endif
+                if (rank == 78 .and. lay == 10 .and. col == 5 .and. row == 9) then
+                  write(*,*) 'CEND after aq_map 10th:', CEND(129)
+                endif                   
+                 
+                 
 
 #ifdef isam
                   DO SPC = 1, NSPC_SA ! general case
@@ -851,12 +877,20 @@ C...load H+ concentration into the deposition array as well
      &                         DEP( COL, ROW, N_SPC_WDEP+1 ) + REMOVAC
  
 C...set cgrid to the ending concentrations
-
+                
+                
                 DO SPC = 1, NSPCSD
                   IF ( SPC .NE. N_GC_SPCD ) THEN
                     CGRID( COL, ROW, LAY, SPC ) = CEND( SPC )
                   END IF
                 END DO
+                
+                if (rank == 78 .and. lay == 9 .and. col == 5 .and. row == 9) then
+                  write(*,*) 'CGRID end of rescld 9th:', CGRID(5,9,9,129)
+                endif
+                if (rank == 78 .and. lay == 10 .and. col == 5 .and. row == 10) then
+                  write(*,*) 'CGRID end of rescld 10th:', CGRID(5,9,10,129)
+                endif  
 
 #ifdef isam
                 DO SPC = 1, NSPC_SA

@@ -65,6 +65,7 @@ C-----------------------------------------------------------------------
       USE UTILIO_DEFN
       use CENTRALIZED_IO_MODULE, only : interpolate_var
       USE HDMod
+      ! USE mpi
 
 #ifdef isam
       USE SA_DEFN, ONLY: ISAM, NSPC_SA, N_SPCTAG, TOT_SADEP, CONV_SADEP,
@@ -149,6 +150,8 @@ C...........Local Variables
 
       REAL FAC                       ! temp conversion factor
       TYPE(hyperdual) CCMIN
+      
+      integer :: rank, ierr
 
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: BUFF2 ( :,: )
@@ -399,11 +402,20 @@ Ckrt deposition arrays for tagged species.....
 #endif
 
       END IF   ! FIRSTIME
+      
+C      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)   ! check for the processor number
 
       MDATE = JDATE
       MTIME = JTIME
 
       call interpolate_var ('DENS', mdate, mtime, DENS)
+C     if (rank == 78) then
+C        write(*,*) 'JTIME:', JTIME
+C        write(*,*) 'CGRID before unit conversion 11th:', CGRID(5, 9, 11, 129)%dx1x2
+C        write(*,*) 'CGRID before unit conversion 10th:', CGRID(5, 9, 10, 129)%dx1x2
+C        write(*,*) 'CGRID before unit conversion 9th:', CGRID(5, 9, 9, 129)%dx1x2
+C        write(*,*) 'CGRID before unit conversion 8th:', CGRID(5, 9, 8, 129)%dx1x2
+C     endif
 
 C...convert units on cgrid to molar mixing ratio (by volume)
 C...  determine no. of moles of gas per moles of air by volume
@@ -627,6 +639,14 @@ c                 ENDIF
 
 C...compute cloud effects for the resolved clouds and resolved rainwater
 
+C     if (rank == 78) then
+C        write(*,*) 'JTIME:', JTIME
+C        write(*,*) 'CGRID before rescld 11th:', CGRID(5, 9, 11, 129)%dx1x2
+C        write(*,*) 'CGRID before rescld 10th:', CGRID(5, 9, 10, 129)%dx1x2
+C        write(*,*) 'CGRID before rescld 9th:', CGRID(5, 9, 9, 129)%dx1x2
+C        write(*,*) 'CGRID before rescld 8th:', CGRID(5, 9, 8, 129)%dx1x2
+C     endif
+
 #ifdef isam
       CALL RESCLD ( CGRID, JDATE, JTIME, TSTEP,
      &              N_SPC_WDEP, WDEP_MAP, TOT_DEP, RESTRANS,
@@ -636,6 +656,15 @@ C...compute cloud effects for the resolved clouds and resolved rainwater
      &              N_SPC_WDEP, WDEP_MAP, TOT_DEP, RESTRANS )
 #endif
 
+
+C     if (rank == 78) then
+C        write(*,*) 'JTIME:', JTIME
+C        write(*,*) 'CGRID after rescld 11th:', CGRID(5, 9, 11, 129)%dx1x2
+C        write(*,*) 'CGRID after rescld 10th:', CGRID(5, 9, 10, 129)%dx1x2
+C        write(*,*) 'CGRID after rescld 9th:', CGRID(5, 9, 9, 129)%dx1x2
+C        write(*,*) 'CGRID after rescld 8th:', CGRID(5, 9, 8, 129)%dx1x2
+C     endif
+         
 C...compute cloud effects for convective (subgrid) clouds
 
 #ifdef isam
@@ -646,6 +675,14 @@ C...compute cloud effects for convective (subgrid) clouds
       CALL CONVCLD_ACM ( CGRID, JDATE, JTIME, TSTEP,
      &                   N_SPC_WDEP, WDEP_MAP, CONV_DEP, SUBTRANS )
 #endif
+      
+C     if (rank == 78) then
+C        write(*,*) 'JTIME:', JTIME
+C        write(*,*) 'CGRID CONVCLD_ACM 11th:', CGRID(5, 9, 11, 129)%dx1x2
+C        write(*,*) 'CGRID CONVCLD_ACM 10th:', CGRID(5, 9, 10, 129)%dx1x2
+C        write(*,*) 'CGRID CONVCLD_ACM 9th:', CGRID(5, 9, 9, 129)%dx1x2
+C        write(*,*) 'CGRID CONVCLD_ACM 8th:', CGRID(5, 9, 8, 129)%dx1x2
+C     endif
 
 C...now check to see if it's time to write the deposition file
       WSTEP = WSTEP + TIME2SEC( TSTEP( 2 ) )
@@ -706,7 +743,7 @@ Ckrt  for the tagged species as well....
 C...write data to the normal wet deposition file
 
         IF ( .NOT. WRITE3( CTM_WET_DEP_1, ALLVAR3, NDATE,
-     &                     NTIME, TOT_DEP%x ) ) THEN
+     &                     NTIME, real(TOT_DEP%x, 4)) ) THEN
           XMSG = 'Could not write ' // CTM_WET_DEP_1 // ' file'
           CALL M3EXIT ( PNAME, NDATE, NTIME, XMSG, XSTAT1 )
         END IF
@@ -743,7 +780,7 @@ C...write data to the diagnostic file if requested by the user
         IF ( CLD_DIAG ) THEN
 
           IF ( .NOT. WRITE3( CTM_WET_DEP_2, ALLVAR3, NDATE,
-     &                       NTIME, CONV_DEP%x ) ) THEN
+     &                       NTIME, real(CONV_DEP%x, 4) ) ) THEN
           XMSG = 'Could not write ' // CTM_WET_DEP_2 // ' file'
             CALL M3EXIT ( PNAME, NDATE, NTIME, XMSG, XSTAT1 )
           END IF
@@ -913,6 +950,16 @@ C...convert to ppmV tracer gas
           END DO
         END DO
       END DO
+      
+C     if (rank == 78) then
+C        write(*,*) 'JTIME:', JTIME
+C        write(*,*) 'CGRID after unit conversion 11th:', CGRID(5, 9, 11, 129)%dx1x2
+C        write(*,*) 'CGRID after unit conversion 10th:', CGRID(5, 9, 10, 129)%dx1x2
+C        write(*,*) 'CGRID after unit conversion 9th:', CGRID(5, 9, 9, 129)%dx1x2
+C        write(*,*) 'CGRID after unit conversion 8th:', CGRID(5, 9, 8, 129)%dx1x2
+C     endif
+      
+      
 
 #ifdef isam
 c ISAM  unit conversion
