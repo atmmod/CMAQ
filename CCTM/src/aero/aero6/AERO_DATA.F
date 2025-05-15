@@ -1240,6 +1240,137 @@ C flag will be set to .true.
 	  
       Return
       End Subroutine extract_aero
+      
+      
+C-----------------------------------------------------------------------
+#ifdef sens
+      Subroutine extract_aero_real( conc, minchk, s_conc, schk )
+#else
+      Subroutine extract_aero_real( conc, minchk )
+#endif
+
+C  Extracts aerosol data into the AERO_DATA:aerospc_conc array
+C  The original idea is that the data for conc comes from CGRID
+C  Also transfers dry surface area to wet 2nd moment.
+C  Only for real values: 
+
+C  Revision History:
+C     First version was coded in April 2010 by Steve Howard with
+C     Prakash Bhave, Jeff Young, and Sergey Napelenok.
+C     4/2016: Updated for 2nd moment by H. Pye and B. Murphy
+C-----------------------------------------------------------------------
+
+      Use aeromet_data, only : pi, f6pi  ! fundamental constants, data type definitions, etc.
+
+      Implicit None
+
+C Arguments:
+      Real,    Intent( In ) :: conc( : )
+      Logical, Intent( In ) :: minchk
+#ifdef sens
+      Real,    Intent( In ) :: s_conc( :,: )
+      Logical, Intent( In ) :: schk  ! necessary because some routines don't require sensitivity updates
+#endif
+
+C Local Variables:
+      Integer m, n, spc
+
+      If ( .Not. mapped ) Then
+         Call map_aero()
+      End If
+
+#ifdef sens
+      If ( schk ) Then
+         If ( .Not. ae_ddm3d_ready ) Then
+            Call init_aero_ddm3d()
+         End If
+      End If
+#endif
+
+C Copy grid cell concentrations of aero species to aerospc_conc
+      aerospc_conc = 0.0d0
+#ifdef sens
+      If ( schk ) Then
+         s_aerospc_conc = 0.0D0
+      End If
+#endif
+      If ( minchk ) Then
+         Do m = 1, n_mode
+            Do spc = 1, n_aerospc
+               n = aerospc_map( spc,m )
+               If ( n .Ne. 0 ) Then
+                  aerospc_conc( spc,m ) = Max( real(conc( n ), 8), aerospc( spc )%min_conc( m ) ) ! [ug/m^3]
+#ifdef sens
+                  If ( schk ) Then
+                     Do np = 1, npmax
+                        If ( aerospc_conc( spc,m ) .Eq. aerospc( spc )%min_conc( m ) ) Then
+                           s_aerospc_conc( spc,m,np ) = 0.0D0
+                        Else
+                           s_aerospc_conc( spc,m,np ) = Real( s_conc( np,n ), 8 )
+                        End If
+                     End Do
+                  End If
+#endif
+               End If
+            End Do
+         End Do
+      Else
+         Do m = 1, n_mode
+            Do spc = 1, n_aerospc
+               n = aerospc_map( spc,m )
+               If ( n .Ne. 0 ) Then
+                  aerospc_conc( spc,m ) = real(conc( n ), 8)   ! [ug/m^3]
+#ifdef sens
+                  If ( schk ) Then
+                     Do np = 1, npmax
+                        s_aerospc_conc( spc,m,np ) = Real( s_conc( np,n ), 8 )
+                     End Do
+                  End If
+#endif
+               End If
+            End Do
+         End Do
+      End If
+
+      ! Calculate Dry Third Moment [ m3 / m3 ]
+      Do m = 1, n_mode
+         moment3_conc( m ) = sum( aerospc_conc(:,m) / aerospc(:)%density,
+     &      MASK= ( ( .NOT. aerospc%no_M2wet ) .AND.
+     &              ( .NOT. aerospc%Tracer ) ) )
+     
+         moment3_conc( m ) = max( moment3_conc( m ) * 1.0E-9 * f6pi,
+     &                            aeromode( m )%min_m3conc )
+      End Do
+
+C Copy grid cell concentrations of aero # and surf area
+C Convert surface area to M2 and set wet_moments_flag
+
+      moment0_conc = 0.0d0
+      moment2_conc = 0.0d0
+
+      If ( minchk ) Then
+         Do m = 1, n_mode
+            n = aeronum_map( m )
+            moment0_conc( m ) = Max( real(conc( n ), 8), aeromode( m )%min_numconc )
+            n = aerosrf_map( m )
+            moment2_conc( m ) = Max( real(conc( n ) / pi , 8), aeromode( m )%min_m2conc )
+         End Do
+      Else
+         Do m = 1, n_mode
+            n = aeronum_map( m )
+            moment0_conc( m ) = real(conc( n ), 8)
+            n = aerosrf_map( m )
+            moment2_conc( m ) = real(conc( n ) / pi, 8)
+         End Do
+      End If
+      wet_moments_flag = .false.
+
+C Convert dry 2,3 moment to wet 2,3 moment
+C flag will be set to .true.
+      Call calcmoments( .true. )
+
+      Return
+      End Subroutine extract_aero_real
 
 C-----------------------------------------------------------------------
 #ifdef sens

@@ -143,15 +143,13 @@ C...........Local Variables
 !     REAL          CONV_DEP( NCOLS,NROWS,N_SPC_WDEP+8 ) ! convective wdep only
 !     REAL          TOT_DEP ( NCOLS,NROWS,N_SPC_WDEP+1 ) ! total wdep
       REAL, ALLOCATABLE, SAVE :: DENS    ( :,:,: ) ! air density (kg/m3)
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: CONV_DEP( :,:,: ) ! convective wdep only
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: TOT_DEP ( :,:,: ) ! total wdep
+      REAL, ALLOCATABLE, SAVE :: CONV_DEP( :,:,: ) ! convective wdep only
+      REAL, ALLOCATABLE, SAVE :: TOT_DEP ( :,:,: ) ! total wdep
       REAL, ALLOCATABLE, SAVE :: RESTRANS( :,: )   ! resolved cloud transmissivity
       REAL, ALLOCATABLE, SAVE :: SUBTRANS( :,:,: ) ! subgrid cloud transmissivity
 
       REAL FAC                       ! temp conversion factor
-      TYPE(hyperdual) CCMIN
-      
-      integer :: rank, ierr
+      REAL( 8 ) CCMIN                ! el-0428: minimum concentration of CGRID, use REAL( 8 )
 
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: BUFF2 ( :,: )
@@ -174,7 +172,7 @@ C...........EXTERNAL FUNCTIONS
             INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP( 3 )
             INTEGER, INTENT( IN )    :: N_SPC_WDEP
             INTEGER, INTENT( IN )    :: WDEP_MAP( : )
-            TYPE(hyperdual),    INTENT( INOUT ) :: DEP( :,:,: )
+            REAL,    INTENT( INOUT ) :: DEP( :,:,: )
             REAL,    INTENT( OUT )   :: RESTRANS( :,: )
 #ifdef isam
             REAL,    INTENT( INOUT ) :: SA_DEP( :,:,:,: )
@@ -195,7 +193,7 @@ C...........EXTERNAL FUNCTIONS
             INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP( 3 )
             INTEGER, INTENT( IN )    :: N_SPC_WDEP
             INTEGER, INTENT( IN )    :: WDEP_MAP( : )
-            TYPE(hyperdual),    INTENT( INOUT ) :: DEP( :,:,: )
+            REAL,    INTENT( INOUT ) :: DEP( :,:,: )
             REAL,    INTENT( OUT )   :: SUBTRANS( :,:,: )
 #ifdef isam
             REAL,    INTENT( INOUT ) :: CONV_SADEP( :,:,:,: )
@@ -307,7 +305,7 @@ C...initialize the deposition array before processing clouds
           XMSG = 'Failure allocating TOT_DEP'
           CALL M3EXIT( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
         END IF
-        TOT_DEP = 0.0d0   ! array assignment
+        TOT_DEP = 0.0   ! array assignment
 
         ALLOCATE ( CONV_DEP( NCOLS,NROWS,N_SPC_WDEP+8+4 ),
      &             STAT = ALLOCSTAT )
@@ -315,7 +313,7 @@ C...initialize the deposition array before processing clouds
           XMSG = 'Failure allocating CONV_DEP'
           CALL M3EXIT( PNAME, JDATE, JTIME, XMSG, XSTAT1 )
         END IF
-        CONV_DEP = 0.0D0   ! array assignment
+        CONV_DEP = 0.0   ! array assignment
 
         ALLOCATE ( RESTRANS ( NCOLS,NROWS ), STAT = ALLOCSTAT )
         IF ( ALLOCSTAT .NE. 0 ) THEN
@@ -454,7 +452,7 @@ C...  convert to moles of aerosol per mole of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               FAC = CNV1 / DENS( COL, ROW, LAY ) / AE_MOLWT( SPC - AE_STRT + 1 )
-              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0D-30/FAC )
+              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC )%x, 1.0D-30/FAC )
               CGRID( COL, ROW, LAY, SPC ) = FAC * CCMIN
      		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
      		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
@@ -486,7 +484,7 @@ C...    convert to # per mole of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               FAC = CNV3 / DENS( COL, ROW, LAY )
-              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0D-30/FAC )
+              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC )%x, 1.0D-30/FAC )
               CGRID( COL, ROW, LAY, SPC ) = FAC * CCMIN
      		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
      		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
@@ -518,7 +516,7 @@ C...    convert to m2 per mole of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               FAC = CNV2 / DENS( COL, ROW, LAY )
-              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0D-30/FAC )
+              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC )%x, 1.0D-30/FAC )
               CGRID( COL, ROW, LAY, SPC ) = FAC * CCMIN
      		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
      		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
@@ -711,15 +709,15 @@ C...now check to see if it's time to write the deposition file
         DO ROW = 1, NROWS
           DO COL = 1, NCOLS
             VAR = N_SPC_WDEP + 8 + 1
-            CONV_DEP( COL, ROW, VAR ) = REAL ( SUBTRANS( COL, ROW, 1 ) , 8 ) 
+            CONV_DEP( COL, ROW, VAR ) = SUBTRANS( COL, ROW, 1 )
             VAR = VAR + 1
-            CONV_DEP( COL, ROW, VAR ) = REAL ( SUBTRANS( COL, ROW, 2 ) , 8 )
+            CONV_DEP( COL, ROW, VAR ) = SUBTRANS( COL, ROW, 2 )
             VAR = VAR + 1
-            CONV_DEP( COL, ROW, VAR ) = REAL ( RESTRANS( COL, ROW ) , 8 )
+            CONV_DEP( COL, ROW, VAR ) = RESTRANS( COL, ROW )
             VAR = VAR + 1
-            CONV_DEP( COL, ROW, VAR ) = REAL ( SUBTRANS( COL, ROW, 1 )
+            CONV_DEP( COL, ROW, VAR ) = SUBTRANS( COL, ROW, 1 )
      &                                * SUBTRANS( COL, ROW, 2 )
-     &                                * RESTRANS( COL, ROW ) , 8 ) 
+     &                                * RESTRANS( COL, ROW )
           END DO
         END DO
 
@@ -743,7 +741,7 @@ Ckrt  for the tagged species as well....
 C...write data to the normal wet deposition file
 
         IF ( .NOT. WRITE3( CTM_WET_DEP_1, ALLVAR3, NDATE,
-     &                     NTIME, real(TOT_DEP%x, 4)) ) THEN
+     &                     NTIME, TOT_DEP ) ) THEN
           XMSG = 'Could not write ' // CTM_WET_DEP_1 // ' file'
           CALL M3EXIT ( PNAME, NDATE, NTIME, XMSG, XSTAT1 )
         END IF
@@ -780,7 +778,7 @@ C...write data to the diagnostic file if requested by the user
         IF ( CLD_DIAG ) THEN
 
           IF ( .NOT. WRITE3( CTM_WET_DEP_2, ALLVAR3, NDATE,
-     &                       NTIME, real(CONV_DEP%x, 4) ) ) THEN
+     &                       NTIME, CONV_DEP ) ) THEN
           XMSG = 'Could not write ' // CTM_WET_DEP_2 // ' file'
             CALL M3EXIT ( PNAME, NDATE, NTIME, XMSG, XSTAT1 )
           END IF

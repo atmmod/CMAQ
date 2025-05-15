@@ -7459,7 +7459,23 @@ Module HDMod
       	  	qleft%dx1x2 = qright%dx1x2
       	
       	  end subroutine reset_hyd_sens
-      	  
+          
+          function real4_to_hyperdual_1d(a) result(hd_array)
+            implicit none
+            real(4), intent(in) :: a(:)
+            type(hyperdual), allocatable :: hd_array(:)
+            integer :: i
+
+            allocate(hd_array(size(a)))
+
+            do i = 1, size(a)
+               hd_array(i)%x = real(a(i), kind=8)   ! promote real(4) to real(8)
+               hd_array(i)%dx1 = 0.0d0
+               hd_array(i)%dx2 = 0.0d0
+               hd_array(i)%dx1x2 = 0.0d0
+            end do
+
+         end function real4_to_hyperdual_1d      	  
       
       end module HDMod
   

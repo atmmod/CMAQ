@@ -48,9 +48,9 @@ C Arguments
       INTEGER, INTENT( IN ) :: NSP            ! no. of species
       INTEGER, INTENT( IN ) :: NLAYS          ! no. of model layers
       REAL, INTENT( IN )    :: F( : )         ! entrainment fraction
-      TYPE(hyperdual), INTENT( INOUT ) :: C( :, : )      ! species concentration
+      REAL, INTENT( INOUT ) :: C( :, : )      ! species concentration
       REAL, INTENT( IN )    :: DZH( : )
-      TYPE(hyperdual), INTENT( INOUT ) :: CBELOW( : )    ! spec conc in layer below cld base
+      REAL, INTENT( INOUT ) :: CBELOW( : )    ! spec conc in layer below cld base
       INTEGER, INTENT( IN ) :: CLBASE
       INTEGER, INTENT( IN ) :: CLTOP
       REAL, INTENT( IN )    :: FRAC           ! grid cell fractional cloud cover
@@ -67,15 +67,12 @@ C Local variables
       INTEGER NLP, K, NL, S          ! index variables
       INTEGER KB
 
-      REAL DTLIM
-      TYPE(hyperdual) :: F1
-      REAL DTS, M1UP
-      TYPE(hyperdual) :: DELC
+      REAL DTLIM, F1
+      REAL DTS, DELC, M1UP
       REAL( 8 ), ALLOCATABLE, SAVE :: AI( : ), BI( : ), EI( : )
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: DI( : ), UI( : )
-      REAL( 8 ) :: ALPHA, GAMA
-      TYPE(hyperdual) :: BETA
-      TYPE(hyperdual), ALLOCATABLE, SAVE :: VCI( :,: )
+      REAL( 8 ), ALLOCATABLE, SAVE :: DI( : ), UI( : )
+      REAL( 8 ) :: ALPHA, BETA, GAMA
+      REAL, ALLOCATABLE, SAVE :: VCI( :,: )
       REAL, ALLOCATABLE, SAVE :: MBARKS( : ), MDWN( : )
 
 !--Local Arrays for MPAS implementation
@@ -124,10 +121,10 @@ C Compute ACM mixing rate
 
       DO S = 1, NSP
         VCI( KB, S ) = CBELOW( S )
-        VCI( CLTOP+1,S ) = 9999.0d0
+        VCI( CLTOP+1,S ) = 9999.0
         DO K = CLBASE, CLTOP
           VCI( K,S ) = C( S,K )
-          UI( K )  = 0.0D0           ! init variable for use below
+          UI( K )  = 0.0           ! init variable for use below
         END DO
       END DO
 
@@ -179,7 +176,7 @@ C Back substitution:
 
 C Update concentrations
           DO K = KB, CLTOP
-            VCI( K,S ) =  UI( K ) 
+            VCI( K,S ) = REAL( UI( K ), 4 )
           END DO
 
 1000    CONTINUE   ! end loop for species

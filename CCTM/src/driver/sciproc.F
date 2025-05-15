@@ -618,11 +618,11 @@ C     endif
       deallocate(cgrid_after_process)
       deallocate(cgrid_before_process)
       
-      do k = 10, 35
-      	 cgrid(:,:,k,:)%dx1 = 0.0d0
-      	 cgrid(:,:,k,:)%dx2 = 0.0d0
-      	 cgrid(:,:,k,:)%dx1x2 = 0.0d0
-      enddo
+C     do k = 10, 35
+C     	 cgrid(:,:,k,:)%dx1 = 0.0d0
+C     	 cgrid(:,:,k,:)%dx2 = 0.0d0
+C     	 cgrid(:,:,k,:)%dx1x2 = 0.0d0
+C     enddo
       
 
 

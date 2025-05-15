@@ -786,6 +786,7 @@ C    aerosols. ATMOSPHERIC CHEMISTRY AND PHYSICS. 7, 4639-4659
       USE UTILIO_DEFN
 	  USE HDMod 
       USE ISORROPIAII_MAIN_MOD, ONLY : ISOROPIA
+      USE HETP_MOD
       USE mpi
       use aero_counter
 	  
@@ -875,8 +876,9 @@ C *** ISORROPIA output variables
       TYPE(hyperdual) :: AERSLD( 19 )         ! solid "     "     "  (unused)
       TYPE(hyperdual) :: OTHER( 9 )           ! supplmentary output array (unused)
       CHARACTER( 15 ) :: SCASI          ! subcase number output (unused)
+      REAL( 8 )       :: HETP_CASE_NUMBER
 
-C *** Variables to account for mass conservation violations in ISRP3F
+C iables to account for mass conservation violations in ISRP3F
 !     LOGICAL TRUSTNH4                  ! false if ISOROPIA's partitioning
                                         !  of NH4/NH3 is to be ignored
       LOGICAL TRUSTCL                   ! false if ISOROPIA's partitioning       
@@ -1086,19 +1088,19 @@ C *** Determine if Hybrid
 #ifdef noiso
       hybrid = .false.
 #else
-	  TEMP_CUTOFF = 260.d0
+	  TEMP_CUTOFF = 250.d0
       PRES_CUTOFF = 2.D4
-      OutOfBounds = (AIRTEMP .LE. 260.0d0) .OR. (AIRPRES .LE. 2.D4) .OR. (AIRRH .LE. 0.18)
+      ! OutOfBounds = (AIRTEMP .GE. 250.0d0) .OR. (AIRPRES .GE. 2.D4) .OR. (AIRRH .GE. 0.18)
       
-      ! FWDISO = ( AIRTEMP .GE. TEMP_CUTOFF ) .AND. ( AIRPRES .GE. PRES_CUTOFF ) .AND. (AIRRH .GE. 0.18)
-      FWDISO = OutOfBounds
+      FWDISO = ( AIRTEMP .GE. TEMP_CUTOFF ) .AND. ( AIRPRES .GE. PRES_CUTOFF ) .AND. (AIRRH .GE. 0.18)
+      ! FWDISO = .NOT. OutOfBounds
 C     FWDISO = .TRUE.
       
       DO I = 1, N_AEROSPC
          IF(  AEROSPC( I )%tracer )CYCLE
          IF ( AEROSPC( I )%CHARGE .NE. 0 ) TMP = TMP + AEROSPC_CONC( I,N_MODE )
       END DO
-      HYBRID = ( TMP .GE. CUTOFF ) .AND. ( AIRRH .GE. 0.18 )
+      HYBRID = ( TMP .GE. CUTOFF ) .AND. ( AIRRH .GE. 0.18 ) .AND. FWDISO
       ! hybrid = .false.
 #endif
 
@@ -1448,7 +1450,7 @@ C	 	! HPLUS_PREV is the saved H+ concentration
             flag_criteria1 = .true. 
             endif
 
-	 	    IF  ( ( ( AERLIQ(1) / HPLUS_PREV ) .GE. 1.00001d0 ) .OR. ( HPLUS_PREV / AERLIQ(1) ) .GE. 1.00001d0 ) THEN
+	 	    IF  ( ( ( AERLIQ(1) / HPLUS_PREV ) .GE. 1.001d0 ) .OR. ( HPLUS_PREV / AERLIQ(1) ) .GE. 1.001d0 ) THEN
             flag_criteria2 = .true.
             hybridsens = .false.
             ENDIF
@@ -1469,6 +1471,8 @@ C	 	! HPLUS_PREV is the saved H+ concentration
                 hybridsens = .false.
              endif
         endif
+        
+        ! hybridsens = .true.
               
         isoiter = isoiter + 1         
 C	 	
@@ -1542,7 +1546,7 @@ C                             write(*,*) 'T', AIRTEMP
 C                             write(*,*) 'hybridsens', hybridsens
 C                       endif
 C                 endif 
-            
+                  ! sensflag = .true.
                   if (sensflag .eq. .false.) then
                         ! hybridsens = .false.
                         J%dx1 = 0.0d0
@@ -1771,9 +1775,30 @@ C *** Set flags to account for mass conservation violations in ISRP3F
       CALL ISOROPIA( WI, RHI, TEMPI, CNTRL, WT, GAS, AERLIQ,
      &               AERSLD, SCASI, OTHER, sensflag)
      
+     	! note the frna, frca, frk, frmg, and frso4 are unused and just placed in the aersld array at the end
+     	! e.l. 0502
+C     CALL mach_hetp_main_15cases(WI(2), WI(3), WI(4), WI(1), WI(5), WI(6), WI(7), WI(8), TEMPI, RHI, 
+C    &                            AERLIQ(5), AERLIQ(6), AERSLD(10), AERLIQ(2), GAS(1), AERLIQ(7), GAS(2), 
+C    &                            AERLIQ(4), GAS(3), AERLIQ(2), AERLIQ(13), AERLIQ(14), AERLIQ(15), AERLIQ(1),
+C    &                            AERLIQ(12), AERLIQ(8), AERSLD(3), AERSLD(11), AERSLD(16), 
+C    &                            AERSLD(17), AERSLD(14), HETP_CASE_NUMBER)
+     
 
 C *** Save H+ concentration information in microgram/m3 for consistency
       EQLBHIJ = AERLIQ(1) * 1.0D6 * AEROSPC_MW( ah3op_idx)
+      
+      IF (SCASI == 'L9') then
+C     gas( 1 ) = precursor_conc( nh3_idx ) * CFAC_GNH3
+C     gas( 2 ) = precursor_conc( hno3_idx) * CFAC_GHNO3
+C     gas( 3 ) = precursor_conc( hcl_idx ) * CFAC_GHCL
+C
+C     EQLBHIJ =  HPLUS( 1 ) + HPLUS( 2 )  ! use charge balance if lacking isoropia info 
+	  call reset_hyd_sens(gas(1), precursor_conc( nh3_idx ) * CFAC_GNH3)
+	  call reset_hyd_sens(gas(2), precursor_conc( hno3_idx ) * CFAC_GHNO3)
+	  call reset_hyd_sens(gas(3), precursor_conc( hcl_idx ) * CFAC_GHCL)
+	  call reset_hyd_sens(EQLBHIJ, HPLUS(1) + HPLUS(2) )
+	  
+      ENDIF         
       
       ELSE 
       
