@@ -1702,8 +1702,9 @@ c     of abscissas is used
       implicit none
 
 c *** arguments:
-      TYPE(hyperdual), intent( in )  :: lamda   ! mean free path
-      TYPE(hyperdual), intent( in )  :: kfm, knc
+      REAL( 8 ), intent( in )  :: lamda   ! mean free path
+      REAL( 8 ), intent( in )  :: knc
+      TYPE(hyperdual), intent( in )  :: kfm
       TYPE(hyperdual), intent( in )  :: dg, xlnsig
       TYPE(hyperdual), intent( out ) :: quads11, quadn11
 
@@ -1755,7 +1756,7 @@ c *** The following Statement Functions are based on expressions from
 c     Binkowski & Shanker, Jour. Geophys. Research. Vol. 100, no. d12,
 c     pp 26,191-26,209 December 20, 1995
 
-      TYPE(hyperdual) :: betafm, betanc
+      ! TYPE(hyperdual) :: betafm, betanc
 
 ! c *** for Free Molecular, Eq. A5
 !       betafm( xx1, xx2 ) = kfm
@@ -1805,15 +1806,38 @@ C-----------------------------------------------------------------------
             dspm = 0.5d0 * ( v1p + v2m ) ** two3rds - a2m
             dsmm = 0.5d0 * ( v1m + v2m ) ** two3rds - a2m
 
-            bppfm = betafm( dp1p, dp2p, kfm)
-            bmpfm = betafm( dp1m, dp2p, kfm)
-            bpmfm = betafm( dp1p, dp2m, kfm )
-            bmmfm = betafm( dp1m, dp2m, kfm )
+C           bppfm = betafm( dp1p, dp2p, kfm)
+C           bmpfm = betafm( dp1m, dp2p, kfm)
+C           bpmfm = betafm( dp1p, dp2m, kfm )
+C           bmmfm = betafm( dp1m, dp2m, kfm )
+            
+            bppfm = kfm * sqrt(1.d0 / dp1p**3.0d0 + 1.d0 / dp2p**3.0d0 ) * (dp1p + dp2p)**2.0d0
+            bmpfm = kfm * sqrt(1.d0 / dp1m**3.0d0 + 1.d0 / dp2p**3.0d0 ) * (dp1m + dp2p)**2.0d0
+            bpmfm = kfm * sqrt(1.d0 / dp1p**3.0d0 + 1.d0 / dp2m**3.0d0 ) * (dp1p + dp2m)**2.0d0
+            bmmfm = kfm * sqrt(1.d0 / dp1m**3.0d0 + 1.d0 / dp2m**3.0d0 ) * (dp1m + dp2m)**2.0d0
 
-            bppnc = betanc( dp1p, dp2p, knc, A, lamda )
-            bmpnc = betanc( dp1m, dp2p, knc, A, lamda )
-            bpmnc = betanc( dp1p, dp2m, knc, A, lamda )
-            bmmnc = betanc( dp1m, dp2m, knc, A, lamda )
+C           bppnc = betanc( dp1p, dp2p, knc, A, lamda )
+C           bmpnc = betanc( dp1m, dp2p, knc, A, lamda )
+C           bpmnc = betanc( dp1p, dp2m, knc, A, lamda )
+C           bmmnc = betanc( dp1m, dp2m, knc, A, lamda )
+            
+            bppnc = knc * (dp1p + dp2p) * 
+     &        (1.0D0 / dp1p + 1.0D0 / dp2p + 
+     &        twoA * lamda * (1.0D0 / dp1p**2.0D0 + 1.0D0 / dp2p**2.0D0))
+            
+            bmpnc = knc * (dp1m + dp2p) *
+     &        (1.0D0 / dp1m + 1.0D0 / dp2p +
+     &        twoA * lamda * (1.0D0 / dp1m**2.0D0 + 1.0D0 / dp2p**2.0D0))
+
+            bpmnc = knc * (dp1p + dp2m) *
+     &        (1.0D0 / dp1p + 1.0D0 / dp2m +
+     &        twoA * lamda * (1.0D0 / dp1p**2.0D0 + 1.0D0 / dp2m**2.0D0))
+
+            bmmnc = knc * (dp1m + dp2m) *
+     &        (1.0D0 / dp1m + 1.0D0 / dp2m +
+     &        twoA * lamda * (1.0D0 / dp1m**2.0D0 + 1.0D0 / dp2m**2.0D0))
+            
+            
 
             sum2sfm = sum2sfm + wyi * ( dspp * bppfm + dspm * bpmfm
      &                        + dsmp * bmpfm + dsmm * bmmfm )
@@ -1870,8 +1894,9 @@ c     number of abscissas, since an even number of abscissas is used.
 
 
 c *** arguments:
-      TYPE(hyperdual), intent( in )  :: lamda   ! mean free path
-      TYPE(hyperdual), intent( in )  :: kfm, knc
+      REAL( 8 ), intent( in )  :: lamda   ! mean free path
+      REAL( 8 ), intent( in )  :: knc
+      TYPE(hyperdual), intent( in )  :: kfm
       TYPE(hyperdual),      intent( in )  :: dg1, dg2, xlnsig1, xlnsig2
       TYPE(hyperdual), intent( out ) :: quads12, quads21, quadn12, quadv12
 
@@ -1928,7 +1953,7 @@ c *** The following Statement Functions are based on expressions from
 c     Binkowski & Shanker, Jour. Geophys. Research. Vol. 100, no. d12,
 c     pp 26,191-26,209 December 20, 1995
 
-      TYPE(hyperdual) :: betafm, betanc
+      ! TYPE(hyperdual) :: betafm, betanc
 
 ! c *** for Free Molecular, Eq. A5
 !       betafm( xx1, xx2 ) = kfm
@@ -1988,16 +2013,38 @@ c-----------------------------------------------------------------------
             dspm = ( v1p + v2m ) ** two3rds - a2m
             dsmm = ( v1m + v2m ) ** two3rds - a2m
 
-            bppfm = betafm( dp1p, dp2p, kfm)
-            bmpfm = betafm( dp1m, dp2p, kfm)
-            bpmfm = betafm( dp1p, dp2m, kfm )
-            bmmfm = betafm( dp1m, dp2m, kfm )
+C           bppfm = betafm( dp1p, dp2p, kfm)
+C           bmpfm = betafm( dp1m, dp2p, kfm)
+C           bpmfm = betafm( dp1p, dp2m, kfm )
+C           bmmfm = betafm( dp1m, dp2m, kfm )
 
-            bppnc = betanc( dp1p, dp2p, knc, A, lamda )
-            bmpnc = betanc( dp1m, dp2p, knc, A, lamda )
-            bpmnc = betanc( dp1p, dp2m, knc, A, lamda )
-            bmmnc = betanc( dp1m, dp2m, knc, A, lamda )
+            bppfm = kfm * sqrt(1.d0 / dp1p**3.0d0 + 1.d0 / dp2p**3.0d0 ) * (dp1p + dp2p)**2.0d0
+            bmpfm = kfm * sqrt(1.d0 / dp1m**3.0d0 + 1.d0 / dp2p**3.0d0 ) * (dp1m + dp2p)**2.0d0
+            bpmfm = kfm * sqrt(1.d0 / dp1p**3.0d0 + 1.d0 / dp2m**3.0d0 ) * (dp1p + dp2m)**2.0d0
+            bmmfm = kfm * sqrt(1.d0 / dp1m**3.0d0 + 1.d0 / dp2m**3.0d0 ) * (dp1m + dp2m)**2.0d0
 
+C           bppnc = betanc( dp1p, dp2p, knc, A, lamda )
+C           bmpnc = betanc( dp1m, dp2p, knc, A, lamda )
+C           bpmnc = betanc( dp1p, dp2m, knc, A, lamda )
+C           bmmnc = betanc( dp1m, dp2m, knc, A, lamda )
+
+            bppnc = knc * (dp1p + dp2p) * 
+     &        (1.0D0 / dp1p + 1.0D0 / dp2p + 
+     &        twoA * lamda * (1.0D0 / dp1p**2.0D0 + 1.0D0 / dp2p**2.0D0))
+            
+            bmpnc = knc * (dp1m + dp2p) *
+     &        (1.0D0 / dp1m + 1.0D0 / dp2p +
+     &        twoA * lamda * (1.0D0 / dp1m**2.0D0 + 1.0D0 / dp2p**2.0D0))
+
+            bpmnc = knc * (dp1p + dp2m) *
+     &        (1.0D0 / dp1p + 1.0D0 / dp2m +
+     &        twoA * lamda * (1.0D0 / dp1p**2.0D0 + 1.0D0 / dp2m**2.0D0))
+
+            bmmnc = knc * (dp1m + dp2m) *
+     &        (1.0D0 / dp1m + 1.0D0 / dp2m +
+     &        twoA * lamda * (1.0D0 / dp1m**2.0D0 + 1.0D0 / dp2m**2.0D0))
+     
+            
             sum2s12fm = sum2s12fm + wyi * ( a1p * bppfm + a1p * bpmfm
      &                            + a1m * bmpfm + a1m * bmmfm )
 
@@ -2063,44 +2110,49 @@ c *** quadv12 is the intermodal coagulation coefficient for 3rd moment
       end subroutine intercoag_gh
 
 
-      FUNCTION betafm(xx1, xx2, kfm)
-
-c *** Explicitly calculate the betafm parameter
-c *** The following Statement Functions are based on expressions from
-c     Binkowski & Shanker, Jour. Geophys. Research. Vol. 100, no. d12,
-c     pp 26,191-26,209 December 20, 1995
-c *** for Free Molecular, Eq. A5
-
-	    use HDMod 
-        implicit none
-        TYPE(hyperdual) :: xx1, xx2, kfm, betafm
-
-        betafm = kfm
-     &        * sqrt( 1.d0 / xx1 ** 3  + 1.d0 / xx2 ** 3 )
-     &        * ( xx1 + xx2 ) ** 2
-
-        RETURN
-
-      END FUNCTION
-
-
-      FUNCTION betanc(xx1, xx2, knc, A1, lamda)
-c *** Explicitly calculate the betanc parameter
-c *** The following Statement Functions are based on expressions from
-c     Binkowski & Shanker, Jour. Geophys. Research. Vol. 100, no. d12,
-c     pp 26,191-26,209 December 20, 1995
-c *** for Near Continuum, Eq. A6
-
-	    use HDMod 
-        implicit none
-        TYPE(hyperdual) :: xx1, xx2, knc, lamda, betanc
-        TYPE(hyperdual) :: A1
-
-
-        betanc = knc * ( xx1 + xx2 )
-     &           * ( 1.0D0 / xx1 + 1.0d0 / xx2 + 2.0d0 * A1 * lamda
-     &           * ( 1.0d0 / xx1 ** 2 + 1.0d0 / xx2 ** 2 ) )
-
-        RETURN
-
-      END FUNCTION
+C     FUNCTION betafm(xx1, xx2, kfm)
+C
+Cc *** Explicitly calculate the betafm parameter
+Cc *** The following Statement Functions are based on expressions from
+Cc     Binkowski & Shanker, Jour. Geophys. Research. Vol. 100, no. d12,
+Cc     pp 26,191-26,209 December 20, 1995
+Cc *** for Free Molecular, Eq. A5
+C
+C    use HDMod 
+C       implicit none
+C       TYPE(hyperdual) :: xx1, xx2, kfm, betafm
+C
+C       betafm = kfm
+C    &        * sqrt( 1.d0 / xx1 ** 3  + 1.d0 / xx2 ** 3 )
+C    &        * ( xx1 + xx2 ) ** 2
+C
+C       RETURN
+C
+C     END FUNCTION
+C
+C
+C     FUNCTION betanc(xx1, xx2, knc, A1, lamda)
+Cc *** Explicitly calculate the betanc parameter
+Cc *** The following Statement Functions are based on expressions from
+Cc     Binkowski & Shanker, Jour. Geophys. Research. Vol. 100, no. d12,
+Cc     pp 26,191-26,209 December 20, 1995
+Cc *** for Near Continuum, Eq. A6
+C
+C    use HDMod 
+C       implicit none
+C       TYPE(hyperdual) :: xx1, xx2, knc, lamda, betanc
+C       real( 8 ) :: A1
+C
+C!       betanc( xx1, xx2 ) = knc * ( xx1 + xx2 )
+C!      &                   * ( 1.0D0 / xx1 + 1.0d0 / xx2 + twoA * lamda
+C!      &                      * ( 1.0d0 / xx1 ** 2 + 1.0d0 / xx2 ** 2 ) )
+C
+C
+C
+C       betanc = knc * ( xx1 + xx2 )
+C    &           * ( 1.0D0 / xx1 + 1.0d0 / xx2 + 2.0d0 * A1 * lamda
+C    &           * ( 1.0d0 / xx1 ** 2 + 1.0d0 / xx2 ** 2 ) )
+C
+C       RETURN
+C
+C     END FUNCTION
