@@ -148,7 +148,7 @@ C...........Local Variables
       REAL, ALLOCATABLE, SAVE :: SUBTRANS( :,:,: ) ! subgrid cloud transmissivity
 
       REAL FAC                       ! temp conversion factor
-      TYPE(hyperdual) CCMIN
+      REAL( 8 ) CCMIN                ! el-0428: minimum concentration of CGRID, use REAL( 8 )
 
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: BUFF2 ( :,: )
@@ -167,7 +167,7 @@ C...........EXTERNAL FUNCTIONS
 #endif
 			USE HDMod
             IMPLICIT NONE
-            TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
+            TYPE(hyperdual), POINTER            :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP( 3 )
             INTEGER, INTENT( IN )    :: N_SPC_WDEP
             INTEGER, INTENT( IN )    :: WDEP_MAP( : )
@@ -188,7 +188,7 @@ C...........EXTERNAL FUNCTIONS
 #endif
 			USE HDMod
             IMPLICIT NONE
-            TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
+            TYPE(hyperdual), POINTER            :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP( 3 )
             INTEGER, INTENT( IN )    :: N_SPC_WDEP
             INTEGER, INTENT( IN )    :: WDEP_MAP( : )
@@ -442,7 +442,7 @@ C...  convert to moles of aerosol per mole of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               FAC = CNV1 / DENS( COL, ROW, LAY ) / AE_MOLWT( SPC - AE_STRT + 1 )
-              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0D-30/FAC )
+              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC )%x, 1.0D-30/FAC )
               CGRID( COL, ROW, LAY, SPC ) = FAC * CCMIN
      		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
      		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
@@ -474,7 +474,7 @@ C...    convert to # per mole of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               FAC = CNV3 / DENS( COL, ROW, LAY )
-              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0D-30/FAC )
+              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC )%x, 1.0D-30/FAC )
               CGRID( COL, ROW, LAY, SPC ) = FAC * CCMIN
      		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
      		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
@@ -506,7 +506,7 @@ C...    convert to m2 per mole of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               FAC = CNV2 / DENS( COL, ROW, LAY )
-              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0D-30/FAC )
+              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC )%x, 1.0D-30/FAC )
               CGRID( COL, ROW, LAY, SPC ) = FAC * CCMIN
      		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
      		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
@@ -674,15 +674,15 @@ C...now check to see if it's time to write the deposition file
         DO ROW = 1, NROWS
           DO COL = 1, NCOLS
             VAR = N_SPC_WDEP + 8 + 1
-            CONV_DEP( COL, ROW, VAR ) = REAL ( SUBTRANS( COL, ROW, 1 ) , 8 ) 
+            CONV_DEP( COL, ROW, VAR ) = SUBTRANS( COL, ROW, 1 )
             VAR = VAR + 1
-            CONV_DEP( COL, ROW, VAR ) = REAL ( SUBTRANS( COL, ROW, 2 ) , 8 )
+            CONV_DEP( COL, ROW, VAR ) = SUBTRANS( COL, ROW, 2 )
             VAR = VAR + 1
-            CONV_DEP( COL, ROW, VAR ) = REAL ( RESTRANS( COL, ROW ) , 8 )
+            CONV_DEP( COL, ROW, VAR ) = RESTRANS( COL, ROW )
             VAR = VAR + 1
-            CONV_DEP( COL, ROW, VAR ) = REAL ( SUBTRANS( COL, ROW, 1 )
+            CONV_DEP( COL, ROW, VAR ) = SUBTRANS( COL, ROW, 1 )
      &                                * SUBTRANS( COL, ROW, 2 )
-     &                                * RESTRANS( COL, ROW ) , 8 ) 
+     &                                * RESTRANS( COL, ROW )
           END DO
         END DO
 
