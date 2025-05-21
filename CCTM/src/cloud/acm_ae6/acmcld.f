@@ -48,9 +48,9 @@ C Arguments
       INTEGER, INTENT( IN ) :: NSP            ! no. of species
       INTEGER, INTENT( IN ) :: NLAYS          ! no. of model layers
       REAL, INTENT( IN )    :: F( : )         ! entrainment fraction
-      REAL, INTENT( INOUT ) :: C( :, : )      ! species concentration
+      TYPE(hyperdual), INTENT( INOUT ) :: C( :, : )      ! species concentration
       REAL, INTENT( IN )    :: DZH( : )
-      REAL, INTENT( INOUT ) :: CBELOW( : )    ! spec conc in layer below cld base
+      TYPE(hyperdual), INTENT( INOUT ) :: CBELOW( : )    ! spec conc in layer below cld base
       INTEGER, INTENT( IN ) :: CLBASE
       INTEGER, INTENT( IN ) :: CLTOP
       REAL, INTENT( IN )    :: FRAC           ! grid cell fractional cloud cover
@@ -67,11 +67,14 @@ C Local variables
       INTEGER NLP, K, NL, S          ! index variables
       INTEGER KB
 
-      REAL DTLIM, F1
-      REAL DTS, DELC, M1UP
+      REAL DTLIM
+      REAL :: F1
+      REAL DTS, M1UP
+      REAL :: DELC
       REAL( 8 ), ALLOCATABLE, SAVE :: AI( : ), BI( : ), EI( : )
       REAL( 8 ), ALLOCATABLE, SAVE :: DI( : ), UI( : )
-      REAL( 8 ) :: ALPHA, BETA, GAMA
+      REAL( 8 ) :: ALPHA, GAMA
+      REAL :: BETA
       REAL, ALLOCATABLE, SAVE :: VCI( :,: )
       REAL, ALLOCATABLE, SAVE :: MBARKS( : ), MDWN( : )
 
@@ -120,11 +123,11 @@ C Compute ACM mixing rate
       DTLIM = MIN( HALF / ( M1UP * DZHI( KB ) ), DTLIM )
 
       DO S = 1, NSP
-        VCI( KB, S ) = CBELOW( S )
-        VCI( CLTOP+1,S ) = 9999.0
+        VCI( KB, S ) = real(CBELOW( S )%x, 4)
+        VCI( CLTOP+1,S ) = 9999.0d0
         DO K = CLBASE, CLTOP
-          VCI( K,S ) = C( S,K )
-          UI( K )  = 0.0           ! init variable for use below
+          VCI( K,S ) = real(C( S,K )%x, 4)
+          UI( K )  = 0.0D0           ! init variable for use below
         END DO
       END DO
 
@@ -176,7 +179,7 @@ C Back substitution:
 
 C Update concentrations
           DO K = KB, CLTOP
-            VCI( K,S ) = REAL( UI( K ), 4 )
+            VCI( K,S ) =  UI( K ) 
           END DO
 
 1000    CONTINUE   ! end loop for species
@@ -184,10 +187,10 @@ C Update concentrations
 
       DO S = 1, NSP
 
-        CBELOW( S ) = VCI( KB,S )
+        CBELOW( S ) = real(VCI( KB,S ), 8)
 
         DO K = CLBASE, CLTOP
-          C( S,K ) = VCI( K,S )
+          C( S,K ) = real(VCI( K,S ), 8)
         END DO
 
       END DO

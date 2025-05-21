@@ -183,9 +183,9 @@ C...........Local Variables:
       REAL          WTBAR               ! total water content of cloud (kg/m3)
       REAL          LWP, CLOD
 
-      REAL, ALLOCATABLE, SAVE :: POLC ( : )   ! incloud conc (mol/mol)
-      REAL, ALLOCATABLE, SAVE :: CEND ( : )   ! ending conc (mol/mol)
-      REAL, ALLOCATABLE, SAVE :: REMOV( : )   ! moles/m2 or mm*mol/lit scavenged
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: POLC ( : )   ! incloud conc (mol/mol)
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: CEND ( : )   ! ending conc (mol/mol)
+      TYPE(hyperdual), ALLOCATABLE, SAVE :: REMOV( : )   ! moles/m2 or mm*mol/lit scavenged
 
       REAL          RN   ( NCOLS, NROWS ) ! non-convective rainfall (cm)
       REAL          DENS ( NCOLS, NROWS, NLAYS )  ! air density (kg/m3)
@@ -228,9 +228,9 @@ C...........External Functions:
            INTEGER, INTENT( IN )  :: JDATE, JTIME
            REAL,    INTENT( IN )  :: WTBAR, WCBAR, TBARC, PBARC,
      &                               CTHK1, AIRM, PRATE1, TAUCLD
-           REAL,    INTENT( IN )  :: POLC ( : )
+           TYPE(hyperdual),    INTENT( IN )  :: POLC ( : )
            REAL,    INTENT( OUT ) :: REMOVAC
-           REAL,    INTENT( OUT ) :: CEND( : ), REMOV( : )
+           TYPE(hyperdual),    INTENT( OUT ) :: CEND( : ), REMOV( : )
            REAL,    INTENT( OUT ) :: ALFA0, ALFA2, ALFA3
         END SUBROUTINE SCAVWDEP
         SUBROUTINE AQ_MAP( JDATE, JTIME, WTBAR, WCBAR, TBARC, PBARC,
@@ -241,9 +241,9 @@ C...........External Functions:
            INTEGER, INTENT( IN )    :: JDATE, JTIME
            REAL,    INTENT( IN )    :: WTBAR, WCBAR, TBARC, PBARC,
      &                                 CTHK1, AIRM, PRATE1, TAUCLD
-           REAL,    INTENT( IN )    :: POLC ( : )
+           TYPE(hyperdual),    INTENT( IN )    :: POLC ( : )
            REAL,    INTENT( INOUT ) :: REMOVAC
-           REAL,    INTENT( INOUT ) :: CEND( : ), REMOV( : )
+           TYPE(hyperdual),    INTENT( INOUT ) :: CEND( : ), REMOV( : )
            REAL,    INTENT( IN )    :: ALFA0, ALFA2, ALFA3
            LOGICAL, INTENT( IN )    :: DARK                  !Golam Sarwar, July 1, 2011
         END SUBROUTINE AQ_MAP
@@ -363,8 +363,6 @@ C...  the met timestep in hours
 #endif
 
       END IF  ! FIRSTIME
-      
-      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)   ! check for the processor number
 
       MDATE = JDATE
       MTIME = JTIME
@@ -583,9 +581,9 @@ C...Finally, get in-cloud pollutant concentrations in moles sp
 C...  per mole air
 
                 DO SPC = 1, NSPCSD
-                  POLC ( SPC ) = real(CGRID( COL, ROW, LAY, SPC )%x, 4)
+                  POLC ( SPC ) = CGRID( COL, ROW, LAY, SPC )
                   CEND ( SPC ) = POLC( SPC )
-                  REMOV( SPC ) = 0.0
+                  REMOV( SPC ) = 0.0d0
                 END DO
 
 #ifdef isam
@@ -611,24 +609,11 @@ C...  per mole air
 C...perform scavenging and aqueous chemistry within the cloud
 C...  and re-adjust the ending and removed amounts for those species
 C...  that were scavenged or that participated in cloud chemistry
-                if (rank == 78 .and. lay == 9 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CEND before scavwdep 9th:', CEND(129)
-                endif
-                if (rank == 78 .and. lay == 10 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CEND before scavwdep 10th:', CEND(129)
-                endif 
-                                  
+
                 CALL SCAVWDEP ( JDATE, JTIME, WTBAR, WCBAR, TBARC,
      &                          PBARC, CTHK1, AIRM, PRATE1, TAUCLD,
      &                          POLC, CEND, REMOV, REMOVAC, ALFA0,
      &                          ALFA2, ALFA3 )
-
-                if (rank == 78 .and. lay == 9 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CEND after scavwdep 9th:', CEND(129)
-                endif
-                if (rank == 78 .and. lay == 10 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CEND after scavwdep 10th:', CEND(129)
-                endif
 
 #ifdef isam
                 DO SPC = 1, NSPC_SA
@@ -664,14 +649,14 @@ C...  calculate cosine of zenith angle for the cell and determine day or night; 
                   COSZ = MET_DATA%COSZEN( COL, ROW )
                   IF ( COSZ .LE. 0.0 ) THEN 
                     DARK = .TRUE.   ! night
-                    JH2O2_HYDROMETEORS = 0.0D0
-                    JHNO3_HYDROMETEORS = 0.0D0
+                    JH2O2_HYDROMETEORS = 0.0
+                    JHNO3_HYDROMETEORS = 0.0
                   ELSE
                     DARK = .FALSE.  ! day
                     JH2O2 = RJ_RES( COL, ROW, LAY, LH2O2 )
                     JHNO3 = RJ_RES( COL, ROW, LAY, LHNO3 )
-                    JH2O2_HYDROMETEORS = REAL( JH2O2*PERMIN_TO_PERSEC, 8 )
-                    JHNO3_HYDROMETEORS = REAL( JHNO3*PERMIN_TO_PERSEC, 8 )
+                    JH2O2_HYDROMETEORS = JH2O2*PERMIN_TO_PERSEC
+                    JHNO3_HYDROMETEORS = JHNO3*PERMIN_TO_PERSEC
                   END IF
 
 C...in aqchem, H2SO4 gas is added to ASO4J
@@ -686,15 +671,6 @@ C...  mimic this for the ASO4GASJ tracking species
      &                          PBARC, CTHK1, AIRM, PRATE1, TAUCLD,
      &                          POLC, CEND, REMOV, REMOVAC, ALFA0,
      &                          ALFA2, ALFA3, DARK )
-                 
-                if (rank == 78 .and. lay == 9 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CEND after aq_map 9th:', CEND(129)
-                endif
-                if (rank == 78 .and. lay == 10 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CEND after aq_map 10th:', CEND(129)
-                endif                   
-                 
-                 
 
 #ifdef isam
                   DO SPC = 1, NSPC_SA ! general case
@@ -867,7 +843,7 @@ C...load deposition amounts into the DEP array
 
                 DO VAR = 1, N_SPC_WDEP
                   DEP( COL, ROW, VAR ) = DEP( COL, ROW, VAR )
-     &                                 + REMOV( WDEP_MAP( VAR ) )
+     &                                 + REMOV( WDEP_MAP( VAR ) )%x
                 END DO
 
 C...load H+ concentration into the deposition array as well
@@ -879,16 +855,9 @@ C...set cgrid to the ending concentrations
 
                 DO SPC = 1, NSPCSD
                   IF ( SPC .NE. N_GC_SPCD ) THEN
-                    CGRID( COL, ROW, LAY, SPC ) = real(CEND( SPC ), 8)
+                    CGRID( COL, ROW, LAY, SPC ) = CEND( SPC )
                   END IF
                 END DO
-                
-                if (rank == 78 .and. lay == 9 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CGRID end of rescld 9th:', CGRID(5,9,9,129)
-                endif
-                if (rank == 78 .and. lay == 10 .and. col == 5 .and. row == 10) then
-                  write(*,*) 'CGRID end of rescld 10th:', CGRID(5,9,10,129)
-                endif  
 
 #ifdef isam
                 DO SPC = 1, NSPC_SA

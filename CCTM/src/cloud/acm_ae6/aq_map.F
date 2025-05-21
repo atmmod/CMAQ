@@ -109,11 +109,9 @@ C Arguments:
       REAL,    INTENT( IN )    :: AIRM      ! total air mass (moles/m2) in cloudy air
       REAL,    INTENT( IN )    :: PRATE1    ! storm rainfall rate (mm/hr)
       REAL,    INTENT( IN )    :: TAUCLD    ! cloud lifetime
-      REAL,    INTENT( IN )    :: POLC ( : )  ! avg vert conc incloud (moles/mole)
-      type(hyperdual), ALLOCATABLE :: POLC_HD( : ) ! avg vert conc incloud (moles/mole), in hyperdual
-      REAL,    INTENT( INOUT ) :: CEND ( : )  ! ending incloud conc (moles/mole)
-      type(hyperdual), ALLOCATABLE :: CEND_HD( : ) ! ending incloud conc (moles/mole), in hyperdual
-      REAL,    INTENT( INOUT ) :: REMOV( : )  ! moles/m2 or mm*mol/lit scavenged
+      TYPE(hyperdual),    INTENT( IN )    :: POLC ( : )  ! avg vert conc incloud (moles/mole)
+      TYPE(hyperdual),    INTENT( INOUT ) :: CEND ( : )  ! ending incloud conc (moles/mole)
+      TYPE(hyperdual),    INTENT( INOUT ) :: REMOV( : )  ! moles/m2 or mm*mol/lit scavenged
       REAL,    INTENT( INOUT ) :: REMOVAC   ! variable storing H+ deposition
       REAL,    INTENT( IN )    :: ALFA0     ! scav coef for aitken aerosol number
       REAL,    INTENT( IN )    :: ALFA2     ! scav coef for aitken aerosol sfc area
@@ -134,20 +132,20 @@ C Local Variables (scalars):
       INTEGER       SPC                 ! liquid species loop counter
       INTEGER ::    STAT
 
-      REAL( 8 )  :: BETASO4
-      REAL       :: EALFA2T                ! EXP( -ALFA2 * TAUCLD )
-      REAL( 8 )  :: M3NEW( NMODES )        ! modal mass at time t
-      REAL( 8 )  :: M3OLD( NMODES )        ! modal mass at time 0
-      REAL( 8 )  :: Dens_wmean_old( NMODES ) ! concentration weighted molecular weight g/mol
-      REAL( 8 )  :: Dens_wmean_new( NMODES ) ! concentration weighted molecular weight g/mol
+      real( 8 )  :: BETASO4
+      real( 8 )  :: EALFA2T                ! EXP( -ALFA2 * TAUCLD )
+      TYPE(hyperdual)  :: M3NEW( NMODES )        ! modal mass at time t
+      TYPE(hyperdual)  :: M3OLD( NMODES )        ! modal mass at time 0
+      TYPE(hyperdual)  :: Dens_wmean_old( NMODES ) ! concentration weighted molecular weight g/mol
+      TYPE(hyperdual)  :: Dens_wmean_new( NMODES ) ! concentration weighted molecular weight g/mol
 
-      REAL       :: HPWDEP                        ! hydrogen wet dep (mm mol/liter)
-      REAL( 8 ), ALLOCATABLE, SAVE :: GAS    ( : )    ! gas phase conc (mol/mol)
-      REAL( 8 ), ALLOCATABLE, SAVE :: GASWDEP( : )    ! gas phase wet dep array (mm mol/liter)
-      REAL( 8 ), ALLOCATABLE, SAVE :: AEROSOL( :, :)  ! aerosol conc (mol/mol)
-      REAL( 8 ), ALLOCATABLE, SAVE :: AERWDEP( :, :)  ! aerosol wet dep array (mm mol/liter)
-      REAL( 8 )  :: WSRGGAS( NGAS, MXSRG)             ! weights for surrogate
-      REAL( 8 )  :: WSRGAER( MAX_NAER, NMODES, MXSRG) ! weights for surrogate
+      real( 8 )      :: HPWDEP                        ! hydrogen wet dep (mm mol/liter)
+      real( 8 ), ALLOCATABLE, SAVE :: GAS    ( : )    ! gas phase conc (mol/mol)
+      real( 8 ), ALLOCATABLE, SAVE :: GASWDEP( : )    ! gas phase wet dep array (mm mol/liter)
+      real( 8 ), ALLOCATABLE, SAVE :: AEROSOL( :, :)  ! aerosol conc (mol/mol)
+      real( 8 ), ALLOCATABLE, SAVE :: AERWDEP( :, :)  ! aerosol wet dep array (mm mol/liter)
+      real( 8 )  :: WSRGGAS( NGAS, MXSRG)             ! weights for surrogate
+      real( 8 )  :: WSRGAER( MAX_NAER, NMODES, MXSRG) ! weights for surrogate
 
 C External Functions:
 
@@ -165,18 +163,18 @@ C External Functions:
            REAL,      INTENT( IN )  :: ALFA0     ! scav coef for aitken aerosol number
            REAL,      INTENT( IN )  :: ALFA2     ! scav coef for aitken aerosol sfc area
            REAL,      INTENT( IN )  :: ALFA3     ! scav coef for aitken aerosol mass
-           REAL,      INTENT( OUT ) :: HPWDEP    ! hydrogen wet deposition (mm mol/liter)
-           REAL( 8 ), INTENT( OUT ) :: BETASO4  
+           real( 8 ),      INTENT( OUT ) :: HPWDEP    ! hydrogen wet deposition (mm mol/liter)
+           real( 8 ), INTENT( OUT ) :: BETASO4  
            REAL,      INTENT( IN )  :: PRCRATE   ! precip rate (mm/hr)
            REAL,      INTENT( IN )  :: PRES_PA   ! pressure (Pa)
            REAL,      INTENT( IN )  :: TAUCLD    ! timestep for cloud (s)
            REAL,      INTENT( IN )  :: TEMP      ! temperature (K)
            REAL,      INTENT( IN )  :: WCAVG     ! liquid water content (kg/m3)
            REAL,      INTENT( IN )  :: WTAVG     ! total water content (kg/m3)
-           REAL( 8 ), INTENT( INOUT ) :: GAS    ( : )   ! gas phase concentrations (mol/molV)
-           REAL( 8 ), INTENT( INOUT ) :: AEROSOL( :,: ) ! aerosol concentrations (mol/molV)
-           REAL( 8 ), INTENT( INOUT ) :: GASWDEP( : )   ! gas phase wet deposition array (mm mol/liter)
-           REAL( 8 ), INTENT( INOUT ) :: AERWDEP( :,: ) ! aerosol wet deposition array (mm mol/liter)
+           real( 8 ), INTENT( INOUT ) :: GAS    ( : )   ! gas phase concentrations (mol/molV)
+           real( 8 ), INTENT( INOUT ) :: AEROSOL( :,: ) ! aerosol concentrations (mol/molV)
+           real( 8 ), INTENT( INOUT ) :: GASWDEP( : )   ! gas phase wet deposition array (mm mol/liter)
+           real( 8 ), INTENT( INOUT ) :: AERWDEP( :,: ) ! aerosol wet deposition array (mm mol/liter)
            LOGICAL,   INTENT( IN )    :: DARK           ! DARK = TRUE is night,  DARK = FALSE is day
         END SUBROUTINE AQCHEM
       END INTERFACE      
@@ -196,8 +194,6 @@ C...  event-statistics variables.
      &             GASWDEP( NGAS ),
      &             AEROSOL( NAER, NMODES),
      &             AERWDEP( NAER, NMODES),
-     &             POLC_HD( MXSPCS )     ,
-     &             CEND_HD( MXSPCS )     ,
      &             STAT = STAT)
         IF (STAT .NE. 0) THEN
            XMSG = 'Memory allocation failure'
@@ -232,7 +228,7 @@ C... Allocate sensitivity arrays
 #endif
 
       END IF
-      
+
 C...for subsequent calls, check to make sure some surrogates were
 C...  specified, otherwise there is no need to perform aqueous chemistry
 
@@ -256,7 +252,7 @@ C...load gas-phase concentrations
 
         DO ISRG = 1, NSRGGAS( IGAS )
           PNTR = CGRID2AQ_MAP( LSRGGAS( IGAS, ISRG ) )
-          GAS( IGAS ) = GAS( IGAS ) + REAL( POLC( PNTR ), 8 )
+		  GAS( IGAS ) = GAS( IGAS ) + POLC( PNTR )%x 
 #ifdef sens
           DO NP = 1, NPMAX
             S_GAS( NP, IGAS ) = S_GAS( NP, IGAS ) + S_POLC ( NP, PNTR )
@@ -267,7 +263,7 @@ C...load gas-phase concentrations
         IF ( GAS( IGAS ) .GT. 0.0D0 ) THEN
           DO ISRG = 1, NSRGGAS( IGAS )
             PNTR = CGRID2AQ_MAP( LSRGGAS( IGAS, ISRG ) )
-            WSRGGAS( IGAS, ISRG ) = REAL( POLC( PNTR ), 8 ) / GAS( IGAS )
+            WSRGGAS( IGAS, ISRG ) =  POLC( PNTR )%x / GAS( IGAS )
 #ifdef sens
             DO NP = 1, NPMAX
                IF ( S_GAS( NP, IGAS ) .NE. 0.0D0 ) THEN
@@ -326,7 +322,7 @@ C...load aerosol concentrations
 #endif
             DO ISRG = 1, NSRGAER( IAER, IMODE )
               PNTR = CGRID2AQ_MAP( LSRGAER( IAER, IMODE, ISRG ) )
-              AEROSOL( IAER, IMODE ) = AEROSOL( IAER, IMODE ) + REAL( POLC( PNTR ), 8 )
+              AEROSOL( IAER, IMODE ) = AEROSOL( IAER, IMODE ) +  POLC( PNTR )%x 
 #ifdef sens
               DO NP = 1, NPMAX
                 S_AEROSOL( NP, IAER, IMODE ) = S_AEROSOL( NP, IAER, IMODE ) + S_POLC( NP, PNTR )
@@ -337,8 +333,9 @@ C...load aerosol concentrations
             IF ( AEROSOL( IAER, IMODE ) .GT. 0.0D0 ) THEN
               DO ISRG = 1, NSRGAER( IAER, IMODE )
                 PNTR = CGRID2AQ_MAP( LSRGAER( IAER, IMODE, ISRG ) )
-                WSRGAER( IAER, IMODE, ISRG ) = REAL( POLC( PNTR ), 8 )
-     &                                       / REAL( AEROSOL( IAER, IMODE ), 8 )
+
+     			WSRGAER( IAER, IMODE, ISRG ) = POLC( PNTR )%x 
+     &                                       / AEROSOL( IAER, IMODE )
 #ifdef sens
                DO NP = 1, NPMAX
                   IF ( S_AEROSOL( NP, IAER, IMODE ) .NE. 0.0D0 ) THEN
@@ -383,20 +380,16 @@ C...set background values for aerosols if no surrogates were specified
 C *** extract grid cell concentrations of aero species from CGRID
 C     into aerospc_conc in aero_data module
 
-
-! Convert POLC to be hyperdual to be compatible with EXTRACT_AERO
-C     POLC_HD = real4_to_hyperdual_1d(POLC)
-
 #ifdef sens
-      CALL EXTRACT_AERO_REAL ( POLC, .FALSE., REAL(S_POLC,4), .TRUE. )
+      CALL EXTRACT_AERO ( POLC, .FALSE., REAL(S_POLC,4), .TRUE. )
 #else
-      CALL EXTRACT_AERO_REAL ( POLC, .FALSE. )
+      CALL EXTRACT_AERO ( POLC, .FALSE. )
 #endif
 
 C *** Calculate pseudo aerosol 3rd moment (ignore factors that cancel in the division)
 C ... M3OLD is in units of m3/kmol_air
-      M3OLD = 0.0
-      Dens_wmean_old = 0.0
+      M3OLD = 0.0d0
+      Dens_wmean_old = 0.0d0
       DO IMODE = 2, N_MODE
 
         DO SPC = 1, N_AEROSPC
@@ -404,10 +397,10 @@ C ... M3OLD is in units of m3/kmol_air
           IF ( ( AEROSPC( SPC )%NAME( IMODE ) .NE. ' ' ) .AND.
      &         ( .NOT. AEROSPC( SPC )%NO_M2WET ) ) THEN
              M3OLD( IMODE ) = M3OLD( IMODE )
-     &                      + ( real(AEROSPC_CONC( SPC,IMODE )%x, 4) * AEROSPC_MW( SPC )
+     &                      + ( AEROSPC_CONC( SPC,IMODE ) * AEROSPC_MW( SPC )
      &                      / AEROSPC( SPC )%DENSITY )
              Dens_wmean_old( IMODE ) = Dens_wmean_old( IMODE )  
-     &                      + real(AEROSPC_CONC( SPC,IMODE )%x, 4) * AEROSPC_MW( SPC )
+     &                      + AEROSPC_CONC( SPC,IMODE ) * AEROSPC_MW( SPC )
           END IF
         END DO
       END DO
@@ -467,19 +460,17 @@ C...Now, re-apportion mass back into cend/remov (cgrid-type) array
 
 C *** extract grid cell concentrations of aero species from CGRID
 C     into aerospc_conc in aero_data module
-c      CEND_HD = real4_to_hyperdual_1d(CEND)
-      
 
 #ifdef sens
-      CALL EXTRACT_AERO_REAL ( CEND, .FALSE., REAL(S_CEND,4), .TRUE. )
+      CALL EXTRACT_AERO ( CEND, .FALSE., REAL(S_CEND,4), .TRUE. )
 #else
-      CALL EXTRACT_AERO_REAL ( CEND, .FALSE. )
+      CALL EXTRACT_AERO ( CEND, .FALSE. )
 #endif
 
 C *** Calculate pseudo aerosol 3rd moment (ignore factors that cancel in the division)
 C ... M3NEW is in units of m3/kmol_air
-      M3NEW = 0.0
-      Dens_wmean_new = 0.0
+      M3NEW = 0.0d0
+      Dens_wmean_new = 0.0d0
       DO IMODE = 2, NMODES
 
         DO SPC = 1, N_AEROSPC
@@ -487,10 +478,10 @@ C ... M3NEW is in units of m3/kmol_air
           IF ( ( AEROSPC( SPC )%NAME( IMODE ) .NE. ' ' ) .AND.
      &         ( .NOT. AEROSPC( SPC )%NO_M2WET ) ) THEN
              M3NEW( IMODE ) = M3NEW( IMODE )
-     &                      + ( real(AEROSPC_CONC( SPC,IMODE )%x, 4) * AEROSPC_MW( SPC )
+     &                      + ( AEROSPC_CONC( SPC,IMODE ) * AEROSPC_MW( SPC )
      &                      / AEROSPC( SPC )%DENSITY )
              Dens_wmean_new( IMODE ) = Dens_wmean_new( IMODE )  
-     &                      + real(AEROSPC_CONC( SPC,IMODE )%x, 4) * AEROSPC_MW( SPC )
+     &                      + AEROSPC_CONC( SPC,IMODE ) * AEROSPC_MW( SPC )
           END IF
         END DO
       END DO
@@ -499,12 +490,19 @@ C...Update aerosol number
       CEND( AERONUM_MAP( 1 ) ) = MAX( CEND( AERONUM_MAP( 1 ) ), aeromode_minNum( 1 )/ (AIRM/CTHK1) )
       CEND( AERONUM_MAP( 2 ) ) = MAX( CEND( AERONUM_MAP( 2 ) ), aeromode_minNum( 2 )/ (AIRM/CTHK1) )
       CEND( AERONUM_MAP( 3 ) ) = MAX( CEND( AERONUM_MAP( 3 ) ), aeromode_minNum( 3 )/ (AIRM/CTHK1) )
+      
+      CEND( AERONUM_MAP( 1 ) )%dx1 = 0.0d0
+      CEND( AERONUM_MAP( 1 ) )%dx2 = 0.0d0
+      CEND( AERONUM_MAP( 1 ) )%dx1x2 = 0.0d0
+      
+      CEND( AERONUM_MAP( 2 ) )%dx1 = 0.0d0
+      CEND( AERONUM_MAP( 2 ) )%dx2 = 0.0d0
+      CEND( AERONUM_MAP( 2 ) )%dx1x2 = 0.0d0    
 
-C... Remove the number sensitivity calculation for now to try      
-C     CEND( AERONUM_MAP( 1 ) )%dx1x2 = 0.0d0
-C     CEND( AERONUM_MAP( 2 ) )%dx1x2 = 0.0d0
-C     CEND( AERONUM_MAP( 3 ) )%dx1x2 = 0.0d0
-
+      CEND( AERONUM_MAP( 3 ) )%dx1 = 0.0d0
+      CEND( AERONUM_MAP( 3 ) )%dx2 = 0.0d0
+      CEND( AERONUM_MAP( 3 ) )%dx1x2 = 0.0d0  
+      
 #ifdef sens
 C... Remove number sensitivity calculations for now
       S_CEND( :, AERONUM_MAP( 1 ) ) = 0.0
@@ -538,17 +536,24 @@ C...Update surface area
      &                         * ( M3NEW( 3 ) / M3OLD( 3 ) ) ** TWOTHIRDS
       CEND( AEROSRF_MAP( 3 ) ) = MAX( CEND( AEROSRF_MAP( 3 ) ), aeromode_minM2( 3 ) * DPI / (AIRM/CTHK1) )
 
-C... Remove the number sensitivity calculation for now to try      
-C     CEND( AERONUM_MAP( 1 ) )%dx1x2 = 0.0d0
-C     CEND( AERONUM_MAP( 2 ) )%dx1x2 = 0.0d0
-C     CEND( AERONUM_MAP( 3 ) )%dx1x2 = 0.0d0
-      
 #ifdef sens
 C... Remove surface area sensitivity calculations for now
       S_CEND( :, AEROSRF_MAP( 1 ) ) = 0.0
       S_CEND( :, AEROSRF_MAP( 2 ) ) = 0.0
       S_CEND( :, AEROSRF_MAP( 3 ) ) = 0.0
 #endif
+
+      CEND( AEROSRF_MAP( 1 ) )%dx1 = 0.0d0
+      CEND( AEROSRF_MAP( 1 ) )%dx2 = 0.0d0
+      CEND( AEROSRF_MAP( 1 ) )%dx1x2 = 0.0d0
+      
+      CEND( AEROSRF_MAP( 2 ) )%dx1 = 0.0d0
+      CEND( AEROSRF_MAP( 2 ) )%dx2 = 0.0d0
+      CEND( AEROSRF_MAP( 2 ) )%dx1x2 = 0.0d0    
+
+      CEND( AEROSRF_MAP( 3 ) )%dx1 = 0.0d0
+      CEND( AEROSRF_MAP( 3 ) )%dx2 = 0.0d0
+      CEND( AEROSRF_MAP( 3 ) )%dx1x2 = 0.0d0 
 
       RETURN
       END

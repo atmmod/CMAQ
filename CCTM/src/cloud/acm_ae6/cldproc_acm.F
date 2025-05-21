@@ -65,7 +65,6 @@ C-----------------------------------------------------------------------
       USE UTILIO_DEFN
       use CENTRALIZED_IO_MODULE, only : interpolate_var
       USE HDMod
-      ! USE mpi
 
 #ifdef isam
       USE SA_DEFN, ONLY: ISAM, NSPC_SA, N_SPCTAG, TOT_SADEP, CONV_SADEP,
@@ -149,7 +148,7 @@ C...........Local Variables
       REAL, ALLOCATABLE, SAVE :: SUBTRANS( :,:,: ) ! subgrid cloud transmissivity
 
       REAL FAC                       ! temp conversion factor
-      REAL( 8 ) CCMIN                ! el-0428: minimum concentration of CGRID, use REAL( 8 )
+      TYPE(hyperdual) CCMIN
 
 #ifdef isam
       REAL, ALLOCATABLE, SAVE :: BUFF2 ( :,: )
@@ -168,7 +167,7 @@ C...........EXTERNAL FUNCTIONS
 #endif
 			USE HDMod
             IMPLICIT NONE
-            TYPE(hyperdual), POINTER            :: CGRID( :,:,:,: )
+            TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP( 3 )
             INTEGER, INTENT( IN )    :: N_SPC_WDEP
             INTEGER, INTENT( IN )    :: WDEP_MAP( : )
@@ -189,7 +188,7 @@ C...........EXTERNAL FUNCTIONS
 #endif
 			USE HDMod
             IMPLICIT NONE
-            TYPE(hyperdual), POINTER            :: CGRID( :,:,:,: )
+            TYPE(hyperdual), POINTER :: CGRID( :,:,:,: )
             INTEGER, INTENT( IN )    :: JDATE, JTIME, TSTEP( 3 )
             INTEGER, INTENT( IN )    :: N_SPC_WDEP
             INTEGER, INTENT( IN )    :: WDEP_MAP( : )
@@ -400,20 +399,11 @@ Ckrt deposition arrays for tagged species.....
 #endif
 
       END IF   ! FIRSTIME
-      
-C      CALL MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)   ! check for the processor number
 
       MDATE = JDATE
       MTIME = JTIME
 
       call interpolate_var ('DENS', mdate, mtime, DENS)
-C     if (rank == 78) then
-C        write(*,*) 'JTIME:', JTIME
-C        write(*,*) 'CGRID before unit conversion 11th:', CGRID(5, 9, 11, 129)%dx1x2
-C        write(*,*) 'CGRID before unit conversion 10th:', CGRID(5, 9, 10, 129)%dx1x2
-C        write(*,*) 'CGRID before unit conversion 9th:', CGRID(5, 9, 9, 129)%dx1x2
-C        write(*,*) 'CGRID before unit conversion 8th:', CGRID(5, 9, 8, 129)%dx1x2
-C     endif
 
 C...convert units on cgrid to molar mixing ratio (by volume)
 C...  determine no. of moles of gas per moles of air by volume
@@ -452,7 +442,7 @@ C...  convert to moles of aerosol per mole of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               FAC = CNV1 / DENS( COL, ROW, LAY ) / AE_MOLWT( SPC - AE_STRT + 1 )
-              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC )%x, 1.0D-30/FAC )
+              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0D-30/FAC )
               CGRID( COL, ROW, LAY, SPC ) = FAC * CCMIN
      		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
      		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
@@ -484,7 +474,7 @@ C...    convert to # per mole of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               FAC = CNV3 / DENS( COL, ROW, LAY )
-              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC )%x, 1.0D-30/FAC )
+              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0D-30/FAC )
               CGRID( COL, ROW, LAY, SPC ) = FAC * CCMIN
      		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
      		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
@@ -516,7 +506,7 @@ C...    convert to m2 per mole of air by volume
           DO ROW = 1, NROWS
             DO COL = 1, NCOLS
               FAC = CNV2 / DENS( COL, ROW, LAY )
-              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC )%x, 1.0D-30/FAC )
+              CCMIN = MAX( CGRID( COL, ROW, LAY, SPC ), 1.0D-30/FAC )
               CGRID( COL, ROW, LAY, SPC ) = FAC * CCMIN
      		  IF ( CGRID( COL, ROW, LAY, SPC )%x .LE. 1.0D-30 ) THEN
      		  	CGRID( COL, ROW, LAY, SPC )%dx1 = 0.d0
@@ -637,14 +627,6 @@ c                 ENDIF
 
 C...compute cloud effects for the resolved clouds and resolved rainwater
 
-C     if (rank == 78) then
-C        write(*,*) 'JTIME:', JTIME
-C        write(*,*) 'CGRID before rescld 11th:', CGRID(5, 9, 11, 129)%dx1x2
-C        write(*,*) 'CGRID before rescld 10th:', CGRID(5, 9, 10, 129)%dx1x2
-C        write(*,*) 'CGRID before rescld 9th:', CGRID(5, 9, 9, 129)%dx1x2
-C        write(*,*) 'CGRID before rescld 8th:', CGRID(5, 9, 8, 129)%dx1x2
-C     endif
-
 #ifdef isam
       CALL RESCLD ( CGRID, JDATE, JTIME, TSTEP,
      &              N_SPC_WDEP, WDEP_MAP, TOT_DEP, RESTRANS,
@@ -654,15 +636,6 @@ C     endif
      &              N_SPC_WDEP, WDEP_MAP, TOT_DEP, RESTRANS )
 #endif
 
-
-C     if (rank == 78) then
-C        write(*,*) 'JTIME:', JTIME
-C        write(*,*) 'CGRID after rescld 11th:', CGRID(5, 9, 11, 129)%dx1x2
-C        write(*,*) 'CGRID after rescld 10th:', CGRID(5, 9, 10, 129)%dx1x2
-C        write(*,*) 'CGRID after rescld 9th:', CGRID(5, 9, 9, 129)%dx1x2
-C        write(*,*) 'CGRID after rescld 8th:', CGRID(5, 9, 8, 129)%dx1x2
-C     endif
-         
 C...compute cloud effects for convective (subgrid) clouds
 
 #ifdef isam
@@ -673,14 +646,6 @@ C...compute cloud effects for convective (subgrid) clouds
       CALL CONVCLD_ACM ( CGRID, JDATE, JTIME, TSTEP,
      &                   N_SPC_WDEP, WDEP_MAP, CONV_DEP, SUBTRANS )
 #endif
-      
-C     if (rank == 78) then
-C        write(*,*) 'JTIME:', JTIME
-C        write(*,*) 'CGRID CONVCLD_ACM 11th:', CGRID(5, 9, 11, 129)%dx1x2
-C        write(*,*) 'CGRID CONVCLD_ACM 10th:', CGRID(5, 9, 10, 129)%dx1x2
-C        write(*,*) 'CGRID CONVCLD_ACM 9th:', CGRID(5, 9, 9, 129)%dx1x2
-C        write(*,*) 'CGRID CONVCLD_ACM 8th:', CGRID(5, 9, 8, 129)%dx1x2
-C     endif
 
 C...now check to see if it's time to write the deposition file
       WSTEP = WSTEP + TIME2SEC( TSTEP( 2 ) )
@@ -709,15 +674,15 @@ C...now check to see if it's time to write the deposition file
         DO ROW = 1, NROWS
           DO COL = 1, NCOLS
             VAR = N_SPC_WDEP + 8 + 1
-            CONV_DEP( COL, ROW, VAR ) = SUBTRANS( COL, ROW, 1 )
+            CONV_DEP( COL, ROW, VAR ) = REAL ( SUBTRANS( COL, ROW, 1 ) , 8 ) 
             VAR = VAR + 1
-            CONV_DEP( COL, ROW, VAR ) = SUBTRANS( COL, ROW, 2 )
+            CONV_DEP( COL, ROW, VAR ) = REAL ( SUBTRANS( COL, ROW, 2 ) , 8 )
             VAR = VAR + 1
-            CONV_DEP( COL, ROW, VAR ) = RESTRANS( COL, ROW )
+            CONV_DEP( COL, ROW, VAR ) = REAL ( RESTRANS( COL, ROW ) , 8 )
             VAR = VAR + 1
-            CONV_DEP( COL, ROW, VAR ) = SUBTRANS( COL, ROW, 1 )
+            CONV_DEP( COL, ROW, VAR ) = REAL ( SUBTRANS( COL, ROW, 1 )
      &                                * SUBTRANS( COL, ROW, 2 )
-     &                                * RESTRANS( COL, ROW )
+     &                                * RESTRANS( COL, ROW ) , 8 ) 
           END DO
         END DO
 
@@ -948,16 +913,6 @@ C...convert to ppmV tracer gas
           END DO
         END DO
       END DO
-      
-C     if (rank == 78) then
-C        write(*,*) 'JTIME:', JTIME
-C        write(*,*) 'CGRID after unit conversion 11th:', CGRID(5, 9, 11, 129)%dx1x2
-C        write(*,*) 'CGRID after unit conversion 10th:', CGRID(5, 9, 10, 129)%dx1x2
-C        write(*,*) 'CGRID after unit conversion 9th:', CGRID(5, 9, 9, 129)%dx1x2
-C        write(*,*) 'CGRID after unit conversion 8th:', CGRID(5, 9, 8, 129)%dx1x2
-C     endif
-      
-      
 
 #ifdef isam
 c ISAM  unit conversion
