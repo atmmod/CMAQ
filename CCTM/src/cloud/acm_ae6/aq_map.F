@@ -136,18 +136,18 @@ C Local Variables (scalars):
 
       REAL( 8 )  :: BETASO4
       REAL( 8 )  :: EALFA2T                ! EXP( -ALFA2 * TAUCLD )
-      REAL( 8 )  :: M3NEW( NMODES )        ! modal mass at time t
-      REAL( 8 )  :: M3OLD( NMODES )        ! modal mass at time 0
-      REAL( 8 )  :: Dens_wmean_old( NMODES ) ! concentration weighted molecular weight g/mol
-      REAL( 8 )  :: Dens_wmean_new( NMODES ) ! concentration weighted molecular weight g/mol
+      type(hyperdual)  :: M3NEW( NMODES )        ! modal mass at time t
+      type(hyperdual)  :: M3OLD( NMODES )        ! modal mass at time 0
+      type(hyperdual)  :: Dens_wmean_old( NMODES ) ! concentration weighted molecular weight g/mol
+      type(hyperdual)  :: Dens_wmean_new( NMODES ) ! concentration weighted molecular weight g/mol
 
       REAL       :: HPWDEP                        ! hydrogen wet dep (mm mol/liter)
-      REAL( 8 ), ALLOCATABLE, SAVE :: GAS    ( : )    ! gas phase conc (mol/mol)
+      type(hyperdual), ALLOCATABLE, SAVE :: GAS    ( : )    ! gas phase conc (mol/mol)
       REAL( 8 ), ALLOCATABLE, SAVE :: GASWDEP( : )    ! gas phase wet dep array (mm mol/liter)
-      REAL( 8 ), ALLOCATABLE, SAVE :: AEROSOL( :, :)  ! aerosol conc (mol/mol)
+      type(hyperdual), ALLOCATABLE, SAVE :: AEROSOL( :, :)  ! aerosol conc (mol/mol)
       REAL( 8 ), ALLOCATABLE, SAVE :: AERWDEP( :, :)  ! aerosol wet dep array (mm mol/liter)
-      REAL( 8 )  :: WSRGGAS( NGAS, MXSRG)             ! weights for surrogate
-      REAL( 8 )  :: WSRGAER( MAX_NAER, NMODES, MXSRG) ! weights for surrogate
+      type(hyperdual)  :: WSRGGAS( NGAS, MXSRG)             ! weights for surrogate
+      type(hyperdual)  :: WSRGAER( MAX_NAER, NMODES, MXSRG) ! weights for surrogate
 
 C External Functions:
 
@@ -173,8 +173,8 @@ C External Functions:
            REAL,      INTENT( IN )  :: TEMP      ! temperature (K)
            REAL,      INTENT( IN )  :: WCAVG     ! liquid water content (kg/m3)
            REAL,      INTENT( IN )  :: WTAVG     ! total water content (kg/m3)
-           REAL( 8 ), INTENT( INOUT ) :: GAS    ( : )   ! gas phase concentrations (mol/molV)
-           REAL( 8 ), INTENT( INOUT ) :: AEROSOL( :,: ) ! aerosol concentrations (mol/molV)
+           type(hyperdual), INTENT( INOUT ) :: GAS    ( : )   ! gas phase concentrations (mol/molV)
+           type(hyperdual), INTENT( INOUT ) :: AEROSOL( :,: ) ! aerosol concentrations (mol/molV)
            REAL( 8 ), INTENT( INOUT ) :: GASWDEP( : )   ! gas phase wet deposition array (mm mol/liter)
            REAL( 8 ), INTENT( INOUT ) :: AERWDEP( :,: ) ! aerosol wet deposition array (mm mol/liter)
            LOGICAL,   INTENT( IN )    :: DARK           ! DARK = TRUE is night,  DARK = FALSE is day
@@ -256,7 +256,7 @@ C...load gas-phase concentrations
 
         DO ISRG = 1, NSRGGAS( IGAS )
           PNTR = CGRID2AQ_MAP( LSRGGAS( IGAS, ISRG ) )
-          GAS( IGAS ) = GAS( IGAS ) + REAL( POLC( PNTR )%x, 8 )
+          GAS( IGAS ) = GAS( IGAS ) + POLC( PNTR )
 #ifdef sens
           DO NP = 1, NPMAX
             S_GAS( NP, IGAS ) = S_GAS( NP, IGAS ) + S_POLC ( NP, PNTR )
@@ -267,7 +267,7 @@ C...load gas-phase concentrations
         IF ( GAS( IGAS ) .GT. 0.0D0 ) THEN
           DO ISRG = 1, NSRGGAS( IGAS )
             PNTR = CGRID2AQ_MAP( LSRGGAS( IGAS, ISRG ) )
-            WSRGGAS( IGAS, ISRG ) = REAL( POLC( PNTR )%x, 8 ) / GAS( IGAS )
+            WSRGGAS( IGAS, ISRG ) = POLC( PNTR ) / GAS( IGAS )
 #ifdef sens
             DO NP = 1, NPMAX
                IF ( S_GAS( NP, IGAS ) .NE. 0.0D0 ) THEN
@@ -326,7 +326,7 @@ C...load aerosol concentrations
 #endif
             DO ISRG = 1, NSRGAER( IAER, IMODE )
               PNTR = CGRID2AQ_MAP( LSRGAER( IAER, IMODE, ISRG ) )
-              AEROSOL( IAER, IMODE ) = AEROSOL( IAER, IMODE ) + REAL( POLC( PNTR )%x, 8 )
+              AEROSOL( IAER, IMODE ) = AEROSOL( IAER, IMODE ) + POLC( PNTR )
 #ifdef sens
               DO NP = 1, NPMAX
                 S_AEROSOL( NP, IAER, IMODE ) = S_AEROSOL( NP, IAER, IMODE ) + S_POLC( NP, PNTR )
@@ -337,8 +337,8 @@ C...load aerosol concentrations
             IF ( AEROSOL( IAER, IMODE ) .GT. 0.0D0 ) THEN
               DO ISRG = 1, NSRGAER( IAER, IMODE )
                 PNTR = CGRID2AQ_MAP( LSRGAER( IAER, IMODE, ISRG ) )
-                WSRGAER( IAER, IMODE, ISRG ) = REAL( POLC( PNTR )%x, 8 )
-     &                                       / REAL( AEROSOL( IAER, IMODE ), 8 )
+                WSRGAER( IAER, IMODE, ISRG ) = POLC( PNTR )
+     &                                       / AEROSOL( IAER, IMODE )
 #ifdef sens
                DO NP = 1, NPMAX
                   IF ( S_AEROSOL( NP, IAER, IMODE ) .NE. 0.0D0 ) THEN
@@ -405,10 +405,10 @@ C ... M3OLD is in units of m3/kmol_air
           IF ( ( AEROSPC( SPC )%NAME( IMODE ) .NE. ' ' ) .AND.
      &         ( .NOT. AEROSPC( SPC )%NO_M2WET ) ) THEN
              M3OLD( IMODE ) = M3OLD( IMODE )
-     &                      + ( real(AEROSPC_CONC( SPC,IMODE )%x, 8) * AEROSPC_MW( SPC )
+     &                      + ( AEROSPC_CONC( SPC,IMODE ) * AEROSPC_MW( SPC )
      &                      / AEROSPC( SPC )%DENSITY )
              Dens_wmean_old( IMODE ) = Dens_wmean_old( IMODE )  
-     &                      + real(AEROSPC_CONC( SPC,IMODE )%x, 8) * AEROSPC_MW( SPC )
+     &                      + AEROSPC_CONC( SPC,IMODE ) * AEROSPC_MW( SPC )
           END IF
         END DO
       END DO
@@ -489,10 +489,10 @@ C ... M3NEW is in units of m3/kmol_air
           IF ( ( AEROSPC( SPC )%NAME( IMODE ) .NE. ' ' ) .AND.
      &         ( .NOT. AEROSPC( SPC )%NO_M2WET ) ) THEN
              M3NEW( IMODE ) = M3NEW( IMODE )
-     &                      + ( real(AEROSPC_CONC( SPC,IMODE )%x, 8) * AEROSPC_MW( SPC )
+     &                      + ( AEROSPC_CONC( SPC,IMODE ) * AEROSPC_MW( SPC )
      &                      / AEROSPC( SPC )%DENSITY )
              Dens_wmean_new( IMODE ) = Dens_wmean_new( IMODE )  
-     &                      + real(AEROSPC_CONC( SPC,IMODE )%x, 8) * AEROSPC_MW( SPC )
+     &                      + AEROSPC_CONC( SPC,IMODE ) * AEROSPC_MW( SPC )
           END IF
         END DO
       END DO

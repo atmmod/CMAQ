@@ -199,8 +199,8 @@ C...........Arguments:
       REAL,      INTENT( IN )  :: TEMP      ! temperature (K)
       REAL,      INTENT( IN )  :: WCAVG     ! liquid water content (kg/m3)
       REAL,      INTENT( IN )  :: WTAVG     ! total water content (kg/m3)
-      REAL( 8 ), INTENT( INOUT ) :: GAS    ( : )   ! gas phase concentrations (mol/molV)
-      REAL( 8 ), INTENT( INOUT ) :: AEROSOL( :,: ) ! aerosol concentrations (mol/molV)
+      type(hyperdual), INTENT( INOUT ) :: GAS    ( : )   ! gas phase concentrations (mol/molV)
+      type(hyperdual), INTENT( INOUT ) :: AEROSOL( :,: ) ! aerosol concentrations (mol/molV)
       REAL( 8 ), INTENT( INOUT ) :: GASWDEP( : )   ! gas phase wet deposition array (mm mol/liter)
       REAL( 8 ), INTENT( INOUT ) :: AERWDEP( :,: ) ! aerosol wet deposition array (mm mol/liter)
       LOGICAL,   INTENT( IN )    :: DARK           ! DARK = TRUE is night,  DARK = FALSE is day
@@ -651,41 +651,41 @@ C...make initializations
 
 C...compute fractional weights for several species
 
-      TOTNIT = GAS( LHNO3 ) + AEROSOL( LNO3, ACC )
+      TOTNIT = GAS( LHNO3 )%x + AEROSOL( LNO3, ACC )%x
       IF ( TOTNIT .GT. 0.0D0 ) THEN
-        FHNO3   = GAS( LHNO3 ) / TOTNIT
-        FNO3ACC = AEROSOL( LNO3, ACC ) / TOTNIT
+        FHNO3   = GAS( LHNO3 )%x / TOTNIT
+        FNO3ACC = AEROSOL( LNO3, ACC )%x / TOTNIT
       ELSE
         FHNO3   = 1.0D0
         FNO3ACC = 0.0D0
       END IF
 
-      TOTAMM = GAS( LNH3 ) + AEROSOL( LNH4, ACC )
+      TOTAMM = GAS( LNH3 )%x + AEROSOL( LNH4, ACC )%x
       IF ( TOTAMM .GT. 0.0D0 ) THEN
-        FNH3    = GAS( LNH3 ) / TOTAMM
-        FNH4ACC = AEROSOL( LNH4, ACC ) / TOTAMM
+        FNH3    = GAS( LNH3 )%x / TOTAMM
+        FNH4ACC = AEROSOL( LNH4, ACC )%x / TOTAMM
       ELSE
         FNH3    = 1.0D0
         FNH4ACC = 0.0D0
       END IF
 
-      TNO3a = AEROSOL( LNO3, ACC ) + AEROSOL( LNO3, COR ) 
+      TNO3a = AEROSOL( LNO3, ACC )%x + AEROSOL( LNO3, COR )%x 
       IF ( TNO3a .GT. 0.0D0) THEN
-         FNO3COR = AEROSOL( LNO3, COR ) / TNO3a
+         FNO3COR = AEROSOL( LNO3, COR )%x / TNO3a
       ELSE
          FNO3COR = 0.0D0
       END IF
       
-      TNH4a = AEROSOL( LNH4, ACC ) + AEROSOL( LNH4, COR )
+      TNH4a = AEROSOL( LNH4, ACC )%x + AEROSOL( LNH4, COR )%x
       IF ( TNH4a .GT. 0.0D0) THEN
-         FNH4COR = AEROSOL( LNH4, COR ) / TNH4a
+         FNH4COR = AEROSOL( LNH4, COR )%x / TNH4a
       ELSE
          FNH4COR = 0.0D0
       END IF
       
-      TCLa  = AEROSOL( LCL, ACC )  + AEROSOL( LCL, COR )
+      TCLa  = AEROSOL( LCL, ACC )%x  + AEROSOL( LCL, COR )%x
       IF ( TCLa .GT. 0.0D0) THEN
-         FCLCOR = AEROSOL( LCL, COR ) / TCLa
+         FCLCOR = AEROSOL( LCL, COR )%x / TCLa
       ELSE
          FCLCOR = 0.0D0
       END IF
@@ -734,10 +734,10 @@ C...  an assumption is made that all of the accumulation-mode
 C...  aerosol mass in incorporated into the cloud droplets
 
       DO ISPC = 1, NAER
-        LOADING( ISPC, ACC ) = AEROSOL( ISPC, ACC ) * PRES_ATM_OVER_XL
+        LOADING( ISPC, ACC ) = AEROSOL( ISPC, ACC )%x * PRES_ATM_OVER_XL
       END DO
 
-      LOADING( LSO4, ACC ) = ( AEROSOL( LSO4, ACC ) + GAS( LH2SO4 ) ) * PRES_ATM_OVER_XL
+      LOADING( LSO4, ACC ) = ( AEROSOL( LSO4, ACC )%x + GAS( LH2SO4 )%x ) * PRES_ATM_OVER_XL
 
 #ifdef sens
       DO NP = 1, NPMAX
@@ -753,7 +753,7 @@ C...  an assumption is made that all of the coarse-mode
 C...  aerosol mass in incorporated into the cloud droplets
 
       DO ISPC = 1, NAER
-        LOADING( ISPC, COR ) = AEROSOL( ISPC, COR ) * PRES_ATM_OVER_XL
+        LOADING( ISPC, COR ) = AEROSOL( ISPC, COR )%x * PRES_ATM_OVER_XL
       END DO
 
 !     LOADING( LCACO3, COR ) = ( AEROSOL( LCACO3, COR ) + AEROSOL( LMGCO3, COR ) )
@@ -804,7 +804,7 @@ C...set aitken-mode aerosol loading (mol/liter)
 
         SCAVENGED = PRES_ATM_OVER_XL * ( 1.0D0 - EXP( -REAL( ALFA3, 8 ) * TIMEW ) )
         DO ISPC = 1, NAER
-          LOADING( ISPC, AKN ) = AEROSOL( ISPC, AKN ) * SCAVENGED
+          LOADING( ISPC, AKN ) = AEROSOL( ISPC, AKN )%x * SCAVENGED
         END DO
 
 C#ifdef sens
@@ -818,34 +818,34 @@ C#endif
 C...Initial gas phase partial pressures (atm)
 C...   = initial partial pressure - amount deposited partial pressure
 
-        INITGAS( LSO2 )  = GAS( LSO2  ) * PRES_ATM
+        INITGAS( LSO2 )  = GAS( LSO2  )%x * PRES_ATM
      &                   + DS4( 0 ) * XL
      &                   - ( WETDEP( LSO3L ) + WETDEP( LHSO3L ) + WETDEP( LSO2L ) ) * XC2
-        INITGAS( LNH3 )  = GAS( LNH3  ) * PRES_ATM
+        INITGAS( LNH3 )  = GAS( LNH3  )%x * PRES_ATM
      &                   + ( LOADING( LNH4, ACC ) + LOADING( LNH4, COR ) + LOADING( LNH4, AKN ) ) * XL
      &                   - ( WETDEP( LNH4ACCL ) + WETDEP( LNH3L ) + WETDEP( LNH4CORL ) ) * XC2
-        INITGAS( LHNO3 ) = ( GAS( LHNO3 ) + 2.0 * GAS( LN2O5 ) ) * PRES_ATM
+        INITGAS( LHNO3 ) = ( GAS( LHNO3 )%x + 2.0 * GAS( LN2O5 )%x ) * PRES_ATM
      &                   + ( LOADING( LNO3, ACC ) + LOADING( LNO3, COR ) + LOADING( LNO3, AKN ) ) * XL
      &                   - ( WETDEP( LNO3ACCL ) + WETDEP( LHNO3L ) + WETDEP( LNO3CORL ) ) * XC2
-        INITGAS( LHCL )  = GAS(  LHCL ) * PRES_ATM
+        INITGAS( LHCL )  = GAS(  LHCL )%x * PRES_ATM
      &                   + ( LOADING( LCL, ACC ) + LOADING( LCL, COR ) + LOADING( LCL, AKN ) ) * XL ! new for sea salt
      &                   - ( WETDEP( LCLACCL ) + WETDEP( LHCLL ) + WETDEP( LCLCORL ) ) * XC2
-        INITGAS( LH2O2 ) = GAS( LH2O2 ) * PRES_ATM - WETDEP( LH2O2L ) * XC2
-        INITGAS( LO3 )   = GAS( LO3   ) * PRES_ATM - WETDEP( LO3L   ) * XC2
-        INITGAS( LFOA )  = GAS( LFOA  ) * PRES_ATM
+        INITGAS( LH2O2 ) = GAS( LH2O2 )%x * PRES_ATM - WETDEP( LH2O2L ) * XC2
+        INITGAS( LO3 )   = GAS( LO3   )%x * PRES_ATM - WETDEP( LO3L   ) * XC2
+        INITGAS( LFOA )  = GAS( LFOA  )%x * PRES_ATM
      &                   - ( WETDEP( LFOAL ) + WETDEP( LHCO2L ) ) * XC2
-        INITGAS( LMHP )  = GAS( LMHP  ) * PRES_ATM - WETDEP( LMHPL  ) * XC2
-        INITGAS( LPAA )  = GAS( LPAA  ) * PRES_ATM - WETDEP( LPAAL  ) * XC2
-        INITGAS( LCO2 )  = GAS( LCO2  ) * PRES_ATM
+        INITGAS( LMHP )  = GAS( LMHP  )%x * PRES_ATM - WETDEP( LMHPL  ) * XC2
+        INITGAS( LPAA )  = GAS( LPAA  )%x * PRES_ATM - WETDEP( LPAAL  ) * XC2
+        INITGAS( LCO2 )  = GAS( LCO2  )%x * PRES_ATM
 !    &                   + ( LOADING( LCACO3, COR ) + LOADING( LMGCO3, COR ) ) * XL
      &                   - ( WETDEP( LCO3L ) + WETDEP( LHCO3L ) + WETDEP( LCO2L ) ) * XC2
-        INITGAS( LGLY )  = GAS( LGLY  ) * PRES_ATM
+        INITGAS( LGLY )  = GAS( LGLY  )%x * PRES_ATM
      &                   + DGLY1 * XL
      &                   - WETDEP( LGLYL ) * XC2
-        INITGAS( LMGLY ) = GAS( LMGLY  ) * PRES_ATM
+        INITGAS( LMGLY ) = GAS( LMGLY  )%x * PRES_ATM
      &                   + DMGLY1 * XL
      &                   - WETDEP( LMGLYL ) * XC2
-        INITGAS( LHO )   = GAS( LHO ) * PRES_ATM
+        INITGAS( LHO )   = GAS( LHO )%x * PRES_ATM
 !steadystate     &                   + DOH1 * XL
 !steadystate     &                   - WETDEP( LOHL ) * XC2
 
