@@ -266,9 +266,9 @@ C...........Local Variables
 
 C-------for ACM version - jp 2/05        REAL DPB
       REAL, ALLOCATABLE, SAVE :: DZH( : )
-      REAL, ALLOCATABLE, SAVE :: CCR ( :,: )
-      REAL, ALLOCATABLE, SAVE :: CONC( :,: )
-      REAL, ALLOCATABLE, SAVE :: CBELOW( : )
+      type(hyperdual), ALLOCATABLE, SAVE :: CCR ( :,: )
+      type(hyperdual), ALLOCATABLE, SAVE :: CONC( :,: )
+      type(hyperdual), ALLOCATABLE, SAVE :: CBELOW( : )
 C-------------------------------------------
 
       LOGICAL, SAVE :: FIRSTIME = .TRUE. ! flag for first pass thru
@@ -312,7 +312,7 @@ C-------------------------------------------
       REAL             ALFA2            ! aitken mode sfc area scavenging coef
       REAL             ALFA3            ! aitken mode mass scavenging coef
       REAL             ARPRES           ! ave cloud pres in atm
-      REAL             CONDIS           !
+      type(hyperdual)             CONDIS           !
       REAL             CTHK             ! cloud thickness (m)
       REAL             CTHK1            ! aq chem calc cloud thickness
       REAL             DAMDP            ! dry adiabatic minus dew point lapse rate
@@ -377,9 +377,9 @@ C-------------------------------------------
       REAL             LWP
       REAL             STRNS            ! intermediate to set subgrid cld transmissivity
       REAL, ALLOCATABLE, SAVE :: AECONCMIN( : ) ! array of minimum concentrations
-      REAL, ALLOCATABLE, SAVE :: BMOL   ( : )   ! mol/m2 species below cloud
-      REAL, ALLOCATABLE, SAVE :: CBASE0 ( : )   ! initial ave trace gas mix rat below cld
-      REAL, ALLOCATABLE, SAVE :: CBASEF ( : )   ! final ave trac gas mix rat blw cld (mol/mol)
+      type(hyperdual), ALLOCATABLE, SAVE :: BMOL   ( : )   ! mol/m2 species below cloud
+      type(hyperdual), ALLOCATABLE, SAVE :: CBASE0 ( : )   ! initial ave trace gas mix rat below cld
+      type(hyperdual), ALLOCATABLE, SAVE :: CBASEF ( : )   ! final ave trac gas mix rat blw cld (mol/mol)
       type(hyperdual), ALLOCATABLE, SAVE :: CEND   ( : )   ! ending equiv gas phase conc (mol/mol)
       type(hyperdual), ALLOCATABLE, SAVE :: POLC   ( : )   ! ave vert conc incloud mol sp/m2 and mol sp/ mol air
       type(hyperdual), ALLOCATABLE, SAVE :: REMOV  ( : )   ! mol/m2 or mm*mol/lit scavenged
@@ -398,11 +398,11 @@ C-------------------------------------------
       REAL             PLCL                ! pressure at LCL
       REAL             QMAX                ! pertbd w.. mix rat of parcel
       REAL          :: RAIN( NCOLS,NROWS ) ! this timestep rainfall (mm/hr)
-      REAL             BCLDWT              ! below cloud weighting function
+      type(hyperdual)             BCLDWT              ! below cloud weighting function
       REAL, ALLOCATABLE, SAVE :: CONCMINL( :,: ) ! minimum concentrations for each species and layer
-      REAL             INCLOUD        ! final conc in cloud after mix and chem [mol/mol]
-      REAL             OUTCLOUD       ! final conc outside    "    "   "   "     "
-      REAL, ALLOCATABLE, SAVE :: PCLD    ( :,: ) ! mol sp/mol air in cloud
+      type(hyperdual)             INCLOUD        ! final conc in cloud after mix and chem [mol/mol]
+      type(hyperdual)             OUTCLOUD       ! final conc outside    "    "   "   "     "
+      type(hyperdual), ALLOCATABLE, SAVE :: PCLD    ( :,: ) ! mol sp/mol air in cloud
 
       REAL          :: RC   ( NCOLS,NROWS )        ! hourly convective rainfall (cm)
       REAL          :: PBL  ( NCOLS,NROWS )        ! PBL height (m)
@@ -478,9 +478,9 @@ C#endif
           INTEGER, INTENT( IN ) :: NSP
           INTEGER, INTENT( IN ) :: NLAYS
           REAL, INTENT( IN )    :: F( : )
-          REAL, INTENT( INOUT ) :: C( :, : )
+          type(hyperdual), INTENT( INOUT ) :: C( :, : )
           REAL, INTENT( IN )    :: DZH( : )
-          REAL, INTENT( INOUT ) :: CBELOW( : )
+          type(hyperdual), INTENT( INOUT ) :: CBELOW( : )
           INTEGER, INTENT( IN ) :: CLBASE
           INTEGER, INTENT( IN ) :: CLTOP
           REAL, INTENT( IN )    :: FRAC
@@ -943,7 +943,7 @@ C...  set minimum for aerosol species
 
           DO LAY = 1, NLAYS
             DO SPC = 1, NSPCSD
-              CONC( SPC,LAY ) = MAX( real (CGRID( COL,ROW,LAY,SPC )%x, 4),
+              CONC( SPC,LAY ) = MAX( CGRID( COL,ROW,LAY,SPC ),
      &                                  CONCMINL( SPC,LAY ) )
 C    		  IF ( CGRID( COL,ROW,LAY,SPC )%x .LT. CONCMINL( SPC, LAY ) ) THEN
 C    		  	CGRID( COL,ROW,LAY,SPC )%dx1 = 0.0d0
@@ -1259,11 +1259,11 @@ C...First, get mol air/m2 at each layer, initialize FSIDE
           DO SPC = 1, NSPCSD
             REMOV( SPC ) = 0.0D0  ! mol/m2 or mm*mol/lit scavenged
             CEND ( SPC ) = 0.0d0  ! ending equiv gas phase conc (mol/mol)
-            BMOL ( SPC ) = 0.0  ! mol/m2 species below cloud
+            BMOL ( SPC ) = 0.0d0  ! mol/m2 species below cloud
             POLC ( SPC ) = 0.0d0  ! mol/m2 species in cloud
 
             DO LAY = 1, NLAYS
-              PCLD( SPC,LAY ) = 0.0  ! mol sp/mol air in cloud
+              PCLD( SPC,LAY ) = 0.0d0  ! mol sp/mol air in cloud
             END DO
 
           END DO
@@ -2219,23 +2219,23 @@ C...   include raining region below cld base
             DO LAY = 1, CLBASE - 1
               DO SPC = 1, NSPCSD
                 IF ( SPC .NE. N_GC_SPCD ) THEN
-                  INCLOUD = PCLD( SPC,LAY ) * real(CEND( SPC )%x, 4)
-     &                    / MAX( real(POLC( SPC )%x, 4), CONCMINL( SPC,LAY ) )
+                  INCLOUD = PCLD( SPC,LAY ) * CEND( SPC )
+     &                    / MAX( POLC( SPC ), CONCMINL( SPC,LAY ) )
 
                   IF ( STM ) THEN
                     IF ( SPC .NE. SURCLDMX( SPC ) ) THEN       ! use its surrogate
                       IF ( POLC( SURCLDMX( SPC ) ) .GT. 0.0 ) THEN
                         INCLOUD = PCLD( SURCLDMX( SPC ),LAY ) * real(CEND( SPC )%x, 4)
-     &                          / MAX( real(POLC( SURCLDMX( SPC ) )%x, 4), CONCMINL( SURCLDMX( SPC ),LAY ) )
+     &                          / MAX( POLC( SURCLDMX( SPC ) ), CONCMINL( SURCLDMX( SPC ),LAY ) )
                       ELSE
-                        INCLOUD = real(CEND( SPC )%x, 4)
+                        INCLOUD = CEND( SPC )
                       END IF
                     END IF
                   END IF ! stm
 
                   OUTCLOUD = PCLD( SPC,LAY )
-                  CGRID( COL,ROW,LAY,SPC ) = real(FRAC * INCLOUD
-     &                                     + ( 1.0 - FRAC ) * OUTCLOUD, 8)
+                  CGRID( COL,ROW,LAY,SPC ) = FRAC * INCLOUD
+     &                                     + ( 1.0 - FRAC ) * OUTCLOUD
      
 C               if (rank == 78 .and. LAY == 10 .and. SPC == 129) then
 C                   write(*,*) 'BELOW'
@@ -2318,7 +2318,7 @@ C#endif
           ELSE
             DO LAY = 1, CLBASE - 1
               DO SPC = 1, NSPCSD
-                CGRID( COL,ROW,LAY,SPC ) = real(PCLD( SPC,LAY ), 8)
+                CGRID( COL,ROW,LAY,SPC ) = PCLD( SPC,LAY )
                 
 C               if (rank == 78 .and. LAY == 10 .and. SPC == 129) then
 C                   write(*,*) 'no raining cloud'
@@ -2350,16 +2350,16 @@ C...Now do changes in cloudy layers:
           DO LAY = CLBASE, CLTOP
             DO SPC = 1, NSPCSD
               IF ( SPC .NE. N_GC_SPCD ) THEN
-                INCLOUD = PCLD( SPC,LAY ) * real(CEND( SPC )%x, 4)
-     &                  / MAX( real(POLC( SPC )%x, 4), CONCMINL( SPC,LAY ) )
+                INCLOUD = PCLD( SPC,LAY ) * CEND( SPC )
+     &                  / MAX( POLC( SPC ), CONCMINL( SPC,LAY ) )
 
                 IF ( STM ) THEN
                   IF ( SPC .NE. SURCLDMX( SPC ) ) THEN       ! use its surrogate
                     IF ( POLC( SURCLDMX( SPC ) ) .GT. 0.0 ) THEN
                       INCLOUD = PCLD( SURCLDMX( SPC ),LAY ) * real(CEND( SPC )%x, 4)
-     &                        / MAX( real(POLC( SURCLDMX( SPC ) )%x, 4), CONCMINL( SURCLDMX( SPC ),LAY ) )
+     &                        / MAX( POLC( SURCLDMX( SPC ) ), CONCMINL( SURCLDMX( SPC ),LAY ) )
                     ELSE
-                      INCLOUD = real(CEND( SPC )%x, 4)
+                      INCLOUD = CEND( SPC )
                     END IF
                   END IF
                 END IF ! stm
@@ -2367,8 +2367,8 @@ C...Now do changes in cloudy layers:
                 OUTCLOUD = ( CCR( SPC,LAY ) - FRAC * PCLD( SPC,LAY ) )
      &                   / ( 1.0 - FRAC )
                 OUTCLOUD = MAX( OUTCLOUD, CONCMINL( SPC,LAY ) )
-                CGRID( COL,ROW,LAY,SPC ) = real(FRAC * INCLOUD 
-     &                                   + ( 1.0 - FRAC ) * OUTCLOUD, 8)
+                CGRID( COL,ROW,LAY,SPC ) = FRAC * INCLOUD 
+     &                                   + ( 1.0 - FRAC ) * OUTCLOUD
      
 C               if (rank == 78 .and. LAY == 10 .and. SPC == 129) then
 C                   WRITE(*,*) 'cloudy'
