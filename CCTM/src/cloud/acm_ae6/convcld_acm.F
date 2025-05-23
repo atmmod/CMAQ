@@ -308,9 +308,9 @@ C-------------------------------------------
       REAL             AIRM             ! total air mass (mol/m2) in cloudy air
       REAL             AIRMB0           ! mol/m2 air below cloud
       REAL             AIRMBI           ! inverse mol/m2 air below cloud
-      REAL             ALFA0            ! aitken mode number scavenging coef
-      REAL             ALFA2            ! aitken mode sfc area scavenging coef
-      REAL             ALFA3            ! aitken mode mass scavenging coef
+      type(hyperdual)             ALFA0            ! aitken mode number scavenging coef
+      type(hyperdual)             ALFA2            ! aitken mode sfc area scavenging coef
+      type(hyperdual)             ALFA3            ! aitken mode mass scavenging coef
       REAL             ARPRES           ! ave cloud pres in atm
       type(hyperdual)             CONDIS           !
       REAL             CTHK             ! cloud thickness (m)
@@ -498,7 +498,7 @@ C#endif
           type(hyperdual),    INTENT( IN )  :: POLC ( : )
           type(hyperdual),    INTENT( OUT ) :: CEND( : ), REMOV( : )
           REAL,    INTENT( OUT ) :: REMOVAC
-          REAL,    INTENT( OUT ) :: ALFA0, ALFA2, ALFA3
+          type(hyperdual),    INTENT( OUT ) :: ALFA0, ALFA2, ALFA3
         END SUBROUTINE SCAVWDEP
 
         SUBROUTINE AQ_MAP( JDATE, JTIME, WTBAR, WCBAR, TBARC, PBARC,
@@ -511,7 +511,7 @@ C#endif
           type(hyperdual),    INTENT( IN )    :: POLC ( : )
           type(hyperdual),    INTENT( INOUT ) :: CEND( : ), REMOV( : )
           REAL,    INTENT( INOUT ) :: REMOVAC
-          REAL,    INTENT( IN )    :: ALFA0, ALFA2, ALFA3
+          type(hyperdual),    INTENT( IN )    :: ALFA0, ALFA2, ALFA3
           LOGICAL, INTENT( IN )    :: DARK            
         END SUBROUTINE AQ_MAP
       END INTERFACE

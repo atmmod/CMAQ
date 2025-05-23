@@ -162,9 +162,9 @@ C...........Local Variables:
       INTEGER       ALLOCSTAT           ! memory allocation status
 
       REAL          AIRM                ! total airmass (mol/m2) in cloudy air
-      REAL          ALFA0               ! aitken mode number scavenging coef
-      REAL          ALFA2               ! aitken mode sfc area scavenging coef
-      REAL          ALFA3               ! aitken mode mass scavenging coef
+      type(hyperdual)          ALFA0               ! aitken mode number scavenging coef
+      type(hyperdual)          ALFA2               ! aitken mode sfc area scavenging coef
+      type(hyperdual)          ALFA3               ! aitken mode mass scavenging coef
       REAL          CTHK1               ! cloud thickness (m)
       REAL          METSTEP             ! timestep on the met file (hr)
       SAVE          METSTEP
@@ -231,7 +231,7 @@ C...........External Functions:
            type(hyperdual),    INTENT( IN )  :: POLC ( : )
            REAL,    INTENT( OUT ) :: REMOVAC
            type(hyperdual),    INTENT( OUT ) :: CEND( : ), REMOV( : )
-           REAL,    INTENT( OUT ) :: ALFA0, ALFA2, ALFA3
+           type(hyperdual),    INTENT( OUT ) :: ALFA0, ALFA2, ALFA3
         END SUBROUTINE SCAVWDEP
         SUBROUTINE AQ_MAP( JDATE, JTIME, WTBAR, WCBAR, TBARC, PBARC,
      &                     CTHK1, AIRM, PRATE1, TAUCLD, POLC, CEND,
@@ -244,7 +244,7 @@ C...........External Functions:
            type(hyperdual),    INTENT( IN )    :: POLC ( : )
            REAL,    INTENT( INOUT ) :: REMOVAC
            type(hyperdual),    INTENT( INOUT ) :: CEND( : ), REMOV( : )
-           REAL,    INTENT( IN )    :: ALFA0, ALFA2, ALFA3
+           type(hyperdual),    INTENT( IN )    :: ALFA0, ALFA2, ALFA3
            LOGICAL, INTENT( IN )    :: DARK                  !Golam Sarwar, July 1, 2011
         END SUBROUTINE AQ_MAP
       END INTERFACE

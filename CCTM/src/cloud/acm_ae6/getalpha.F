@@ -78,21 +78,21 @@ C...........Parameters:
 
 C...........Arguments:
 
-      REAL          NUMI       ! total number concentration for the Aitken mode [ #/m**3 ]
-      REAL          MASSI      ! total mass concentration in AItken mode [ ug/m**3 ]
-      REAL          SURFI      ! total surface area in Aitken mode [ m**2 / m**3 ]
+      type(hyperdual)          NUMI       ! total number concentration for the Aitken mode [ #/m**3 ]
+      type(hyperdual)          MASSI      ! total mass concentration in AItken mode [ ug/m**3 ]
+      type(hyperdual)          SURFI      ! total surface area in Aitken mode [ m**2 / m**3 ]
       REAL          LWC        ! cloud liquid water content [ kg/m**3 ]
       REAL          T          ! average cloud temperature [ K ]
       REAL          P          ! average cloud pressure [ Pa ]
       REAL          RHOAIR     ! average cloud density [ kg/m**3 ]
-      REAL          ALFA0      ! scavenging coefficient for number [ 1/s ]
-      REAL          ALFA2      ! scavenging coefficient for surface area [ 1/s ]
-      REAL          ALFA3      ! scavenging coefficient for mass [ 1/s ]
+      type(hyperdual)          ALFA0      ! scavenging coefficient for number [ 1/s ]
+      type(hyperdual)          ALFA2      ! scavenging coefficient for surface area [ 1/s ]
+      type(hyperdual)          ALFA3      ! scavenging coefficient for mass [ 1/s ]
 
 C...........Local Variables (scalars):
 
-      REAL          DGNI       ! geometric mean diameter for AItken mode [ m ]
-      REAL          L2SGI      ! square of the log of the
+      type(hyperdual)          DGNI       ! geometric mean diameter for AItken mode [ m ]
+      type(hyperdual)          L2SGI      ! square of the log of the
                                ! Aitken mode geometric standard deviation
 !     REAL          XXFN       ! fraction for computing L2SGI
 
@@ -104,16 +104,16 @@ c *** ranges for acceptable values of LOG( sigma_g).
 
       REAL          NC         ! total cloud droplet number concentration  [ #/m**3 ]
       REAL          DGC        ! geometric mean diameter for cloud droplet [ m ]
-      REAL          ESG4       ! exp(0.5 * L2SGI )
-      REAL          ESG16      ! exp(2.0 * L2SGI )
-      REAL          ESG36      ! exp(4.5 * L2SGI )
-      REAL          DG2        ! square of geometic mean diameter
-      REAL          AMM2       ! -2nd moment of the Aitken mode distribution
-      REAL          AMM1       ! -1st moment of the Aitken mode distribution
-      REAL          AM1        ! 1st moment of the Aitken mode distribution
-      REAL          AM0        ! alternative name for Aitken mode number  [ #/m**3]
-      REAL          AM2        ! 2nd moment of the Aitken mode distribution
-      REAL          AM3        ! 3rd moment of the Aitken mode distribution
+      type(hyperdual)          ESG4       ! exp(0.5 * L2SGI )
+      type(hyperdual)          ESG16      ! exp(2.0 * L2SGI )
+      type(hyperdual)          ESG36      ! exp(4.5 * L2SGI )
+      type(hyperdual)          DG2        ! square of geometic mean diameter
+      type(hyperdual)          AMM2       ! -2nd moment of the Aitken mode distribution
+      type(hyperdual)          AMM1       ! -1st moment of the Aitken mode distribution
+      type(hyperdual)          AM1        ! 1st moment of the Aitken mode distribution
+      type(hyperdual)          AM0        ! alternative name for Aitken mode number  [ #/m**3]
+      type(hyperdual)          AM2        ! 2nd moment of the Aitken mode distribution
+      type(hyperdual)          AM3        ! 3rd moment of the Aitken mode distribution
       REAL          M0C        ! moments of the cloud droplet distribution
       REAL          M1C        ! moments of the cloud droplet distribution
       REAL          M2C        ! moments of the cloud droplet distribution
@@ -125,10 +125,10 @@ c *** ranges for acceptable values of LOG( sigma_g).
       REAL          COEF       !
       !REAL          DIFF0      ! aerosol diffusivities
       !REAL          DIFF2      ! aerosol diffusivities
-      REAL          DIFF3      ! aerosol diffusivities
+      type(hyperdual)          DIFF3      ! aerosol diffusivities
       !REAL          PE0        ! Peclet numbers
       !REAL          PE2        ! Peclet numers
-      REAL          PE3        ! Peclet numbers
+      type(hyperdual)          PE3        ! Peclet numbers
       REAL          COEF2      !
       REAL          COEF3      !
       REAL          COEF4      !
@@ -182,12 +182,12 @@ C FSB mass check changed to be 1.0e-6 [ug/m**3] - 08/23/2005
 C     to avoid AM3 becomming too small.  With this change
 C     AM3 is no smaller than 1.0e-18
 
-      IF ( ( NUMI .LE. 0.0 ) .OR. ( MASSI .LE. 1.0e-6 ) .OR.
-     &     ( LWC  .LE. 0.0 ) ) THEN
+      IF ( ( NUMI .LE. 0.0d0 ) .OR. ( MASSI .LE. 1.0d-6 ) .OR.
+     &     ( LWC  .LE. 0.0d0 ) ) THEN
 !cc     &     ( SURFI .LE. 0.0 ) .OR. ( LWC  .LE. 0.0 ) ) THEN
-        ALFA0 = 0.0
-        ALFA2 = 0.0
-        ALFA3 = 0.0
+        ALFA0 = 0.0d0
+        ALFA2 = 0.0d0
+        ALFA3 = 0.0d0
         RETURN
       END IF
 
@@ -246,7 +246,7 @@ C...  The following method is much more robust, even if it uses three log calls.
 
 C...set the standard deviation to a fixed value (e.g. 1.7)
 
-        L2SGI = DEFL2SG
+        L2SGI = real( DEFL2SG, 8 )
 
 C...calculate the 2nd moment based on the fixed standard deviation
 
@@ -264,8 +264,8 @@ C...  of Aitken mode distribution
       ESG36 = ESG4 * ESG16 * ESG16
 
 C...calculate dgni from numi and m3i
-
-      DGNI = CUBRT( AM3 / ( AM0 * ESG36 ) )
+      ! EXP( ONE3 * LOG( XX ) )
+      DGNI = EXP( ONE3 * LOG( AM3 / ( AM0 * ESG36 ) ) )
       DG2  = DGNI  * DGNI
 
 C...now get other aerosol moments
@@ -329,7 +329,9 @@ C...  including convective enhancement
 !cc
 !cc      ALFA0 = COEF4 * DIFF0 * ( 1.0 + 0.5 * CUBRT( PE0 ) )
 !cc      ALFA2 = COEF4 * DIFF2 * ( 1.0 + 0.5 * CUBRT( PE2 ) )
-      ALFA3 = COEF4 * DIFF3 * ( 1.0 + 0.5 * CUBRT( PE3 ) )
+      ! EXP( ONE3 * LOG( XX ) )
+      ! ALFA3 = COEF4 * DIFF3 * ( 1.0 + 0.5 * CUBRT( PE3 ) )
+      ALFA3 = COEF4 * DIFF3 * ( 1.0 + 0.5 * EXP( ONE3 * LOG( PE3 ) ) )
       ALFA0 = ALFA3
       ALFA2 = ALFA3
 

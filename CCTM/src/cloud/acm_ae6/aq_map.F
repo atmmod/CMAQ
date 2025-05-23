@@ -115,9 +115,9 @@ C Arguments:
       type(hyperdual), ALLOCATABLE :: CEND_HD( : ) ! ending incloud conc (moles/mole), in hyperdual
       type(hyperdual),    INTENT( INOUT ) :: REMOV( : )  ! moles/m2 or mm*mol/lit scavenged
       REAL,    INTENT( INOUT ) :: REMOVAC   ! variable storing H+ deposition
-      REAL,    INTENT( IN )    :: ALFA0     ! scav coef for aitken aerosol number
-      REAL,    INTENT( IN )    :: ALFA2     ! scav coef for aitken aerosol sfc area
-      REAL,    INTENT( IN )    :: ALFA3     ! scav coef for aitken aerosol mass
+      type(hyperdual),    INTENT( IN )    :: ALFA0     ! scav coef for aitken aerosol number
+      type(hyperdual),    INTENT( IN )    :: ALFA2     ! scav coef for aitken aerosol sfc area
+      type(hyperdual),    INTENT( IN )    :: ALFA3     ! scav coef for aitken aerosol mass
       LOGICAL, INTENT( IN )    :: DARK      ! DARK = TRUE is night,  DARK = FALSE is day
 
 C Local Variables (scalars):
@@ -162,9 +162,9 @@ C External Functions:
            INTEGER,   INTENT( IN )  :: JDATE  ! current model date, coded YYYYDDD
            INTEGER,   INTENT( IN )  :: JTIME  ! current model time, coded HHMMSS
            REAL,      INTENT( IN )  :: AIRM      ! total air mass in cloudy layers (mol/m2)
-           REAL,      INTENT( IN )  :: ALFA0     ! scav coef for aitken aerosol number
-           REAL,      INTENT( IN )  :: ALFA2     ! scav coef for aitken aerosol sfc area
-           REAL,      INTENT( IN )  :: ALFA3     ! scav coef for aitken aerosol mass
+           type(hyperdual),      INTENT( IN )  :: ALFA0     ! scav coef for aitken aerosol number
+           type(hyperdual),      INTENT( IN )  :: ALFA2     ! scav coef for aitken aerosol sfc area
+           type(hyperdual),      INTENT( IN )  :: ALFA3     ! scav coef for aitken aerosol mass
            REAL,      INTENT( OUT ) :: HPWDEP    ! hydrogen wet deposition (mm mol/liter)
            REAL( 8 ), INTENT( OUT ) :: BETASO4  
            REAL,      INTENT( IN )  :: PRCRATE   ! precip rate (mm/hr)
@@ -421,7 +421,7 @@ C...perform aqueous-phase chemistry calculations
      &              AEROSOL, GASWDEP, AERWDEP, HPWDEP, BETASO4, DARK )
 
 C...  compute the scavenging coefficient
-      EALFA2T = EXP( -ALFA2 * TAUCLD )
+      EALFA2T = EXP( -ALFA2%x * TAUCLD )
 
 C...store the amount of hydrogen deposition
 
