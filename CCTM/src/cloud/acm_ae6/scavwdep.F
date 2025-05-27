@@ -118,7 +118,7 @@ C...........Arguments:
       type(hyperdual),    INTENT( OUT ) :: ALFA0   ! scav coef for aitken aerosol number
       type(hyperdual),    INTENT( OUT ) :: ALFA2   ! scav coef for aitken aerosol sfc area
       type(hyperdual),    INTENT( OUT ) :: ALFA3   ! scav coef for aitken aerosol mass
-      REAL,    INTENT( OUT ) :: REMOVAC ! variable storing H+ deposition
+      type(hyperdual),    INTENT( OUT ) :: REMOVAC ! variable storing H+ deposition
       type(hyperdual),    INTENT(  IN ) :: POLC ( : )  ! avg vert conc incloud (moles/mole)
       type(hyperdual),    INTENT( OUT ) :: CEND ( : )  ! ending incloud conc (moles/mole)
       type(hyperdual),    INTENT( OUT ) :: REMOV( : )  ! moles/m2 or mm*mol/lit scavenged
@@ -263,7 +263,7 @@ ccc          TWASH = AMAX1( TWASH, TAUCLD / 60.0 )   ! <different units?sec&min
       TWASH = AMAX1( TWASH, TAUCLD )
       ONE_OVER_TWASH = 1.0 / TWASH
       TWF = H2ODENS / ( WTBAR * RTCH )
-      REMOVAC = 0.0
+      REMOVAC = 0.0d0
 
 #ifdef sens
       S_REMOVAC = 0.0

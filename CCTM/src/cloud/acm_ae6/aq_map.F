@@ -114,7 +114,7 @@ C Arguments:
       type(hyperdual),    INTENT( INOUT ) :: CEND ( : )  ! ending incloud conc (moles/mole)
       type(hyperdual), ALLOCATABLE :: CEND_HD( : ) ! ending incloud conc (moles/mole), in hyperdual
       type(hyperdual),    INTENT( INOUT ) :: REMOV( : )  ! moles/m2 or mm*mol/lit scavenged
-      REAL,    INTENT( INOUT ) :: REMOVAC   ! variable storing H+ deposition
+      type(hyperdual),    INTENT( INOUT ) :: REMOVAC   ! variable storing H+ deposition
       type(hyperdual),    INTENT( IN )    :: ALFA0     ! scav coef for aitken aerosol number
       type(hyperdual),    INTENT( IN )    :: ALFA2     ! scav coef for aitken aerosol sfc area
       type(hyperdual),    INTENT( IN )    :: ALFA3     ! scav coef for aitken aerosol mass
@@ -134,18 +134,18 @@ C Local Variables (scalars):
       INTEGER       SPC                 ! liquid species loop counter
       INTEGER ::    STAT
 
-      REAL( 8 )  :: BETASO4
+      type(hyperdual)  :: BETASO4
       REAL( 8 )  :: EALFA2T                ! EXP( -ALFA2 * TAUCLD )
       type(hyperdual)  :: M3NEW( NMODES )        ! modal mass at time t
       type(hyperdual)  :: M3OLD( NMODES )        ! modal mass at time 0
       type(hyperdual)  :: Dens_wmean_old( NMODES ) ! concentration weighted molecular weight g/mol
       type(hyperdual)  :: Dens_wmean_new( NMODES ) ! concentration weighted molecular weight g/mol
 
-      REAL       :: HPWDEP                        ! hydrogen wet dep (mm mol/liter)
+      type(hyperdual)       :: HPWDEP                        ! hydrogen wet dep (mm mol/liter)
       type(hyperdual), ALLOCATABLE, SAVE :: GAS    ( : )    ! gas phase conc (mol/mol)
-      REAL( 8 ), ALLOCATABLE, SAVE :: GASWDEP( : )    ! gas phase wet dep array (mm mol/liter)
+      type(hyperdual), ALLOCATABLE, SAVE :: GASWDEP( : )    ! gas phase wet dep array (mm mol/liter)
       type(hyperdual), ALLOCATABLE, SAVE :: AEROSOL( :, :)  ! aerosol conc (mol/mol)
-      REAL( 8 ), ALLOCATABLE, SAVE :: AERWDEP( :, :)  ! aerosol wet dep array (mm mol/liter)
+      type(hyperdual), ALLOCATABLE, SAVE :: AERWDEP( :, :)  ! aerosol wet dep array (mm mol/liter)
       type(hyperdual)  :: WSRGGAS( NGAS, MXSRG)             ! weights for surrogate
       type(hyperdual)  :: WSRGAER( MAX_NAER, NMODES, MXSRG) ! weights for surrogate
 
@@ -165,8 +165,8 @@ C External Functions:
            type(hyperdual),      INTENT( IN )  :: ALFA0     ! scav coef for aitken aerosol number
            type(hyperdual),      INTENT( IN )  :: ALFA2     ! scav coef for aitken aerosol sfc area
            type(hyperdual),      INTENT( IN )  :: ALFA3     ! scav coef for aitken aerosol mass
-           REAL,      INTENT( OUT ) :: HPWDEP    ! hydrogen wet deposition (mm mol/liter)
-           REAL( 8 ), INTENT( OUT ) :: BETASO4  
+           type(hyperdual),      INTENT( OUT ) :: HPWDEP    ! hydrogen wet deposition (mm mol/liter)
+           type(hyperdual), INTENT( OUT ) :: BETASO4  
            REAL,      INTENT( IN )  :: PRCRATE   ! precip rate (mm/hr)
            REAL,      INTENT( IN )  :: PRES_PA   ! pressure (Pa)
            REAL,      INTENT( IN )  :: TAUCLD    ! timestep for cloud (s)
@@ -175,8 +175,8 @@ C External Functions:
            REAL,      INTENT( IN )  :: WTAVG     ! total water content (kg/m3)
            type(hyperdual), INTENT( INOUT ) :: GAS    ( : )   ! gas phase concentrations (mol/molV)
            type(hyperdual), INTENT( INOUT ) :: AEROSOL( :,: ) ! aerosol concentrations (mol/molV)
-           REAL( 8 ), INTENT( INOUT ) :: GASWDEP( : )   ! gas phase wet deposition array (mm mol/liter)
-           REAL( 8 ), INTENT( INOUT ) :: AERWDEP( :,: ) ! aerosol wet deposition array (mm mol/liter)
+           type(hyperdual), INTENT( INOUT ) :: GASWDEP( : )   ! gas phase wet deposition array (mm mol/liter)
+           type(hyperdual), INTENT( INOUT ) :: AERWDEP( :,: ) ! aerosol wet deposition array (mm mol/liter)
            LOGICAL,   INTENT( IN )    :: DARK           ! DARK = TRUE is night,  DARK = FALSE is day
         END SUBROUTINE AQCHEM
       END INTERFACE      

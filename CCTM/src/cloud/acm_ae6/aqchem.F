@@ -188,11 +188,11 @@ C...........Arguments:
       INTEGER,   INTENT( IN )  :: JTIME  ! current model time, coded HHMMSS
 
       REAL,      INTENT( IN )  :: AIRM      ! total air mass in cloudy layers (mol/m2)
-      REAL,      INTENT( IN )  :: ALFA0     ! scav coef for aitken aerosol number
-      REAL,      INTENT( IN )  :: ALFA2     ! scav coef for aitken aerosol sfc area
-      REAL,      INTENT( IN )  :: ALFA3     ! scav coef for aitken aerosol mass
-      REAL,      INTENT( OUT ) :: HPWDEP    ! hydrogen wet deposition (mm mol/liter)
-      REAL( 8 ), INTENT( OUT ) :: BETASO4
+      type(hyperdual),      INTENT( IN )  :: ALFA0     ! scav coef for aitken aerosol number
+      type(hyperdual),      INTENT( IN )  :: ALFA2     ! scav coef for aitken aerosol sfc area
+      type(hyperdual),      INTENT( IN )  :: ALFA3     ! scav coef for aitken aerosol mass
+      type(hyperdual),      INTENT( OUT ) :: HPWDEP    ! hydrogen wet deposition (mm mol/liter)
+      TYPE(hyperdual), INTENT( OUT ) :: BETASO4
       REAL,      INTENT( IN )  :: PRCRATE   ! precip rate (mm/hr)
       REAL,      INTENT( IN )  :: PRES_PA   ! pressure (Pa)
       REAL,      INTENT( IN )  :: TAUCLD    ! timestep for cloud (s)
@@ -201,8 +201,8 @@ C...........Arguments:
       REAL,      INTENT( IN )  :: WTAVG     ! total water content (kg/m3)
       type(hyperdual), INTENT( INOUT ) :: GAS    ( : )   ! gas phase concentrations (mol/molV)
       type(hyperdual), INTENT( INOUT ) :: AEROSOL( :,: ) ! aerosol concentrations (mol/molV)
-      REAL( 8 ), INTENT( INOUT ) :: GASWDEP( : )   ! gas phase wet deposition array (mm mol/liter)
-      REAL( 8 ), INTENT( INOUT ) :: AERWDEP( :,: ) ! aerosol wet deposition array (mm mol/liter)
+      type(hyperdual), INTENT( INOUT ) :: GASWDEP( : )   ! gas phase wet deposition array (mm mol/liter)
+      type(hyperdual), INTENT( INOUT ) :: AERWDEP( :,: ) ! aerosol wet deposition array (mm mol/liter)
       LOGICAL,   INTENT( IN )    :: DARK           ! DARK = TRUE is night,  DARK = FALSE is day
 
 C...........Local Variables (scalars):
@@ -222,139 +222,139 @@ C...........Local Variables (scalars):
       INTEGER      IGAS            ! loop counter for gas species
       INTEGER      IOX             ! index over oxidation reactions
 
-      REAL( 8 ) :: DEPSUM
-      REAL( 8 ) :: A               ! iron's anion concentration
+      type(hyperdual) :: DEPSUM
+      type(hyperdual) :: A               ! iron's anion concentration
       REAL( 8 ) :: HPLUS           ! H+ concentration in cloudwater (mol/liter)
-      REAL( 8 ) :: ACT1            ! activity correction factor, single ions
-      REAL( 8 ) :: ACT2            ! activity factor correction, double ions
-      REAL( 8 ) :: ACTB            !
+      type(hyperdual) :: ACT1            ! activity correction factor, single ions
+      type(hyperdual) :: ACT2            ! activity factor correction, double ions
+      type(hyperdual) :: ACTB            !
       REAL( 8 ) :: AE              ! guess for H+ conc in cloudwater (mol/liter)
-      REAL( 8 ) :: B               ! manganese's anion concentration
+      type(hyperdual) :: B               ! manganese's anion concentration
       REAL( 8 ) :: PRES_ATM        ! pressure (Atm)
       REAL( 8 ) :: BB              ! lower limit guess of cloudwater pH
-      REAL( 8 ) :: CA              ! Calcium conc in cloudwater (mol/liter)
-      REAL( 8 ) :: CL              ! total Cl-  conc in cloudwater (mol/liter)
-      REAL( 8 ) :: CLACC           ! fine Cl- in cloudwater (mol/liter)
-      REAL( 8 ) :: CLCOR           ! coarse Cl-  conc in cloudwater (mol/liter)
+      type(hyperdual) :: CA              ! Calcium conc in cloudwater (mol/liter)
+      type(hyperdual) :: CL              ! total Cl-  conc in cloudwater (mol/liter)
+      type(hyperdual) :: CLACC           ! fine Cl- in cloudwater (mol/liter)
+      type(hyperdual) :: CLCOR           ! coarse Cl-  conc in cloudwater (mol/liter)
       REAL( 8 ) :: CO2H            ! Henry's Law constant for CO2
       REAL( 8 ) :: CO21            ! First dissociation constant for CO2
       REAL( 8 ) :: CO22            ! Second dissociation constant for CO2
       REAL( 8 ) :: CO212           ! CO21*CO22
       REAL( 8 ) :: CO212H          ! CO2H*CO21*CO22
       REAL( 8 ) :: CO21H           ! CO2H*CO21
-      REAL( 8 ) :: CO2L            ! CO2 conc in cloudwater (mol/liter)
-      REAL( 8 ) :: CO3             ! CO3= conc in cloudwater (mol/liter)
+      type(hyperdual) :: CO2L            ! CO2 conc in cloudwater (mol/liter)
+      type(hyperdual) :: CO3             ! CO3= conc in cloudwater (mol/liter)
       REAL( 8 ) :: CTHK1           ! cloud thickness (m)
-      REAL( 8 ) :: DSIV_SCALE      ! mass conservation scale factor for S(IV)
+      type(hyperdual) :: DSIV_SCALE      ! mass conservation scale factor for S(IV)
       REAL( 8 ) :: DTRMV           !
-      REAL( 8 ) :: DTS6            !
-      REAL( 8 ) :: DGLYDT          ! change in GLY (mol/liter/sec)
-      REAL( 8 ) :: DMGLYDT         ! change in MGLY (mol/liter/sec)
+      type(hyperdual) :: DTS6            !
+      type(hyperdual) :: DGLYDT          ! change in GLY (mol/liter/sec)
+      type(hyperdual) :: DMGLYDT         ! change in MGLY (mol/liter/sec)
 !     REAL( 8 ) :: DOHDT           ! change in OH
-      REAL( 8 ) :: DGLY1           ! change due to Rxn. in GLY for DTW(0) time step
-      REAL( 8 ) :: DMGLY1          ! change due to Rxn. in MGLY for DTW(0) time step
+      type(hyperdual) :: DGLY1           ! change due to Rxn. in GLY for DTW(0) time step
+      type(hyperdual) :: DMGLY1          ! change due to Rxn. in MGLY for DTW(0) time step
 !     REAL( 8 ) :: DOH1            ! change in OH for DTW(0) time step
-      REAL( 8 ) :: DORGC           ! change in ORGC for DTW(0) time step (mol/liter)
-      REAL( 8 ) :: EBETASO4T       ! EXP( -BETASO4 * TAUCLD )
+      type(hyperdual) :: DORGC           ! change in ORGC for DTW(0) time step (mol/liter)
+      type(hyperdual) :: EBETASO4T       ! EXP( -BETASO4 * TAUCLD )
       REAL( 8 ) :: EALFA0T         ! EXP( -ALFA0 * TAUCLD )
       REAL( 8 ) :: EALFA2T         ! EXP( -ALFA2 * TAUCLD )
       REAL( 8 ) :: EALFA3T         ! EXP( -ALFA3 * TAUCLD )
-      REAL( 8 ) :: EC              ! elemental carbon acc+akn aerosol in cloudwater (mol/liter)
-      REAL( 8 ) :: FA              ! functional value ??
-      REAL( 8 ) :: FB              ! functional value ??
-      REAL( 8 ) :: FCLCOR          ! frac weight of coarse CL to (acc+coarse) CL
-      REAL( 8 ) :: FE              ! Fe+++ conc in cloudwater (mol/liter)
-      REAL( 8 ) :: FHNO3           ! frac weight of HNO3 to total NO3
-      REAL( 8 ) :: FNH3            ! frac weight of NH3 to total ammonia
-      REAL( 8 ) :: FNH4ACC         ! frac weight of NH4 acc to total ammonia
-      REAL( 8 ) :: FNH4COR         ! frac weight of coarse NH4 to (acc+coarse) NH4
-      REAL( 8 ) :: FNO3ACC         ! frac weight of NO3 acc to total NO3     
-      REAL( 8 ) :: FNO3COR         ! frac weight of coarse NO3 to (acc+coarse) NO3
+      type(hyperdual) :: EC              ! elemental carbon acc+akn aerosol in cloudwater (mol/liter)
+      type(hyperdual) :: FA              ! functional value ??
+      type(hyperdual) :: FB              ! functional value ??
+      type(hyperdual) :: FCLCOR          ! frac weight of coarse CL to (acc+coarse) CL
+      type(hyperdual) :: FE              ! Fe+++ conc in cloudwater (mol/liter)
+      type(hyperdual) :: FHNO3           ! frac weight of HNO3 to total NO3
+      type(hyperdual) :: FNH3            ! frac weight of NH3 to total ammonia
+      type(hyperdual) :: FNH4ACC         ! frac weight of NH4 acc to total ammonia
+      type(hyperdual) :: FNH4COR         ! frac weight of coarse NH4 to (acc+coarse) NH4
+      type(hyperdual) :: FNO3ACC         ! frac weight of NO3 acc to total NO3     
+      type(hyperdual) :: FNO3COR         ! frac weight of coarse NO3 to (acc+coarse) NO3
       REAL( 8 ) :: FRACLIQ         ! fraction of water in liquid form
       REAL( 8 ) :: FOA1            ! First dissociation constant for FOA (Formic Acid)
       REAL( 8 ) :: FOAH            ! Henry's Law constant for FOA
       REAL( 8 ) :: FOA1H           ! FOAH*FOA1
-      REAL( 8 ) :: FOAL            ! FOA conc in cloudwater (mol/liter)
-      REAL( 8 ) :: FTST            !
+      type(hyperdual) :: FOAL            ! FOA conc in cloudwater (mol/liter)
+      type(hyperdual) :: FTST            !
       REAL( 8 ) :: GLYH            ! Henry's Law constant for glyoxal
-      REAL( 8 ) :: GLYL            ! glyoxal conc in cloud water (mol/liter)
+      type(hyperdual) :: GLYL            ! glyoxal conc in cloud water (mol/liter)
       REAL( 8 ) :: GM              !
-      REAL( 8 ) :: GM1             !
-      REAL( 8 ) :: GM1LOG          !
-      REAL( 8 ) :: GM2             ! activity correction factor
-      REAL( 8 ) :: GM2LOG          !
+      type(hyperdual) :: GM1             !
+      type(hyperdual) :: GM1LOG          !
+      type(hyperdual) :: GM2             ! activity correction factor
+      type(hyperdual) :: GM2LOG          !
       REAL( 8 ) :: HA              !
       REAL( 8 ) :: HB              !
       REAL( 8 ) :: H2OW            !
       REAL( 8 ) :: H2O2H           ! Henry's Law Constant for H2O2
-      REAL( 8 ) :: H2O2L           ! H2O2 conc in cloudwater (mol/liter)
+      type(hyperdual) :: H2O2L           ! H2O2 conc in cloudwater (mol/liter)
       REAL( 8 ) :: HCLH            ! Henry's Law Constant for HCL
       REAL( 8 ) :: HCL1            ! First dissociation constant for HCL
       REAL( 8 ) :: HCL1H           ! HCL1*HCLH
-      REAL( 8 ) :: HCLL            ! HCl  conc in  cloudwater (mol/liter)
-      REAL( 8 ) :: HCO2            ! HCO2 conc in cloudwater (mol/liter)
-      REAL( 8 ) :: HCO3            ! HCO3 conc in cloudwater (mol/liter)
+      TYPE(hyperdual) :: HCLL            ! HCl  conc in  cloudwater (mol/liter)
+      TYPE(hyperdual) :: HCO2            ! HCO2 conc in cloudwater (mol/liter)
+      TYPE(hyperdual) :: HCO3            ! HCO3 conc in cloudwater (mol/liter)
       REAL( 8 ) :: HNO3H           ! Henry's Law Constant for HNO3
       REAL( 8 ) :: HNO31           ! First dissociation constant for HNO3
       REAL( 8 ) :: HNO31H          !
-      REAL( 8 ) :: HNO3L           ! HNO3 conc in cloudwater (mol/liter)
+      type(hyperdual) :: HNO3L           ! HNO3 conc in cloudwater (mol/liter)
       REAL( 8 ) :: HOH             ! Henry's Law Constant for HO
-      REAL( 8 ) :: HSO3            ! HSO3 conc in cloudwater (mol/liter)
-      REAL( 8 ) :: HSO4            ! HSO4 concn in cloudwater (mol/liter)
-      REAL( 8 ) :: HSO4ACC         ! accumulation mode HSO4 concn in cloudwater (mol/liter)
-      REAL( 8 ) :: HSO4COR         ! coarse HSO4 concn in cloudwater (mol/liter)
+      TYPE(hyperdual) :: HSO3            ! HSO3 conc in cloudwater (mol/liter)
+      TYPE(hyperdual) :: HSO4            ! HSO4 concn in cloudwater (mol/liter)
+      TYPE(hyperdual) :: HSO4ACC         ! accumulation mode HSO4 concn in cloudwater (mol/liter)
+      TYPE(hyperdual) :: HSO4COR         ! coarse HSO4 concn in cloudwater (mol/liter)
       REAL( 8 ) :: HTST            !
-      REAL( 8 ) :: K               ! K conc in cloudwater (mol/liter)
+      type(hyperdual) :: K               ! K conc in cloudwater (mol/liter)
       !REAL( 8 ) :: LGTEMP          ! log of TEMP
-      REAL( 8 ) :: MG              !
+      type(hyperdual) :: MG              !
       REAL( 8 ) :: MGLYH           ! Henry's Law Constant for methylglyoxal
-      REAL( 8 ) :: MGLYL           ! MGLY conc in cloud water (mol/liter)
+      type(hyperdual) :: MGLYL           ! MGLY conc in cloud water (mol/liter)
       REAL( 8 ) :: MHPH            ! Henry's Law Constant for MHP
-      REAL( 8 ) :: MHPL            ! MHP conc in cloudwater (mol/liter)
-      REAL( 8 ) :: MN              ! Mn++ conc in cloudwater (mol/liter)
-      REAL( 8 ) :: NA              ! Na conc in cloudwater (mol/liter)
-      REAL( 8 ) :: NAACC           ! Na in cloudwater (mol/liter)
-      REAL( 8 ) :: NACOR           ! coarse Na in cloudwater (mol/liter)
+      type(hyperdual) :: MHPL            ! MHP conc in cloudwater (mol/liter)
+      type(hyperdual) :: MN              ! Mn++ conc in cloudwater (mol/liter)
+      type(hyperdual) :: NA              ! Na conc in cloudwater (mol/liter)
+      type(hyperdual) :: NAACC           ! Na in cloudwater (mol/liter)
+      type(hyperdual) :: NACOR           ! coarse Na in cloudwater (mol/liter)
       REAL( 8 ) :: NH31            ! First dissociation constant for NH3
       REAL( 8 ) :: NH3H            ! Henry's Law Constant for NH3
       REAL( 8 ) :: NH3DH20         !
       REAL( 8 ) :: NH31HDH         !
-      REAL( 8 ) :: NH3L            ! NH3 conc in cloudwater (mol/liter)
-      REAL( 8 ) :: NH4             ! NH4+ conc in cloudwater (mol/liter)
-      REAL( 8 ) :: NH4ACC          ! NH4 acc conc in cloudwater (mol/liter)
-      REAL( 8 ) :: NH4COR          ! NH4 coarse conc in cloudwater (mol/liter)
+      type(hyperdual) :: NH3L            ! NH3 conc in cloudwater (mol/liter)
+      type(hyperdual) :: NH4             ! NH4+ conc in cloudwater (mol/liter)
+      type(hyperdual) :: NH4ACC          ! NH4 acc conc in cloudwater (mol/liter)
+      type(hyperdual) :: NH4COR          ! NH4 coarse conc in cloudwater (mol/liter)
       !REAL( 8 ) :: NITAER          ! total aerosol nitrate
-      REAL( 8 ) :: NO3             ! NO3 conc in cloudwater (mol/liter)
-      REAL( 8 ) :: NO3ACC          ! NO3 acc conc in cloudwater (mol/liter)
-      REAL( 8 ) :: NO3COR          ! NO3 coarse conc in cloudwater (mol/liter)
-      REAL( 8 ) :: NUMCOR          ! coarse aerosol number in cloudwater (mol/liter)
+      type(hyperdual) :: NO3             ! NO3 conc in cloudwater (mol/liter)
+      type(hyperdual) :: NO3ACC          ! NO3 acc conc in cloudwater (mol/liter)
+      type(hyperdual) :: NO3COR          ! NO3 coarse conc in cloudwater (mol/liter)
+      type(hyperdual) :: NUMCOR          ! coarse aerosol number in cloudwater (mol/liter)
       REAL( 8 ) :: O3H             ! Henry's Law Constant for O3
-      REAL( 8 ) :: O3L             ! O3 conc in cloudwater (mol/liter)
-      REAL( 8 ) :: OH              ! OH conc in cloudwater (mol/liter)
-      REAL( 8 ) :: OHL             ! OH radical conc in cloudwater (mol/liter)
-      REAL( 8 ) :: SOA             ! secondary organic aerosol in cloudwater (mol/liter)
-      REAL( 8 ) :: ORGC            ! cloud-produced SOA in cloudwater (treated as primary)
-      REAL( 8 ) :: POA             ! primary organic aerosol in cloudwater (mol/liter)
+      type(hyperdual) :: O3L             ! O3 conc in cloudwater (mol/liter)
+      type(hyperdual) :: OH              ! OH conc in cloudwater (mol/liter)
+      type(hyperdual) :: OHL             ! OH radical conc in cloudwater (mol/liter)
+      type(hyperdual) :: SOA             ! secondary organic aerosol in cloudwater (mol/liter)
+      type(hyperdual) :: ORGC            ! cloud-produced SOA in cloudwater (treated as primary)
+      type(hyperdual) :: POA             ! primary organic aerosol in cloudwater (mol/liter)
       REAL( 8 ) :: PAAH            ! Henry's Law Constant for PAA
-      REAL( 8 ) :: PAAL            ! PAA conc in cloudwater (mol/liter)
-      REAL( 8 ) :: PCO2F           ! gas only CO2 partial pressure (atm)
-      REAL( 8 ) :: PFOAF           ! gas only ORGANIC ACID partial press (atm)
-      REAL( 8 ) :: PGLYF           ! gas only GLY partial pressure (atm)
-      REAL( 8 ) :: PH2O2F          ! gas only H2O2 partial pressure (atm)
-      REAL( 8 ) :: PHCLF           ! gas only HCL partial pressure (atm)
-      REAL( 8 ) :: PHNO3F          ! gas only HNO3 partial pressure (atm)
-      REAL( 8 ) :: PHOF            ! gas only HO partial pressure (atm)
-      REAL( 8 ) :: PMGLYF          ! gas only MGLY parital pressure (atm)
-      REAL( 8 ) :: PMHPF           ! gas only MHP partial pressure (atm)
-      REAL( 8 ) :: PNH3F           ! gas only NH3 partial pressure (atm)
-      REAL( 8 ) :: PO3F            ! gas only O3 partial pressure (atm)
-      REAL( 8 ) :: PPAAF           ! gas only PAA partial pressure (atm)
-      REAL( 8 ) :: PRIM            ! PRIMARY acc+akn aerosol in cloudwater (mol/liter)
+      type(hyperdual) :: PAAL            ! PAA conc in cloudwater (mol/liter)
+      type(hyperdual) :: PCO2F           ! gas only CO2 partial pressure (atm)
+      type(hyperdual) :: PFOAF           ! gas only ORGANIC ACID partial press (atm)
+      type(hyperdual) :: PGLYF           ! gas only GLY partial pressure (atm)
+      type(hyperdual) :: PH2O2F          ! gas only H2O2 partial pressure (atm)
+      type(hyperdual) :: PHCLF           ! gas only HCL partial pressure (atm)
+      type(hyperdual) :: PHNO3F          ! gas only HNO3 partial pressure (atm)
+      type(hyperdual) :: PHOF            ! gas only HO partial pressure (atm)
+      type(hyperdual) :: PMGLYF          ! gas only MGLY parital pressure (atm)
+      type(hyperdual) :: PMHPF           ! gas only MHP partial pressure (atm)
+      type(hyperdual) :: PNH3F           ! gas only NH3 partial pressure (atm)
+      type(hyperdual) :: PO3F            ! gas only O3 partial pressure (atm)
+      type(hyperdual) :: PPAAF           ! gas only PAA partial pressure (atm)
+      type(hyperdual) :: PRIM            ! PRIMARY acc+akn aerosol in cloudwater (mol/liter)
 !     REAL( 8 ) :: PRIMCOR         ! PRIMARY coarse aerosol in cloudwater (mol/liter)
-      REAL( 8 ) :: PSO2F           ! gas only SO2 partial pressure (atm)
+      type(hyperdual) :: PSO2F           ! gas only SO2 partial pressure (atm)
       !REAL( 8 ) :: RATE            !
-      REAL( 8 ) :: RECIPA1         !
-      REAL( 8 ) :: RECIPA2         !
+      type(hyperdual) :: RECIPA1         !
+      type(hyperdual) :: RECIPA2         !
       REAL( 8 ) :: RECIPAP1        ! one over pressure (/atm)
       REAL( 8 ) :: RGLY3           ! liter/(mol sec)
       REAL( 8 ) :: RH2O2           !
@@ -362,57 +362,57 @@ C...........Local Variables (scalars):
       REAL( 8 ) :: RMHP            !
       REAL( 8 ) :: RPAA            !
       REAL( 8 ) :: RT              ! gas const * temperature (liter atm/mol)
-      REAL( 8 ) :: SIV             ! dissolved so2 in cloudwater (mol/liter)
+      type(hyperdual) :: SIV             ! dissolved so2 in cloudwater (mol/liter)
       REAL( 8 ) :: SK6             !
-      REAL( 8 ) :: SK6TS6          !
+      type(hyperdual) :: SK6TS6          !
       REAL( 8 ) :: SO21            ! First dissociation constant for SO2
       REAL( 8 ) :: SO22            ! Second dissociation constant for SO2
       REAL( 8 ) :: SO2H            ! Henry's Law Constant for SO2
       REAL( 8 ) :: SO212           ! SO21*SO22
       REAL( 8 ) :: SO212H          ! SO21*SO22*SO2H
       REAL( 8 ) :: SO21H           ! SO21*SO2H
-      REAL( 8 ) :: SO2L            ! SO2 conc in cloudwater (mol/liter)
-      REAL( 8 ) :: SO3             ! SO3= conc in cloudwater (mol/liter)
-      REAL( 8 ) :: SO4             ! SO4= conc in cloudwater (mol/liter)
-      REAL( 8 ) :: SO4ACC          ! accumulation mode SO4= conc in cloudwater (mol/liter)
-      REAL( 8 ) :: SO4COR          ! coarse SO4= conc in cloudwater (mol/liter)
-      REAL( 8 ) :: STION           ! ionic strength
-      REAL( 8 ) :: TAC             !
-      REAL( 8 ) :: TCLa            ! sum of accumulation and coarse mode chloride
+      type(hyperdual) :: SO2L            ! SO2 conc in cloudwater (mol/liter)
+      type(hyperdual) :: SO3             ! SO3= conc in cloudwater (mol/liter)
+      type(hyperdual) :: SO4             ! SO4= conc in cloudwater (mol/liter)
+      type(hyperdual) :: SO4ACC          ! accumulation mode SO4= conc in cloudwater (mol/liter)
+      type(hyperdual) :: SO4COR          ! coarse SO4= conc in cloudwater (mol/liter)
+      type(hyperdual) :: STION           ! ionic strength
+      type(hyperdual) :: TAC             !
+      type(hyperdual) :: TCLa            ! sum of accumulation and coarse mode chloride
       REAL( 8 ) :: TEMP1           ! (1/T) - (1/298) (1/K)
-      REAL( 8 ) :: TIMEW           ! cloud chemistry clock (sec)
+      type(hyperdual) :: TIMEW           ! cloud chemistry clock (sec)
 !     REAL( 8 ) :: THO             ! total hydroxyl radical available for oxidation
-      REAL( 8 ) :: TGLY            ! total glyoxal available for oxidation
-      REAL( 8 ) :: TMGLY           ! total methylglyoxal available for oxidation
+      type(hyperdual) :: TGLY            ! total glyoxal available for oxidation
+      type(hyperdual) :: TMGLY           ! total methylglyoxal available for oxidation
       !REAL( 8 ) :: TOTOX           !
-      REAL( 8 ) :: TH2O2
-      REAL( 8 ) :: TO3
-      REAL( 8 ) :: TMHP      
-      REAL( 8 ) :: TNH4a           ! sum of accumulation and coarse mode ammonium
-      REAL( 8 ) :: TNO3a           ! sum of accumulation and coarse mode nitrate      
-      REAL( 8 ) :: TPAA
-      REAL( 8 ) :: TOTAMM          ! total ammonium
-      REAL( 8 ) :: TOTNIT          ! total nitrate (excluding coarse mode)
-      REAL( 8 ) :: TS6             ! SO4 conc in cloudwater (mol/liter)
-      REAL( 8 ) :: TS6ACC          ! SO4 acc conc in cloudwater (mol/liter)
-      REAL( 8 ) :: TS6COR          ! coarse SO4 conc in cloudwater   (mol/liter)
+      type(hyperdual) :: TH2O2
+      type(hyperdual) :: TO3
+      type(hyperdual) :: TMHP      
+      type(hyperdual) :: TNH4a           ! sum of accumulation and coarse mode ammonium
+      type(hyperdual) :: TNO3a           ! sum of accumulation and coarse mode nitrate      
+      type(hyperdual) :: TPAA
+      type(hyperdual) :: TOTAMM          ! total ammonium
+      type(hyperdual) :: TOTNIT          ! total nitrate (excluding coarse mode)
+      type(hyperdual) :: TS6             ! SO4 conc in cloudwater (mol/liter)
+      type(hyperdual) :: TS6ACC          ! SO4 acc conc in cloudwater (mol/liter)
+      type(hyperdual) :: TS6COR          ! coarse SO4 conc in cloudwater   (mol/liter)
 C...for sulfur tracking
-      REAL( 8 ) :: TS6AQH2O2       ! SO4 conc from reaction 1 (mol/liter)
-      REAL( 8 ) :: TS6AQO3         ! SO4 conc from reaction 2 (mol/liter)
-      REAL( 8 ) :: TS6AQFEMN       ! SO4 conc from reaction 3 (mol/liter)
-      REAL( 8 ) :: TS6AQMHP        ! SO4 conc from reaction 4 (mol/liter)
-      REAL( 8 ) :: TS6AQPAA        ! SO4 conc from reaction 5 (mol/liter)
+      type(hyperdual) :: TS6AQH2O2       ! SO4 conc from reaction 1 (mol/liter)
+      type(hyperdual) :: TS6AQO3         ! SO4 conc from reaction 2 (mol/liter)
+      type(hyperdual) :: TS6AQFEMN       ! SO4 conc from reaction 3 (mol/liter)
+      type(hyperdual) :: TS6AQMHP        ! SO4 conc from reaction 4 (mol/liter)
+      type(hyperdual) :: TS6AQPAA        ! SO4 conc from reaction 5 (mol/liter)
 
-      REAL( 8 ) :: TSIV            ! total S(iv) available for oxidation
+      type(hyperdual) :: TSIV            ! total S(iv) available for oxidation
       REAL( 8 ) :: TST             !
       REAL( 8 ) :: TWASH           ! washout time for clouds (sec)
-      REAL( 8 ) :: WETFAC          ! converts mol/l to mm-mol/l based on precip
+      type(hyperdual) :: WETFAC          ! converts mol/l to mm-mol/l based on precip
       REAL( 8 ) :: XC1             ! (/mm)
       REAL( 8 ) :: XC2             ! (liter-atm/mol/mm)
       REAL( 8 ) :: XL              ! conversion factor (liter-atm/mol)
       REAL( 8 ) :: ONE_OVER_XL     ! 1.0 / XL
       REAL( 8 ) :: PRES_ATM_OVER_XL ! PRES_ATM / XL
-      REAL( 8 ) :: SCAVENGED       ! aitken scavenging factor by cloud water
+      type(hyperdual) :: SCAVENGED       ! aitken scavenging factor by cloud water
       REAL( 8 ) :: XLCO2           !
       REAL( 8 ) :: XLH2O2          !
       REAL( 8 ) :: XLHCL           ! const in calc of HCL final partial pres
@@ -422,21 +422,21 @@ C...for sulfur tracking
       REAL( 8 ) :: XLO3            !
       REAL( 8 ) :: XLPAA           !
       REAL( 8 ) :: XLSO2           !
-      REAL( 8 ) :: CAACC           ! accumulation mode Calcium (AE6) SLN 16March2011
-      REAL( 8 ) :: MGACC           ! accumulation mode Magnesium (AE6) SLN 16March2011
-      REAL( 8 ) :: KACC            ! accumulation mode Potassium (AE6) SLN 16March2011
-      REAL( 8 ) :: CACOR           ! coarse mode Calcium (AE6) SLN 16March2011
-      REAL( 8 ) :: MGCOR           ! coarse mode Magnesium (AE6) SLN 16March2011
-      REAL( 8 ) :: KCOR            ! coarse mode Potassium (AE6) SLN 16March2011
-      REAL( 8 ) :: SOILCOR         ! coarse mode SOIL (AE6) SLN 16March2011
-      REAL( 8 ) :: ANTHCOR         ! coarse mode CORS (AE6) SLN 16March2011
-      REAL( 8 ) :: SEASCOR         ! coarse mode SEAS (AE6) SLN 16March2011
-      REAL( 8 ) :: FEACC           ! accumulation mode Fe (AE6) SLN 22March2011
-      REAL( 8 ) :: MNACC           ! accumulation mode Mn (AE6) SLN 22March2011
-      REAL( 8 ) :: FECOR           ! coarse mode Fe (AE6) SLN 22March2011
-      REAL( 8 ) :: MNCOR           ! coarse mode Mn (AE6) SLN 22March2011
-      REAL( 8 ) :: FE_OX           ! Fe(III) available for sulfate oxidation
-      REAL( 8 ) :: MN_OX           ! Mn(II) available for sulfate oxidation
+      type(hyperdual) :: CAACC           ! accumulation mode Calcium (AE6) SLN 16March2011
+      type(hyperdual) :: MGACC           ! accumulation mode Magnesium (AE6) SLN 16March2011
+      type(hyperdual) :: KACC            ! accumulation mode Potassium (AE6) SLN 16March2011
+      type(hyperdual) :: CACOR           ! coarse mode Calcium (AE6) SLN 16March2011
+      type(hyperdual) :: MGCOR           ! coarse mode Magnesium (AE6) SLN 16March2011
+      type(hyperdual) :: KCOR            ! coarse mode Potassium (AE6) SLN 16March2011
+      type(hyperdual) :: SOILCOR         ! coarse mode SOIL (AE6) SLN 16March2011
+      type(hyperdual) :: ANTHCOR         ! coarse mode CORS (AE6) SLN 16March2011
+      type(hyperdual) :: SEASCOR         ! coarse mode SEAS (AE6) SLN 16March2011
+      type(hyperdual) :: FEACC           ! accumulation mode Fe (AE6) SLN 22March2011
+      type(hyperdual) :: MNACC           ! accumulation mode Mn (AE6) SLN 22March2011
+      type(hyperdual) :: FECOR           ! coarse mode Fe (AE6) SLN 22March2011
+      type(hyperdual) :: MNCOR           ! coarse mode Mn (AE6) SLN 22March2011
+      type(hyperdual) :: FE_OX           ! Fe(III) available for sulfate oxidation
+      type(hyperdual) :: MN_OX           ! Mn(II) available for sulfate oxidation
       REAL( 8 ) :: FE_III          ! Fractional Fe(III) partitioning, GS - July 1, 2011
       REAL( 8 ) :: MN_II           ! Fractional Mn(II) partitioning, GS - July 1, 2011
 
@@ -462,13 +462,13 @@ C...for sulfur tracking
 
 C...........Local Variables (arrays):
 
-      REAL( 8 ) :: LOADING( MAX_NAER, NMODES ) ! aerosol loading (mol/liter)
-      REAL( 8 ) :: INITGAS( NGAS ) ! initial gas partial pressure (atm)
-      REAL( 8 ) :: LIQUID( NLIQS ) ! wet deposition array (mm mol/liter)
-      REAL( 8 ) :: WETDEP( NLIQS ) ! wet deposition array (mm mol/liter)
-      REAL( 8 ) :: DSIVDT( 0:NUMOX ) ! rate of so2 oxid incloud (mol/liter/sec)
-      REAL( 8 ) :: DS4   ( 0:NUMOX ) ! S(IV) oxidized over timestep DTW(0)
-      REAL( 8 ) :: DTW   ( 0:NUMOX ) ! cloud chemistry timestep (sec)
+      type(hyperdual) :: LOADING( MAX_NAER, NMODES ) ! aerosol loading (mol/liter)
+      type(hyperdual) :: INITGAS( NGAS ) ! initial gas partial pressure (atm)
+      type(hyperdual) :: LIQUID( NLIQS ) ! wet deposition array (mm mol/liter)
+      type(hyperdual) :: WETDEP( NLIQS ) ! wet deposition array (mm mol/liter)
+      type(hyperdual) :: DSIVDT( 0:NUMOX ) ! rate of so2 oxid incloud (mol/liter/sec)
+      type(hyperdual) :: DS4   ( 0:NUMOX ) ! S(IV) oxidized over timestep DTW(0)
+      type(hyperdual) :: DTW   ( 0:NUMOX ) ! cloud chemistry timestep (sec)
 
       REAL( 8 ) :: ONE_OVER_TEMP     ! 1.0 / TEMP
 
@@ -478,10 +478,10 @@ C...........External Functions:
 
 !For Varaible used by TXHG Version
       !LOGICAL, SAVE :: TRUST_TXHG_CHEM = .TRUE.  ! allow effects for TXHG version on ion and ph
-      REAL( 8 ) :: TRACER           ! TRACER acc+akn aerosol in cloudwater (mol/liter)
-      REAL( 8 ) :: TRACERCOR        ! TRACER coarse aerosol in cloudwater (mol/liter)
-      REAL( 8 ) :: HGFINE           ! mercury PM acc+akn aerosol in cloudwater (mol/liter)
-      REAL( 8 ) :: HGCOR            ! mercury PM coarse aerosol in cloudwater (mol/liter)
+      type(hyperdual) :: TRACER           ! TRACER acc+akn aerosol in cloudwater (mol/liter)
+      type(hyperdual) :: TRACERCOR        ! TRACER coarse aerosol in cloudwater (mol/liter)
+      type(hyperdual) :: HGFINE           ! mercury PM acc+akn aerosol in cloudwater (mol/liter)
+      type(hyperdual) :: HGCOR            ! mercury PM coarse aerosol in cloudwater (mol/liter)
 
 
 #ifdef sens
@@ -651,41 +651,41 @@ C...make initializations
 
 C...compute fractional weights for several species
 
-      TOTNIT = GAS( LHNO3 )%x + AEROSOL( LNO3, ACC )%x
+      TOTNIT = GAS( LHNO3 ) + AEROSOL( LNO3, ACC )
       IF ( TOTNIT .GT. 0.0D0 ) THEN
-        FHNO3   = GAS( LHNO3 )%x / TOTNIT
-        FNO3ACC = AEROSOL( LNO3, ACC )%x / TOTNIT
+        FHNO3   = GAS( LHNO3 ) / TOTNIT
+        FNO3ACC = AEROSOL( LNO3, ACC ) / TOTNIT
       ELSE
         FHNO3   = 1.0D0
         FNO3ACC = 0.0D0
       END IF
 
-      TOTAMM = GAS( LNH3 )%x + AEROSOL( LNH4, ACC )%x
+      TOTAMM = GAS( LNH3 ) + AEROSOL( LNH4, ACC )
       IF ( TOTAMM .GT. 0.0D0 ) THEN
-        FNH3    = GAS( LNH3 )%x / TOTAMM
-        FNH4ACC = AEROSOL( LNH4, ACC )%x / TOTAMM
+        FNH3    = GAS( LNH3 ) / TOTAMM
+        FNH4ACC = AEROSOL( LNH4, ACC ) / TOTAMM
       ELSE
         FNH3    = 1.0D0
         FNH4ACC = 0.0D0
       END IF
 
-      TNO3a = AEROSOL( LNO3, ACC )%x + AEROSOL( LNO3, COR )%x 
+      TNO3a = AEROSOL( LNO3, ACC ) + AEROSOL( LNO3, COR ) 
       IF ( TNO3a .GT. 0.0D0) THEN
-         FNO3COR = AEROSOL( LNO3, COR )%x / TNO3a
+         FNO3COR = AEROSOL( LNO3, COR ) / TNO3a
       ELSE
          FNO3COR = 0.0D0
       END IF
       
-      TNH4a = AEROSOL( LNH4, ACC )%x + AEROSOL( LNH4, COR )%x
+      TNH4a = AEROSOL( LNH4, ACC ) + AEROSOL( LNH4, COR )
       IF ( TNH4a .GT. 0.0D0) THEN
-         FNH4COR = AEROSOL( LNH4, COR )%x / TNH4a
+         FNH4COR = AEROSOL( LNH4, COR ) / TNH4a
       ELSE
          FNH4COR = 0.0D0
       END IF
       
-      TCLa  = AEROSOL( LCL, ACC )%x  + AEROSOL( LCL, COR )%x
+      TCLa  = AEROSOL( LCL, ACC )  + AEROSOL( LCL, COR )
       IF ( TCLa .GT. 0.0D0) THEN
-         FCLCOR = AEROSOL( LCL, COR )%x / TCLa
+         FCLCOR = AEROSOL( LCL, COR ) / TCLa
       ELSE
          FCLCOR = 0.0D0
       END IF
@@ -734,10 +734,10 @@ C...  an assumption is made that all of the accumulation-mode
 C...  aerosol mass in incorporated into the cloud droplets
 
       DO ISPC = 1, NAER
-        LOADING( ISPC, ACC ) = AEROSOL( ISPC, ACC )%x * PRES_ATM_OVER_XL
+        LOADING( ISPC, ACC ) = AEROSOL( ISPC, ACC ) * PRES_ATM_OVER_XL
       END DO
 
-      LOADING( LSO4, ACC ) = ( AEROSOL( LSO4, ACC )%x + GAS( LH2SO4 )%x ) * PRES_ATM_OVER_XL
+      LOADING( LSO4, ACC ) = ( AEROSOL( LSO4, ACC ) + GAS( LH2SO4 ) ) * PRES_ATM_OVER_XL
 
 #ifdef sens
       DO NP = 1, NPMAX
@@ -753,7 +753,7 @@ C...  an assumption is made that all of the coarse-mode
 C...  aerosol mass in incorporated into the cloud droplets
 
       DO ISPC = 1, NAER
-        LOADING( ISPC, COR ) = AEROSOL( ISPC, COR )%x * PRES_ATM_OVER_XL
+        LOADING( ISPC, COR ) = AEROSOL( ISPC, COR ) * PRES_ATM_OVER_XL
       END DO
 
 !     LOADING( LCACO3, COR ) = ( AEROSOL( LCACO3, COR ) + AEROSOL( LMGCO3, COR ) )
@@ -802,9 +802,9 @@ C...loop If kinetic calculations are made, return to this point
 
 C...set aitken-mode aerosol loading (mol/liter)
 
-        SCAVENGED = PRES_ATM_OVER_XL * ( 1.0D0 - EXP( -REAL( ALFA3, 8 ) * TIMEW ) )
+        SCAVENGED = PRES_ATM_OVER_XL * ( 1.0D0 - EXP( -REAL( ALFA3%x, 8 ) * TIMEW ) )
         DO ISPC = 1, NAER
-          LOADING( ISPC, AKN ) = AEROSOL( ISPC, AKN )%x * SCAVENGED
+          LOADING( ISPC, AKN ) = AEROSOL( ISPC, AKN ) * SCAVENGED
         END DO
 
 C#ifdef sens
@@ -818,34 +818,34 @@ C#endif
 C...Initial gas phase partial pressures (atm)
 C...   = initial partial pressure - amount deposited partial pressure
 
-        INITGAS( LSO2 )  = GAS( LSO2  )%x * PRES_ATM
+        INITGAS( LSO2 )  = GAS( LSO2  ) * PRES_ATM
      &                   + DS4( 0 ) * XL
      &                   - ( WETDEP( LSO3L ) + WETDEP( LHSO3L ) + WETDEP( LSO2L ) ) * XC2
-        INITGAS( LNH3 )  = GAS( LNH3  )%x * PRES_ATM
+        INITGAS( LNH3 )  = GAS( LNH3  ) * PRES_ATM
      &                   + ( LOADING( LNH4, ACC ) + LOADING( LNH4, COR ) + LOADING( LNH4, AKN ) ) * XL
      &                   - ( WETDEP( LNH4ACCL ) + WETDEP( LNH3L ) + WETDEP( LNH4CORL ) ) * XC2
-        INITGAS( LHNO3 ) = ( GAS( LHNO3 )%x + 2.0 * GAS( LN2O5 )%x ) * PRES_ATM
+        INITGAS( LHNO3 ) = ( GAS( LHNO3 ) + 2.0 * GAS( LN2O5 ) ) * PRES_ATM
      &                   + ( LOADING( LNO3, ACC ) + LOADING( LNO3, COR ) + LOADING( LNO3, AKN ) ) * XL
      &                   - ( WETDEP( LNO3ACCL ) + WETDEP( LHNO3L ) + WETDEP( LNO3CORL ) ) * XC2
-        INITGAS( LHCL )  = GAS(  LHCL )%x * PRES_ATM
+        INITGAS( LHCL )  = GAS(  LHCL ) * PRES_ATM
      &                   + ( LOADING( LCL, ACC ) + LOADING( LCL, COR ) + LOADING( LCL, AKN ) ) * XL ! new for sea salt
      &                   - ( WETDEP( LCLACCL ) + WETDEP( LHCLL ) + WETDEP( LCLCORL ) ) * XC2
-        INITGAS( LH2O2 ) = GAS( LH2O2 )%x * PRES_ATM - WETDEP( LH2O2L ) * XC2
-        INITGAS( LO3 )   = GAS( LO3   )%x * PRES_ATM - WETDEP( LO3L   ) * XC2
-        INITGAS( LFOA )  = GAS( LFOA  )%x * PRES_ATM
+        INITGAS( LH2O2 ) = GAS( LH2O2 ) * PRES_ATM - WETDEP( LH2O2L ) * XC2
+        INITGAS( LO3 )   = GAS( LO3   ) * PRES_ATM - WETDEP( LO3L   ) * XC2
+        INITGAS( LFOA )  = GAS( LFOA  ) * PRES_ATM
      &                   - ( WETDEP( LFOAL ) + WETDEP( LHCO2L ) ) * XC2
-        INITGAS( LMHP )  = GAS( LMHP  )%x * PRES_ATM - WETDEP( LMHPL  ) * XC2
-        INITGAS( LPAA )  = GAS( LPAA  )%x * PRES_ATM - WETDEP( LPAAL  ) * XC2
-        INITGAS( LCO2 )  = GAS( LCO2  )%x * PRES_ATM
+        INITGAS( LMHP )  = GAS( LMHP  ) * PRES_ATM - WETDEP( LMHPL  ) * XC2
+        INITGAS( LPAA )  = GAS( LPAA  ) * PRES_ATM - WETDEP( LPAAL  ) * XC2
+        INITGAS( LCO2 )  = GAS( LCO2  ) * PRES_ATM
 !    &                   + ( LOADING( LCACO3, COR ) + LOADING( LMGCO3, COR ) ) * XL
      &                   - ( WETDEP( LCO3L ) + WETDEP( LHCO3L ) + WETDEP( LCO2L ) ) * XC2
-        INITGAS( LGLY )  = GAS( LGLY  )%x * PRES_ATM
+        INITGAS( LGLY )  = GAS( LGLY  ) * PRES_ATM
      &                   + DGLY1 * XL
      &                   - WETDEP( LGLYL ) * XC2
-        INITGAS( LMGLY ) = GAS( LMGLY  )%x * PRES_ATM
+        INITGAS( LMGLY ) = GAS( LMGLY  ) * PRES_ATM
      &                   + DMGLY1 * XL
      &                   - WETDEP( LMGLYL ) * XC2
-        INITGAS( LHO )   = GAS( LHO )%x * PRES_ATM
+        INITGAS( LHO )   = GAS( LHO ) * PRES_ATM
 !steadystate     &                   + DOH1 * XL
 !steadystate     &                   - WETDEP( LOHL ) * XC2
 
@@ -2108,7 +2108,7 @@ C...  for S(IV), also limit by oxidants (except assume O2 in steady state)
 
 C...  recalculate the total S(iv) oxidation rate
 
-        DSIVDT( 0 ) = 0.0
+        DSIVDT( 0 ) = 0.0D0
         DO IOX = 1, NUMOX
           DSIVDT( 0 ) = DSIVDT( 0 ) + DSIVDT( IOX )
         END DO
@@ -2213,9 +2213,9 @@ C...  scavenging aerosol number in the accumulation mode
       END IF
 
       EBETASO4T = EXP( -BETASO4 * TAUCLD )
-      EALFA0T   = EXP( -ALFA0 * TAUCLD )
-      EALFA2T   = EXP( -ALFA2 * TAUCLD )
-      EALFA3T   = EXP( -ALFA3 * TAUCLD )
+      EALFA0T   = EXP( -ALFA0%x * TAUCLD )
+      EALFA2T   = EXP( -ALFA2%x * TAUCLD )
+      EALFA3T   = EXP( -ALFA3%x * TAUCLD )
 
 C...Compute the output concentrations and wet deposition amounts
 
@@ -2522,7 +2522,7 @@ C...Compute for Aerosol species in  TXHG Version
 
 C...store the amount of hydrogen deposition
 
-      HPWDEP = REAL( WETDEP( LACL ), 4 )
+      HPWDEP = WETDEP( LACL )
 #ifdef sens
       DO NP =1, NPMAX
         S_HPWDEP( NP ) = S_WETDEP( NP, LACL )

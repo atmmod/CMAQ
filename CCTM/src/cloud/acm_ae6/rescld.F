@@ -121,7 +121,7 @@ C...........Arguments:
       INTEGER, INTENT( IN )    :: TSTEP( 3 )       ! model time steps, coded HHMMSS
       INTEGER, INTENT( IN )    :: N_SPC_WDEP       ! # of wet deposition species
       INTEGER, INTENT( IN )    :: WDEP_MAP( : )    ! wet deposition species map to CGRID
-      REAL,    INTENT( INOUT ) :: DEP( :,:,: )     ! wet deposition
+      type(hyperdual),    INTENT( INOUT ) :: DEP( :,:,: )     ! wet deposition
       REAL,    INTENT( OUT )   :: RESTRANS( :,: )  ! resolved cloud transmissivity
 #ifdef isam
       REAL,    INTENT( INOUT ) :: SA_DEP( :,:,:,: )
@@ -175,7 +175,7 @@ C...........Local Variables:
       REAL          QRSGCOL             ! vert column integrated precip content
       REAL          QCICOL              ! vert column integrated cloud content
       REAL          RAIN                ! non-conv rainfall rate (mm/hr)
-      REAL          REMOVAC             ! variable storing H+ deposition
+      type(hyperdual)          REMOVAC             ! variable storing H+ deposition
       REAL          TAUCLD              ! cloud lifetime (sec)
       REAL          TBARC               ! mean cloud temp (K)
       REAL          WCBAR               ! liq water content of cloud (kg/m3)
@@ -229,7 +229,7 @@ C...........External Functions:
            REAL,    INTENT( IN )  :: WTBAR, WCBAR, TBARC, PBARC,
      &                               CTHK1, AIRM, PRATE1, TAUCLD
            type(hyperdual),    INTENT( IN )  :: POLC ( : )
-           REAL,    INTENT( OUT ) :: REMOVAC
+           type(hyperdual),    INTENT( OUT ) :: REMOVAC
            type(hyperdual),    INTENT( OUT ) :: CEND( : ), REMOV( : )
            type(hyperdual),    INTENT( OUT ) :: ALFA0, ALFA2, ALFA3
         END SUBROUTINE SCAVWDEP
@@ -242,7 +242,7 @@ C...........External Functions:
            REAL,    INTENT( IN )    :: WTBAR, WCBAR, TBARC, PBARC,
      &                                 CTHK1, AIRM, PRATE1, TAUCLD
            type(hyperdual),    INTENT( IN )    :: POLC ( : )
-           REAL,    INTENT( INOUT ) :: REMOVAC
+           type(hyperdual),    INTENT( INOUT ) :: REMOVAC
            type(hyperdual),    INTENT( INOUT ) :: CEND( : ), REMOV( : )
            type(hyperdual),    INTENT( IN )    :: ALFA0, ALFA2, ALFA3
            LOGICAL, INTENT( IN )    :: DARK                  !Golam Sarwar, July 1, 2011
@@ -611,24 +611,11 @@ C...  per mole air
 C...perform scavenging and aqueous chemistry within the cloud
 C...  and re-adjust the ending and removed amounts for those species
 C...  that were scavenged or that participated in cloud chemistry
-                if (rank == 78 .and. lay == 9 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CEND before scavwdep 9th:', CEND(129)
-                endif
-                if (rank == 78 .and. lay == 10 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CEND before scavwdep 10th:', CEND(129)
-                endif 
                                   
                 CALL SCAVWDEP ( JDATE, JTIME, WTBAR, WCBAR, TBARC,
      &                          PBARC, CTHK1, AIRM, PRATE1, TAUCLD,
      &                          POLC, CEND, REMOV, REMOVAC, ALFA0,
      &                          ALFA2, ALFA3 )
-
-                if (rank == 78 .and. lay == 9 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CEND after scavwdep 9th:', CEND(129)
-                endif
-                if (rank == 78 .and. lay == 10 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CEND after scavwdep 10th:', CEND(129)
-                endif
 
 #ifdef isam
                 DO SPC = 1, NSPC_SA
@@ -685,16 +672,7 @@ C...  mimic this for the ASO4GASJ tracking species
                   CALL AQ_MAP ( JDATE, JTIME, WTBAR, WCBAR, TBARC,
      &                          PBARC, CTHK1, AIRM, PRATE1, TAUCLD,
      &                          POLC, CEND, REMOV, REMOVAC, ALFA0,
-     &                          ALFA2, ALFA3, DARK )
-                 
-                if (rank == 78 .and. lay == 9 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CEND after aq_map 9th:', CEND(129)
-                endif
-                if (rank == 78 .and. lay == 10 .and. col == 5 .and. row == 9) then
-                  write(*,*) 'CEND after aq_map 10th:', CEND(129)
-                endif                   
-                 
-                 
+     &                          ALFA2, ALFA3, DARK )                 
 
 #ifdef isam
                   DO SPC = 1, NSPC_SA ! general case
@@ -867,7 +845,7 @@ C...load deposition amounts into the DEP array
 
                 DO VAR = 1, N_SPC_WDEP
                   DEP( COL, ROW, VAR ) = DEP( COL, ROW, VAR )
-     &                                 + real(REMOV( WDEP_MAP( VAR ) )%x, 4)
+     &                                 + REMOV( WDEP_MAP( VAR ) )
                 END DO
 
 C...load H+ concentration into the deposition array as well

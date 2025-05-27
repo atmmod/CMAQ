@@ -181,7 +181,7 @@ C...........Arguments
       INTEGER, INTENT( IN )    :: TSTEP( 3 )
       INTEGER, INTENT( IN )    :: N_SPC_WDEP
       INTEGER, INTENT( IN )    :: WDEP_MAP( : )
-      REAL,    INTENT( INOUT ) :: CONV_DEP( :,:,: )
+      type(hyperdual),    INTENT( INOUT ) :: CONV_DEP( :,:,: )
       REAL,    INTENT( OUT )   :: SUBTRANS( :,:,: )
 C#ifdef isam
 C     REAL,    INTENT( INOUT ) :: CONV_SADEP( :,:,:,: )
@@ -347,7 +347,7 @@ C-------------------------------------------
       REAL             QENT             ! wat vap mix ratio due to cld sidewall entrainmt
       REAL             QP               ! perturbed water vap mix ratio of parcel
       REAL             QXS              ! int. excess wat ov grid cell needed for rainout
-      REAL             REMOVAC          ! variable storing H+ deposition
+      type(hyperdual)             REMOVAC          ! variable storing H+ deposition
       REAL             RHOAIR           ! air density in kg/m3
       REAL             RLH              ! relative humidity
       REAL             RLHSRC           ! relative humidity at cld src level
@@ -497,7 +497,7 @@ C#endif
      &                              CTHK1, AIRM, PRATE1, TAUCLD
           type(hyperdual),    INTENT( IN )  :: POLC ( : )
           type(hyperdual),    INTENT( OUT ) :: CEND( : ), REMOV( : )
-          REAL,    INTENT( OUT ) :: REMOVAC
+          type(hyperdual),    INTENT( OUT ) :: REMOVAC
           type(hyperdual),    INTENT( OUT ) :: ALFA0, ALFA2, ALFA3
         END SUBROUTINE SCAVWDEP
 
@@ -510,7 +510,7 @@ C#endif
      &                                CTHK1, AIRM, PRATE1, TAUCLD
           type(hyperdual),    INTENT( IN )    :: POLC ( : )
           type(hyperdual),    INTENT( INOUT ) :: CEND( : ), REMOV( : )
-          REAL,    INTENT( INOUT ) :: REMOVAC
+          type(hyperdual),    INTENT( INOUT ) :: REMOVAC
           type(hyperdual),    INTENT( IN )    :: ALFA0, ALFA2, ALFA3
           LOGICAL, INTENT( IN )    :: DARK            
         END SUBROUTINE AQ_MAP
@@ -891,7 +891,11 @@ C...  threshold
         XMSG = 'NEGATIVE RAIN...PROBABLY BAD MET DATA... in' // MET_CRO_2D
         CALL M3EXIT ( PNAME, MDATE, MTIME, XMSG, XSTAT1 )
       END IF
-      WHERE ( RAIN .GE. RTHRESH ) CONV_DEP( :,:,N_SPC_WDEP + 6 ) = 1.0
+      WHERE ( RAIN .GE. RTHRESH ) CONV_DEP( :,:,N_SPC_WDEP + 6 )%x = 1.0d0
+      WHERE ( RAIN .GE. RTHRESH ) CONV_DEP( :,:,N_SPC_WDEP + 6 )%dx1 = 0.0d0
+      WHERE ( RAIN .GE. RTHRESH ) CONV_DEP( :,:,N_SPC_WDEP + 6 )%dx2 = 0.0d0
+      WHERE ( RAIN .GE. RTHRESH ) CONV_DEP( :,:,N_SPC_WDEP + 6 )%dx1x2 = 0.0d0
+      
 
 C...Loop through all grid cells
 
@@ -1065,7 +1069,7 @@ C...walcek formula
 
           END IF
 
-          CONV_DEP( COL,ROW, N_SPC_WDEP + 2 ) = PLCL
+          CONV_DEP( COL,ROW, N_SPC_WDEP + 2 ) = real(PLCL, 8)
 
 C...Determine cloud base at LAY in  which LCL resides,
 C...  but not below layer 2.
@@ -1180,11 +1184,11 @@ C...   humidity criterion, or, not let cloud top go above 600mb.
 
 267       CONTINUE   ! loop exit target
 
-          CONV_DEP( COL,ROW, N_SPC_WDEP + 3 ) = FLOAT( CLBASE )
+          CONV_DEP( COL,ROW, N_SPC_WDEP + 3 ) = real(CLBASE , 8)
 
           IF ( ICLDTYPE .EQ. 1 ) THEN    !  store raining cloud top and proceed
 
-            CONV_DEP( COL,ROW, N_SPC_WDEP + 4 ) = FLOAT( CLTOP )
+            CONV_DEP( COL,ROW, N_SPC_WDEP + 4 ) = real( CLTOP , 8 )
 
           ELSE                      !  get cloud top for either CNP or PFW
 
@@ -1240,8 +1244,8 @@ C...Now based on Sunqdvist et al. 1989 DOI: 10.1175/1520-0493(1989)117<1641:CACP
 
             IF ( FRAC .LT. 0.01 ) GO TO 299
 
-            CONV_DEP( COL,ROW, N_SPC_WDEP + 5 ) = FLOAT( CLTOP ) ! store NP cloud top
-            CONV_DEP( COL,ROW, N_SPC_WDEP + 8 ) = FRAC
+            CONV_DEP( COL,ROW, N_SPC_WDEP + 5 ) = real(CLTOP, 8 ) ! store NP cloud top
+            CONV_DEP( COL,ROW, N_SPC_WDEP + 8 ) = real(FRAC, 8)
 
           END IF  ! end of existence, depth and frac cov calc for
                   ! either PFW or CNP clouds
@@ -1628,7 +1632,7 @@ C...Final calc of storm rainfall rate and frac area (raining clds)
           END IF
           IF ( FRAC .LT. 0.01 ) GO TO 299
           
-          CONV_DEP( COL,ROW, N_SPC_WDEP + 7 ) = FRAC
+          CONV_DEP( COL,ROW, N_SPC_WDEP + 7 ) = real(FRAC, 8)
 
 7000      CONTINUE                        ! target of cloudtype split
 
@@ -1906,7 +1910,7 @@ C...Finally, get in cloud pollutant concentrations in mol sp per mol air
 #endif
           END DO
 
-          REMOVAC = 0.0
+          REMOVAC = 0.0d0
 #ifdef sens
           S_REMOVAC = 0.0D0
 #endif
@@ -2178,7 +2182,7 @@ C...add deposition amounts into the DEP array
 
           DO VAR = 1, N_SPC_WDEP
             CONV_DEP( COL,ROW,VAR ) = CONV_DEP( COL,ROW,VAR )
-     &                              + real(REMOV( WDEP_MAP( VAR ) )%x, 4)
+     &                              + REMOV( WDEP_MAP( VAR ) )
 #ifdef sens
             DO NP = 1, NPMAX
               S_CONDEP( COL, ROW, NP, VAR ) = S_CONDEP( COL, ROW, NP,VAR )
@@ -2225,7 +2229,7 @@ C...   include raining region below cld base
                   IF ( STM ) THEN
                     IF ( SPC .NE. SURCLDMX( SPC ) ) THEN       ! use its surrogate
                       IF ( POLC( SURCLDMX( SPC ) ) .GT. 0.0 ) THEN
-                        INCLOUD = PCLD( SURCLDMX( SPC ),LAY ) * real(CEND( SPC )%x, 4)
+                        INCLOUD = PCLD( SURCLDMX( SPC ),LAY ) * CEND( SPC )
      &                          / MAX( POLC( SURCLDMX( SPC ) ), CONCMINL( SURCLDMX( SPC ),LAY ) )
                       ELSE
                         INCLOUD = CEND( SPC )
@@ -2356,7 +2360,7 @@ C...Now do changes in cloudy layers:
                 IF ( STM ) THEN
                   IF ( SPC .NE. SURCLDMX( SPC ) ) THEN       ! use its surrogate
                     IF ( POLC( SURCLDMX( SPC ) ) .GT. 0.0 ) THEN
-                      INCLOUD = PCLD( SURCLDMX( SPC ),LAY ) * real(CEND( SPC )%x, 4)
+                      INCLOUD = PCLD( SURCLDMX( SPC ),LAY ) * CEND( SPC )
      &                        / MAX( POLC( SURCLDMX( SPC ) ), CONCMINL( SURCLDMX( SPC ),LAY ) )
                     ELSE
                       INCLOUD = CEND( SPC )
